@@ -1,5 +1,6 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
+import jdk.jfr.Unsigned;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 
@@ -290,4 +291,8 @@ public class NumberRange<T extends Number> {
     public static <T extends Number> @NotNull NumberRange<T> of(@NotNull T value1, @NotNull T value2) {
         return new NumberRange<>(value1, value2);
     }
+
+    public static final NumberRange<Integer> INT32 = NumberRange.of(-2147483648, 2147483647);
+
+    public static final NumberRange<Long> UINT32 = NumberRange.of(0L, 4294967295L);
 }

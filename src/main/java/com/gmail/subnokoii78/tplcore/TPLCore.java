@@ -2,6 +2,8 @@ package com.gmail.subnokoii78.tplcore;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Map;
+
 public final class TPLCore extends JavaPlugin {
 
     @Override
