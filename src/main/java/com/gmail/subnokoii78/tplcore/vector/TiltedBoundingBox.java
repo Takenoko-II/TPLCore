@@ -1,6 +1,6 @@
 package com.gmail.subnokoii78.tplcore.vector;
 
-import com.gmail.subnokoii78.util.other.TupleLR;
+import com.gmail.subnokoii78.tplcore.generic.TupleLR;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.BoundingBox;

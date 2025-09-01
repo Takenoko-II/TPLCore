@@ -16,6 +16,11 @@ public final class ScoreObjective {
         this.objective = objective;
     }
 
+    @Override
+    public int hashCode() {
+        return objective.getName().hashCode();
+    }
+
     public boolean hasScore(@NotNull Entity entity) {
         return objective.getScoreFor(entity).isScoreSet();
     }
@@ -118,7 +123,7 @@ public final class ScoreObjective {
     public @NotNull DisplaySlot getDisplaySlot() throws IllegalStateException {
         final DisplaySlot displaySlot = objective.getDisplaySlot();
         if (displaySlot == null) {
-            throw new IllegalStateException("このオブジェクティブは現在表示されていません");
+            throw new IllegalStateException("オブジェクティブ '" + objective.getName() + "' は現在表示されていません");
         }
         else return displaySlot;
     }

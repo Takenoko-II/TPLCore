@@ -327,25 +327,6 @@ public class CommandSourceStack {
     }
 
     /**
-     * コマンドの引数としての形式で記述された軸を読み取ります。
-     * @param axes 解析する文字列
-     * @return 軸の文字のSet
-     */
-    public static @NotNull Set<Character> readAxes(@NotNull String axes) {
-        final Set<String> chars = Set.of(axes.split(""));
-
-        if (axes.length() > 3) throw new IllegalArgumentException("軸は3つまで指定可能です");
-        else if (axes.length() != chars.size()) throw new IllegalArgumentException("軸が重複しています");
-        else if (!Set.of("x", "y", "z").containsAll(chars)) {
-            throw new IllegalArgumentException("x, y, zの文字が有効です");
-        }
-
-        return chars.stream()
-            .map(c -> c.charAt(0))
-            .collect(Collectors.toSet());
-    }
-
-    /**
      * 渡されたセレクターから処理順に従ってエンティティを取得します。
      * @param selector セレクター
      * @return エンティティのリスト

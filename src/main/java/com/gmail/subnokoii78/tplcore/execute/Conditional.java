@@ -3,7 +3,7 @@ package com.gmail.subnokoii78.tplcore.execute;
 /**
  * サブコマンドif|unlessを区別するための列挙型
  */
-public enum IfUnless {
+public enum Conditional {
     /**
      * ガードサブコマンドの条件をテストの成功にするオプション
      */
@@ -16,7 +16,7 @@ public enum IfUnless {
 
     private final boolean bool;
 
-    IfUnless(boolean bool) {
+    Conditional(boolean bool) {
         this.bool = bool;
     }
 

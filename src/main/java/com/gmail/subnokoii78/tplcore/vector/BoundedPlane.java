@@ -1,6 +1,6 @@
 package com.gmail.subnokoii78.tplcore.vector;
 
-import com.gmail.subnokoii78.util.other.TupleT;
+import com.gmail.subnokoii78.tplcore.generic.TupleT;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

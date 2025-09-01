@@ -1,7 +1,7 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
-import com.gmail.subnokoii78.util.scoreboard.ScoreObjective;
-import com.gmail.subnokoii78.util.scoreboard.ScoreboardUtils;
+import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
+import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,14 +64,14 @@ public abstract class ScoreHolder {
 
         @Override
         protected @Nullable Integer getScore(@NotNull String objective, @NotNull CommandSourceStack stack) {
-            if (!ScoreboardUtils.isRegistered(objective)) return null;
-            return ScoreboardUtils.getObjective(objective).getScore(stack.getEntities(selector).getFirst());
+            if (!Scoreboard.MAIN_SCOREBOARD.hasObjective(objective)) return null;
+            return Scoreboard.MAIN_SCOREBOARD.getObjective(objective).getScore(stack.getEntities(selector).getFirst());
         }
 
         @Override
         protected void setScore(@NotNull String objective, @NotNull CommandSourceStack stack, int value) {
-            if (!ScoreboardUtils.isRegistered(objective)) return;
-            final ScoreObjective o = ScoreboardUtils.getObjective(objective);
+            if (!Scoreboard.MAIN_SCOREBOARD.hasObjective(objective)) return;
+            final ScoreObjective o = Scoreboard.MAIN_SCOREBOARD.getObjective(objective);
             stack.getEntities(selector).forEach(entity -> o.setScore(entity, value));
         }
     }
@@ -85,14 +85,14 @@ public abstract class ScoreHolder {
 
         @Override
         protected @Nullable Integer getScore(@NotNull String objective, @NotNull CommandSourceStack stack) {
-            if (!ScoreboardUtils.isRegistered(objective)) return null;
-            return ScoreboardUtils.getObjective(objective).getScore(name);
+            if (!Scoreboard.MAIN_SCOREBOARD.hasObjective(objective)) return null;
+            return Scoreboard.MAIN_SCOREBOARD.getObjective(objective).getScore(name);
         }
 
         @Override
         protected void setScore(@NotNull String objective, @NotNull CommandSourceStack stack, int value) {
-            if (!ScoreboardUtils.isRegistered(objective)) return;
-            ScoreboardUtils.getObjective(objective).setScore(name, value);
+            if (!Scoreboard.MAIN_SCOREBOARD.hasObjective(objective)) return;
+            Scoreboard.MAIN_SCOREBOARD.getObjective(objective).setScore(name, value);
         }
     }
 }

@@ -1,7 +1,7 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
-import com.gmail.subnokoii78.util.scoreboard.ScoreObjective;
-import com.gmail.subnokoii78.util.scoreboard.ScoreboardUtils;
+import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
+import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -434,9 +434,9 @@ public abstract class SelectorArgument {
             return entities.stream()
                 .filter(entity -> {
                     for (final String name : argument.keySet()) {
-                        if (!ScoreboardUtils.isRegistered(name)) return false;
+                        if (!Scoreboard.MAIN_SCOREBOARD.hasObjective(name)) return false;
 
-                        final ScoreObjective objective = ScoreboardUtils.getObjective(name);
+                        final ScoreObjective objective = Scoreboard.MAIN_SCOREBOARD.getObjective(name);
                         final NumberRange<Integer> range = argument.get(name);
 
                         if (range.within(objective.getScore(entity))) {

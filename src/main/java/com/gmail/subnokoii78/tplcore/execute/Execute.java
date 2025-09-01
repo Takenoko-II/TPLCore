@@ -24,6 +24,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Execute APIの心臓部
@@ -313,7 +314,17 @@ public class Execute {
      */
     public @NotNull Execute align(@NotNull String axes) {
         return redirect(stack -> {
-            final Set<Character> axisChars = CommandSourceStack.readAxes(axes);
+            final Set<String> chars = Set.of(axes.split(""));
+
+            if (axes.length() > 3) throw new IllegalArgumentException("軸は3つまで指定可能です");
+            else if (axes.length() != chars.size()) throw new IllegalArgumentException("軸が重複しています");
+            else if (!Set.of("x", "y", "z").containsAll(chars)) {
+                throw new IllegalArgumentException("x, y, zの文字が有効です");
+            }
+
+            final Set<Character> axisChars = chars.stream()
+                .map(c -> c.charAt(0))
+                .collect(Collectors.toSet());
             final Vector3Builder location = stack.getPosition();
 
             if (axisChars.contains('x')) location.x(Math.floor(location.x()));
@@ -356,14 +367,14 @@ public class Execute {
      * @param toggle ifまたはunless
      * @return ifまたはunless
      */
-    public @NotNull GuardSubCommand ifOrUnless(@NotNull IfUnless toggle) {
+    public @NotNull GuardSubCommand guard(@NotNull Conditional toggle) {
         return new GuardSubCommand(this, toggle);
     }
 
     public static final class GuardSubCommand extends SubCommand<Execute> {
-        private final IfUnless toggle;
+        private final Conditional toggle;
 
-        private GuardSubCommand(@NotNull Execute execute, @NotNull IfUnless toggle) {
+        private GuardSubCommand(@NotNull Execute execute, @NotNull Conditional toggle) {
             super(execute);
             this.toggle = toggle;
         }
@@ -556,13 +567,13 @@ public class Execute {
                     if (target == null) return List.of();
 
                     if (itemSlots.matches(target, predicate)) {
-                        if (ifUnless.toggle.equals(IfUnless.IF)) {
+                        if (ifUnless.toggle.equals(Conditional.IF)) {
                             return List.of(stack);
                         }
                         else return List.of();
                     }
 
-                    if (ifUnless.toggle.equals(IfUnless.IF)) {
+                    if (ifUnless.toggle.equals(Conditional.IF)) {
                         return List.of();
                     }
                     else return List.of(stack);
