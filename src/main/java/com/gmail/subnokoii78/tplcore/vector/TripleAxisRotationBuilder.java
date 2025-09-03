@@ -114,13 +114,9 @@ public final class TripleAxisRotationBuilder implements VectorBuilder<TripleAxis
         return calculate(component -> component * scalar);
     }
 
-    /**
-     * @return {@link LocalAxisProviderE#back()}とまったく同じです
-     * @see LocalAxisProviderE#back()
-     */
     @Override
     public @NotNull TripleAxisRotationBuilder invert() {
-        return getLocalAxisProviderE().back();
+        return getObjectsCoordsSystem().back();
     }
 
     @Override
@@ -162,11 +158,6 @@ public final class TripleAxisRotationBuilder implements VectorBuilder<TripleAxis
         return equals(new TripleAxisRotationBuilder());
     }
 
-    @Deprecated
-    public @NotNull LocalAxisProviderE getLocalAxisProviderE() {
-        return new LocalAxisProviderE(this);
-    }
-
     public @NotNull ObjectCoordsSystem getObjectsCoordsSystem() {
         return new ObjectCoordsSystem(this);
     }
@@ -201,81 +192,6 @@ public final class TripleAxisRotationBuilder implements VectorBuilder<TripleAxis
 
     public static @NotNull TripleAxisRotationBuilder from(@NotNull DualAxisRotationBuilder other) {
         return new TripleAxisRotationBuilder(other.yaw(), other.pitch(), 0);
-    }
-
-    @Deprecated
-    public static final class LocalAxisProviderE extends Vector3Builder.LocalAxisProvider {
-        private final TripleAxisRotationBuilder rotation;
-
-        private LocalAxisProviderE(@NotNull TripleAxisRotationBuilder rotation) {
-            super(rotation.getDirection3d());
-            this.rotation = rotation.copy();
-        }
-
-        public @NotNull Vector3Builder getX() {
-            return super.getX().rotate(getZ(), rotation.roll());
-        }
-
-        public @NotNull Vector3Builder getY() {
-            return this.getZ().cross(this.getX());
-        }
-
-        public @NotNull Vector3Builder getZ() {
-            return super.getZ();
-        }
-
-        public @NotNull TripleAxisRotationBuilder forward() {
-            return rotation.copy();
-        }
-
-        public @NotNull TripleAxisRotationBuilder back() {
-            return ofAxes(
-                getX().invert(),
-                getY(),
-                getZ().invert()
-            );
-        }
-
-        public @NotNull TripleAxisRotationBuilder left() {
-            return ofAxes(
-                getZ().invert(),
-                getY(),
-                getX()
-            );
-        }
-
-        public @NotNull TripleAxisRotationBuilder right() {
-            return ofAxes(
-                getZ(),
-                getY(),
-                getX().invert()
-            );
-        }
-
-        public @NotNull TripleAxisRotationBuilder up() {
-            return ofAxes(
-                getX(),
-                getZ().invert(),
-                getY()
-            );
-        }
-
-        public @NotNull TripleAxisRotationBuilder down() {
-            return ofAxes(
-                getX(),
-                getZ(),
-                getY().invert()
-            );
-        }
-    }
-
-    @Deprecated
-    public static @NotNull TripleAxisRotationBuilder ofAxes(@NotNull Vector3Builder x, @NotNull Vector3Builder y, @NotNull Vector3Builder z) {
-        return new TripleAxisRotationBuilder(
-            (float) (Math.atan2(-z.x(), z.z()) * 180 / Math.PI),
-            (float) (Math.asin(-z.y()) * 180 / Math.PI),
-            (float) (Math.atan2(x.y(), y.y()) * 180 / Math.PI)
-        );
     }
 
     public static final class ObjectCoordsSystem {

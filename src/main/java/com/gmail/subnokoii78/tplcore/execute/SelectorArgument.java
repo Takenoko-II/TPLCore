@@ -434,9 +434,9 @@ public abstract class SelectorArgument {
             return entities.stream()
                 .filter(entity -> {
                     for (final String name : argument.keySet()) {
-                        if (!Scoreboard.MAIN_SCOREBOARD.hasObjective(name)) return false;
+                        if (!Scoreboard.MAIN.hasObjective(name)) return false;
 
-                        final ScoreObjective objective = Scoreboard.MAIN_SCOREBOARD.getObjective(name);
+                        final ScoreObjective objective = Scoreboard.MAIN.getObjective(name);
                         final NumberRange<Integer> range = argument.get(name);
 
                         if (range.within(objective.getScore(entity))) {

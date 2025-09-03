@@ -7,6 +7,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class RandomService {
     private final RangeRandomizer randomizer;
@@ -118,9 +119,5 @@ public class RandomService {
             this.randomizer.randFloat(NumberRange.of(-90f, 90f)),
             this.randomizer.randFloat(NumberRange.of(-180f, 180f))
         );
-    }
-
-    public static int int32() {
-        return new Random().nextInt();
     }
 }

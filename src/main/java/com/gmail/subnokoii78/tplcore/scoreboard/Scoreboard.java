@@ -40,5 +40,5 @@ public final class Scoreboard {
         }
     }
 
-    public static final Scoreboard MAIN_SCOREBOARD = new Scoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+    public static final Scoreboard MAIN = new Scoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 }

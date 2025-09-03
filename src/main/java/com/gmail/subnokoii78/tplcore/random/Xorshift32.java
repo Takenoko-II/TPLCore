@@ -43,8 +43,4 @@ public class Xorshift32 implements RangeRandomizer {
     public double randDouble(@NotNull NumberRange<Double> range) {
         return (next() / (double) NumberRange.UINT32.max()) * (range.max() - range.min()) + range.min();
     }
-
-    public static @NotNull Xorshift32 random() {
-        return new Xorshift32(RandomService.int32());
-    }
 }

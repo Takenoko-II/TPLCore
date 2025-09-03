@@ -482,6 +482,10 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
         return new org.bukkit.util.Vector(x, y, z);
     }
 
+    public @NotNull BlockPositionBuilder toBlockPositionBuilder() {
+        return new BlockPositionBuilder((int) x, (int) y, (int) z);
+    }
+
     /**
      * org.bukkit.util.Vectorをこのクラスに変換します。
      * @param vector 変換するベクトル
