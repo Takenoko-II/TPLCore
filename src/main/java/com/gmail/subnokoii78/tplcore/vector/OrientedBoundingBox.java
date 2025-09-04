@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * オイラー角を用いて自由に傾けることができる当たり判定のボックス
  */
-public final class TiltedBoundingBox {
+public final class OrientedBoundingBox {
     private double width;
 
     private double height;
@@ -64,7 +64,7 @@ public final class TiltedBoundingBox {
      * @param height 縦の長さ
      * @param depth 奥行きの長さ
      */
-    public TiltedBoundingBox(double width, double height, double depth) {
+    public OrientedBoundingBox(double width, double height, double depth) {
         this.width = width;
         this.height = height;
         this.depth = depth;
@@ -73,7 +73,7 @@ public final class TiltedBoundingBox {
     /**
      * 1^3の立方体のボックスを作成します。
      */
-    public TiltedBoundingBox() {
+    public OrientedBoundingBox() {
         this(1d, 1d, 1d);
     }
 
@@ -84,7 +84,7 @@ public final class TiltedBoundingBox {
      * @param location Bukkit API の {@link Location}
      * @return this
      */
-    public @NotNull TiltedBoundingBox put(@NotNull Location location) {
+    public @NotNull OrientedBoundingBox put(@NotNull Location location) {
         return dimension(location.getWorld())
         .center(Vector3Builder.from(location))
         .rotation(TripleAxisRotationBuilder.from(DualAxisRotationBuilder.from(location)));
@@ -103,7 +103,7 @@ public final class TiltedBoundingBox {
      * @param dimension ディメンション
      * @return this
      */
-    public @NotNull TiltedBoundingBox dimension(@NotNull World dimension) {
+    public @NotNull OrientedBoundingBox dimension(@NotNull World dimension) {
         world = dimension;
         return this;
     }
@@ -121,7 +121,7 @@ public final class TiltedBoundingBox {
      * @param center 中心座標
      * @return this
      */
-    public @NotNull TiltedBoundingBox center(@NotNull Vector3Builder center) {
+    public @NotNull OrientedBoundingBox center(@NotNull Vector3Builder center) {
         this.center
             .x(center.x())
             .y(center.y())
@@ -142,7 +142,7 @@ public final class TiltedBoundingBox {
      * @param rotation 回転
      * @return this
      */
-    public @NotNull TiltedBoundingBox rotation(@NotNull TripleAxisRotationBuilder rotation) {
+    public @NotNull OrientedBoundingBox rotation(@NotNull TripleAxisRotationBuilder rotation) {
         this.rotation
             .yaw(rotation.yaw())
             .pitch(rotation.pitch())
@@ -163,7 +163,7 @@ public final class TiltedBoundingBox {
      * @param size 大きさ
      * @return this
      */
-    public @NotNull TiltedBoundingBox size(@NotNull Vector3Builder size) {
+    public @NotNull OrientedBoundingBox size(@NotNull Vector3Builder size) {
         width = size.x();
         height = size.y();
         depth = size.z();
@@ -237,7 +237,7 @@ public final class TiltedBoundingBox {
      * @param other 他のボックス
      * @return 衝突していればtrue
      */
-    public boolean isCollides(@NotNull TiltedBoundingBox other) {
+    public boolean isCollides(@NotNull OrientedBoundingBox other) {
         if (!world.equals(other.world)) return false;
 
         // Separating Axis Theorem (SAT: 分離軸定理)
@@ -324,7 +324,7 @@ public final class TiltedBoundingBox {
      * @return 衝突していればtrue
      */
     public boolean isCollides(@NotNull Entity entity) {
-        return isCollides(TiltedBoundingBox.of(entity));
+        return isCollides(OrientedBoundingBox.of(entity));
     }
 
     /**
@@ -590,9 +590,9 @@ public final class TiltedBoundingBox {
             .collect(Collectors.toSet());
     }
 
-    public static @NotNull TiltedBoundingBox of(@NotNull Entity entity) {
+    public static @NotNull OrientedBoundingBox of(@NotNull Entity entity) {
         final BoundingBox box = entity.getBoundingBox();
-        return new TiltedBoundingBox()
+        return new OrientedBoundingBox()
             .size(new Vector3Builder(box.getWidthX(), box.getHeight(), box.getWidthZ()))
             .dimension(entity.getWorld())
             .center(Vector3Builder.from(box.getCenter()));

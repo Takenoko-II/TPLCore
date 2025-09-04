@@ -50,10 +50,10 @@ public final class BoundedPlane {
 
         if (v1.dot(n) * v2.dot(n) > 0) return null;
 
-        final var provider = rotation.getObjectsCoordsSystem();
+        final TripleAxisRotationBuilder.ObjectCoordsSystem system = rotation.getObjectsCoordsSystem();
 
-        final Vector3Builder vx = provider.getX().length(width / 2);
-        final Vector3Builder vy = provider.getY().length(height / 2);
+        final Vector3Builder vx = system.getX().length(width / 2);
+        final Vector3Builder vy = system.getY().length(height / 2);
 
         final Vector3Builder $00 = center.copy().subtract(vx).subtract(vy);
         final Vector3Builder $10 = center.copy().add(vx).subtract(vy);

@@ -33,7 +33,6 @@ public final class TripleAxisRotationBuilder implements VectorBuilder<TripleAxis
             && roll == other.roll;
     }
 
-    @Override
     public boolean similar(@NotNull TripleAxisRotationBuilder other, int digits) {
         return format("($c, $c, $c)", digits).equals(other.format("($c, $c, $c)", digits));
     }
@@ -125,7 +124,6 @@ public final class TripleAxisRotationBuilder implements VectorBuilder<TripleAxis
         return calculate(min, max, (value, minValue, maxValue) -> Math.max(minValue, Math.min(value, maxValue)));
     }
 
-    @Override
     public @NotNull String format(@NotNull String format, int digits) {
         final String floatFormat = "%." + digits + "f";
 
@@ -162,15 +160,15 @@ public final class TripleAxisRotationBuilder implements VectorBuilder<TripleAxis
         return new ObjectCoordsSystem(this);
     }
 
-    public @NotNull DualAxisRotationBuilder getRotation2d() {
+    public @NotNull DualAxisRotationBuilder toRotation2f() {
         return new DualAxisRotationBuilder(yaw, pitch);
     }
 
     public @NotNull Vector3Builder getDirection3d() {
-        return getRotation2d().getDirection3d();
+        return toRotation2f().getDirection3d();
     }
 
-    public @NotNull Quaternionf getQuaternion4d() {
+    public @NotNull Quaternionf getQuaternion4f() {
         final var quaternion = new Quaternionf(0f, 0f, 0f, 1f);
         final var axes = new DualAxisRotationBuilder(yaw, pitch).getDirection3d().getLocalAxisProvider();
 

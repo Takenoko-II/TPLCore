@@ -6,6 +6,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.BiFunction;
@@ -41,7 +42,6 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
             && z == other.z;
     }
 
-    @Override
     public boolean similar(@NotNull Vector3Builder other, int digits) {
         return format("($c, $c, $c)", digits).equals(other.format("($c, $c, $c)", digits));
     }
@@ -323,9 +323,10 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
      * @param degree 角度
      * @return this
      */
+    @ApiStatus.Experimental
     @Destructive
     public @NotNull Vector3Builder rotate(@NotNull Vector3Builder axis, float degree) {
-        final double radian = degree * Math.PI / 180;
+        /*final double radian = degree * Math.PI / 180;
         final double sin = Math.sin(radian);
         final double cos = Math.cos(radian);
 
@@ -360,6 +361,21 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
         this.y = by;
         this.z = bz;
 
+        return this;*/
+
+        final double theta = Math.toRadians(degree);
+        final double sin = Math.sin(theta);
+        final double cos = Math.cos(theta);
+        final Vector3Builder k = axis.copy().normalize();
+        final Vector3Builder v = copy();
+
+        final Vector3Builder r = v.copy().scale(cos)
+            .add(k.cross(v).scale(sin))
+            .add(k.copy().scale(k.dot(v) * (1 - cos)));
+
+        x = r.x;
+        y = r.y;
+        z = r.z;
         return this;
     }
 
@@ -367,7 +383,6 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
      * このベクトルを指定の形式に従って文字列化します。形式には"$x", "$y", "$z", "$c"が使えます。
      * @return 文字列化されたベクトル
      */
-    @Override
     public @NotNull String format(@NotNull String format, int digits) {
         final String doubleFormat = "%." + digits + "f";
 
@@ -444,7 +459,7 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
      * このベクトルを回転に変換します。
      * @return 回転
      */
-    public @NotNull DualAxisRotationBuilder getRotation2d() {
+    public @NotNull DualAxisRotationBuilder getRotation2f() {
         return new DualAxisRotationBuilder(
             (float) (-Math.atan2(x() / length(), z() / length()) * 180d / Math.PI),
             (float) (-Math.asin(y() / length()) * 180d / Math.PI)
@@ -482,7 +497,7 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
         return new org.bukkit.util.Vector(x, y, z);
     }
 
-    public @NotNull BlockPositionBuilder toBlockPositionBuilder() {
+    public @NotNull BlockPositionBuilder toIntVector() {
         return new BlockPositionBuilder((int) x, (int) y, (int) z);
     }
 

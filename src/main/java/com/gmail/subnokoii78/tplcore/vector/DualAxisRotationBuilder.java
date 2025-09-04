@@ -36,7 +36,6 @@ public class DualAxisRotationBuilder implements VectorBuilder<DualAxisRotationBu
             && pitch == other.pitch;
     }
 
-    @Override
     public boolean similar(@NotNull DualAxisRotationBuilder other, int digits) {
         return format("($c, $c)", digits).equals(other.format("($c, $c)", digits));
     }
@@ -144,7 +143,6 @@ public class DualAxisRotationBuilder implements VectorBuilder<DualAxisRotationBu
         return calculate(min, max, (value, minValue, maxValue) -> Math.max(minValue, Math.min(value, maxValue)));
     }
 
-    @Override
     public @NotNull String format(@NotNull String format, int digits) {
         final String floatFormat = "%." + digits + "f";
 

@@ -10,14 +10,11 @@ public class PerlinNoise {
 
     public record NoiseGenerationOptions(double frequency, double amplitude) {}
 
-    private final RangeRandomizer randomizer;
-
     private final int[] permutation = new int[512];
 
     private final Vector3Builder offset;
 
     public PerlinNoise(@NotNull RangeRandomizer randomizer) {
-        this.randomizer = randomizer;
         offset = new Vector3Builder().calculate(__unused__ -> (double) randomizer.randInt(NumberRange.of(0, 2147483647)) / 2147483647 * 256);
 
         final int[] p = new int[]{
@@ -102,17 +99,17 @@ public class PerlinNoise {
 
         final Vector3Builder floored = vb.copy().calculate(Math::floor);
 
-        final BlockPositionBuilder indices = floored.toBlockPositionBuilder().calculate(component -> component & 255);
+        final BlockPositionBuilder indices = floored.toIntVector().calculate(component -> component & 255);
 
         vb.subtract(floored).calculate(this::fade);
 
-        final int xy00 = permutation[indices.x] + indices.y;
-        final int xy10 = permutation[indices.x + 1] + indices.y;
+        final int xy00 = permutation[indices.x()] + indices.y();
+        final int xy10 = permutation[indices.x() + 1] + indices.y();
 
-        final int AA = permutation[xy00] + indices.z;
-        final int AB = permutation[xy00 + 1] + indices.z;
-        final int BA = permutation[xy10] + indices.z;
-        final int BB = permutation[xy10 + 1] + indices.z;
+        final int AA = permutation[xy00] + indices.z();
+        final int AB = permutation[xy00 + 1] + indices.z();
+        final int BA = permutation[xy10] + indices.z();
+        final int BB = permutation[xy10 + 1] + indices.z();
 
         return options.amplitude * trilinear(
             vb,
@@ -120,11 +117,11 @@ public class PerlinNoise {
         );
     }
 
-    /*public noise2(v: Vector2, options: NoiseGenerationOptions): number {
-        return this.noise3({ x: v.x, y: v.y, z: 0 }, options);
+    public double noise2(double x, double y, @NotNull NoiseGenerationOptions options) {
+        return noise3(new Vector3Builder(x, y, 0), options);
     }
 
-    public noise1(v: number, options: NoiseGenerationOptions): number {
-        return this.noise2({ x: v, y: 0 }, options);
-    }*/
+    public double noise1(double x, @NotNull NoiseGenerationOptions options) {
+        return noise2(x, 0, options);
+    }
 }

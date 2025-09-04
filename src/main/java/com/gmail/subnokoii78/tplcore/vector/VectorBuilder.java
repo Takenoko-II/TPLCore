@@ -80,12 +80,6 @@ public interface VectorBuilder<T extends VectorBuilder<T, U>, U extends Number> 
     @NotNull T clamp(@NotNull T min, @NotNull T max);
 
     /**
-     * このベクトルを形式に従って文字列化します。
-     * @return 文字列化されたベクトル
-     */
-    @NotNull String format(@NotNull String format, int digits);
-
-    /**
      * このベクトルを文字列化します。
      * @return 文字列化されたベクトル
      */
@@ -103,10 +97,4 @@ public interface VectorBuilder<T extends VectorBuilder<T, U>, U extends Number> 
      * @return components.every(v => v === 0);
      */
     boolean isZero();
-
-    /**
-     * 二つのベクトルの各成分が指定桁数まで一致していることを確かめます。
-     * @return 一致していれば真
-     */
-    boolean similar(@NotNull T other, int digits);
 }

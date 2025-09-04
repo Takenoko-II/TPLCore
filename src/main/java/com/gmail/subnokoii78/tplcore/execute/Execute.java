@@ -252,7 +252,7 @@ public class Execute {
         public @NotNull Execute $(@NotNull String input) {
             return execute.redirect(stack -> {
                 final Vector3Builder direction = stack.getPosition().add(stack.getEntityAnchor().getOffset()).getDirectionTo(stack.readCoordinates(input));
-                stack.write(direction.getRotation2d());
+                stack.write(direction.getRotation2f());
             });
         }
 
@@ -272,7 +272,7 @@ public class Execute {
                             Vector3Builder.from(entity)
                                 .add(anchorType.getOffset(entity))
                         );
-                    copy.write(direction.getRotation2d());
+                    copy.write(direction.getRotation2f());
                     return copy;
                 })
                 .toList()

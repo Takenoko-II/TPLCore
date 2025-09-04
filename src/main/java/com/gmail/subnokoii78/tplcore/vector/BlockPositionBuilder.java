@@ -15,11 +15,45 @@ public class BlockPositionBuilder implements VectorBuilder<BlockPositionBuilder,
         this.z = z;
     }
 
+    public int x() {
+        return x;
+    }
+
+    public int y() {
+        return y;
+    }
+
+    public int z() {
+        return z;
+    }
+
+    @Destructive
+    public @NotNull BlockPositionBuilder x(int value) {
+        x = value;
+        return this;
+    }
+
+
+    @Destructive
+    public @NotNull BlockPositionBuilder y(int value) {
+        y = value;
+        return this;
+    }
+
+
+    @Destructive
+    public @NotNull BlockPositionBuilder z(int value) {
+        z = value;
+        return this;
+    }
+
     @Override
     public boolean equals(@NotNull BlockPositionBuilder other) {
         return x == other.x && y == other.y && z == other.z;
     }
 
+
+    @Destructive
     @Override
     public @NotNull BlockPositionBuilder calculate(@NotNull UnaryOperator<Integer> operator) {
         x = operator.apply(x);
@@ -28,6 +62,8 @@ public class BlockPositionBuilder implements VectorBuilder<BlockPositionBuilder,
         return this;
     }
 
+
+    @Destructive
     @Override
     public @NotNull BlockPositionBuilder calculate(@NotNull BlockPositionBuilder other, @NotNull BiFunction<Integer, Integer, Integer> operator) {
         x = operator.apply(x, other.x);
@@ -36,6 +72,7 @@ public class BlockPositionBuilder implements VectorBuilder<BlockPositionBuilder,
         return this;
     }
 
+    @Destructive
     @Override
     public @NotNull BlockPositionBuilder calculate(@NotNull BlockPositionBuilder other1, @NotNull BlockPositionBuilder other2, @NotNull TriFunction<Integer, Integer, Integer, Integer> operator) {
         x = operator.apply(x, other1.x, other2.x);
@@ -44,33 +81,38 @@ public class BlockPositionBuilder implements VectorBuilder<BlockPositionBuilder,
         return this;
     }
 
+    @Destructive
     @Override
     public @NotNull BlockPositionBuilder add(@NotNull BlockPositionBuilder other) {
         return calculate(other, Integer::sum);
     }
 
+    @Destructive
     @Override
     public @NotNull BlockPositionBuilder subtract(@NotNull BlockPositionBuilder other) {
         return add(other.copy().invert());
     }
 
+    @Destructive
     @Override
     public @NotNull BlockPositionBuilder scale(@NotNull Integer scalar) {
         return calculate(component -> component * scalar);
     }
 
+
+    @Destructive
     @Override
     public @NotNull BlockPositionBuilder invert() {
         return scale(-1);
     }
 
+    @Destructive
     @Override
     public @NotNull BlockPositionBuilder clamp(@NotNull BlockPositionBuilder min, @NotNull BlockPositionBuilder max) {
         return calculate(min, max, (value, minValue, maxValue) -> Math.max(minValue, Math.min(value, maxValue)));
     }
 
-    @Override
-    public @NotNull String format(@NotNull String format, int digits) {
+    public @NotNull String format(@NotNull String format) {
         return format
             .replaceAll("\\$x", String.valueOf(x))
             .replaceAll("\\$y", String.valueOf(y))
@@ -83,7 +125,7 @@ public class BlockPositionBuilder implements VectorBuilder<BlockPositionBuilder,
 
     @Override
     public @NotNull String toString() {
-        return format("($x, $y, $z)", 0);
+        return format("($x, $y, $z)");
     }
 
     @Override
@@ -96,8 +138,7 @@ public class BlockPositionBuilder implements VectorBuilder<BlockPositionBuilder,
         return equals(new BlockPositionBuilder(0, 0, 0));
     }
 
-    @Override
-    public boolean similar(@NotNull BlockPositionBuilder other, int digits) {
-        return false;
+    public @NotNull Vector3Builder toDoubleVector() {
+        return new Vector3Builder(x, y, z);
     }
 }
