@@ -358,7 +358,7 @@ public class Execute {
      * @param dimension ディメンション
      * @return this
      */
-    public @NotNull Execute in(@NotNull DimensionProvider dimension) {
+    public @NotNull Execute in(@NotNull DimensionAccess dimension) {
         return redirect(stack -> stack.write(dimension.getWorld()));
     }
 
@@ -491,12 +491,12 @@ public class Execute {
 
         /**
          * ディメンションが指定のものであるかどうかをテストします。
-         * @param dimensionProvider ディメンション
+         * @param dimension ディメンション
          * @return that
          */
-        public @NotNull Execute dimension(@NotNull DimensionProvider dimensionProvider) {
+        public @NotNull Execute dimension(@NotNull DimensionAccess dimension) {
             return execute.fork(stack -> {
-                if (toggle.apply(stack.getDimension().equals(dimensionProvider.getWorld()))) {
+                if (toggle.apply(stack.getDimension().equals(dimension.getWorld()))) {
                     return List.of(stack);
                 }
                 else return List.of();

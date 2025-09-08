@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * executeコマンドにおける単一の実行文脈を表現するクラス
@@ -25,7 +24,7 @@ public class CommandSourceStack {
 
     private Entity executor = null;
 
-    private World dimension = DimensionProvider.OVERWORLD.getWorld();
+    private World dimension = DimensionAccess.OVERWORLD.getWorld();
 
     private final Vector3Builder location = new Vector3Builder();
 
@@ -48,7 +47,7 @@ public class CommandSourceStack {
      */
     public CommandSourceStack(@NotNull SourceOrigin<?> sender) {
         this.sender = sender;
-        sender.callOrigin(Entity.class, entity -> {
+        sender.useOrigin(Entity.class, entity -> {
             write(entity);
             write(entity.getWorld());
             write(Vector3Builder.from(entity));
@@ -56,7 +55,7 @@ public class CommandSourceStack {
             return null;
         });
 
-        sender.callOrigin(Block.class, block -> {
+        sender.useOrigin(Block.class, block -> {
             write(block.getWorld());
             write(Vector3Builder.from(block.getLocation()));
             write(DualAxisRotationBuilder.from(block.getLocation()));
@@ -126,7 +125,7 @@ public class CommandSourceStack {
             return location.withRotationAndWorld(rotation, dimension);
         }
 
-        final Location loc = new Location(DimensionProvider.OVERWORLD.getWorld(), 0d, 0d, 0d, 0f, 0f);
+        final Location loc = new Location(DimensionAccess.OVERWORLD.getWorld(), 0d, 0d, 0d, 0f, 0f);
 
         if (set.contains(LocationGetOption.DIMENSION)) {
             loc.setWorld(dimension);
@@ -369,7 +368,7 @@ public class CommandSourceStack {
     public boolean runCommand(@NotNull String command) {
         final String common = String.format(
             "in %s positioned %s rotated %s",
-            DimensionProvider.of(dimension).getId(),
+            DimensionAccess.of(dimension).getId(),
             location.format("$c $c $c", 5),
             rotation.format("$c $c", 5)
         );

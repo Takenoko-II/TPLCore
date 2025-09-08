@@ -7,7 +7,7 @@ plugins {
 
 group = "com.gmail.subnokoii78"
 version = "1.0-SNAPSHOT"
-description = "Test plugin for net.minecraft package"
+description = ""
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)

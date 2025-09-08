@@ -4,7 +4,7 @@ import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class CancellableEvent implements Event {
-    private final Cancellable event;
+    protected final Cancellable event;
 
     protected CancellableEvent(@NotNull Cancellable event) {
         this.event = event;

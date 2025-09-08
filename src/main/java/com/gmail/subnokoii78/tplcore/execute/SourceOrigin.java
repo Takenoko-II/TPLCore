@@ -1,6 +1,7 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.block.Block;
@@ -28,7 +29,7 @@ public abstract class SourceOrigin<T> {
      * <br>コマンドブロック以外のブロックに限りIDを返します。
      * @return 送信者名
      */
-    public abstract @NotNull Component getName();
+    public abstract @NotNull Component getDisplayName();
 
     public abstract @NotNull Location getLocation();
 
@@ -39,7 +40,7 @@ public abstract class SourceOrigin<T> {
      */
     public abstract void sendMessage(@NotNull Component message);
 
-    public <U, V> @Nullable V callOrigin(@NotNull Class<U> clazz, @NotNull Function<U, V> callback) {
+    public <U, V> @Nullable V useOrigin(@NotNull Class<U> clazz, @NotNull Function<U, V> callback) {
         if (clazz.isInstance(sender)) {
             return callback.apply(clazz.cast(sender));
         }
@@ -52,7 +53,7 @@ public abstract class SourceOrigin<T> {
         }
 
         @Override
-        public @NotNull Component getName() {
+        public @NotNull Component getDisplayName() {
             return sender.name();
         }
 
@@ -73,7 +74,7 @@ public abstract class SourceOrigin<T> {
         }
 
         @Override
-        public @NotNull Component getName() {
+        public @NotNull Component getDisplayName() {
             if (sender.getState() instanceof CommandBlock commandBlock) {
                 return commandBlock.name();
             }
@@ -88,7 +89,9 @@ public abstract class SourceOrigin<T> {
 
         @Override
         public void sendMessage(@NotNull Component message) {
-            return;
+            if (sender instanceof CommandBlock commandBlock) {
+                commandBlock.lastOutput(message);
+            }
         }
     }
 
@@ -98,13 +101,13 @@ public abstract class SourceOrigin<T> {
         }
 
         @Override
-        public @NotNull Component getName() {
+        public @NotNull Component getDisplayName() {
             return sender.name();
         }
 
         @Override
         public @NotNull Location getLocation() {
-            return new Location(DimensionProvider.OVERWORLD.getWorld(), 0d, 0d, 0d, 0f, 0f);
+            return new Location(DimensionAccess.OVERWORLD.getWorld(), 0d, 0d, 0d, 0f, 0f);
         }
 
         @Override
@@ -119,18 +122,18 @@ public abstract class SourceOrigin<T> {
         }
 
         @Override
-        public @NotNull Component getName() {
+        public @NotNull Component getDisplayName() {
             return Component.text(sender.getName());
         }
 
         @Override
         public @NotNull Location getLocation() {
-            return new Location(DimensionProvider.OVERWORLD.getWorld(), 0d, 0d, 0d, 0f, 0f);
+            return new Location(DimensionAccess.OVERWORLD.getWorld(), 0d, 0d, 0d, 0f, 0f);
         }
 
         @Override
         public void sendMessage(@NotNull Component message) {
-            return;
+            Bukkit.getServer().sendMessage(message);
         }
     }
 

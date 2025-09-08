@@ -1,5 +1,7 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -9,27 +11,27 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public final class DimensionProvider {
-    private static final Map<NamespacedKey, DimensionProvider> INSTANCES = new HashMap<>();
+public final class DimensionAccess {
+    private static final Map<NamespacedKey, DimensionAccess> INSTANCES = new HashMap<>();
 
     /**
      * オーバーワールド
      */
-    public static final DimensionProvider OVERWORLD = new DimensionProvider(NamespacedKey.minecraft("overworld"));
+    public static final DimensionAccess OVERWORLD = new DimensionAccess(NamespacedKey.minecraft("overworld"));
 
     /**
      * ネザー
      */
-    public static final DimensionProvider THE_NETHER = new DimensionProvider(NamespacedKey.minecraft("nether"));
+    public static final DimensionAccess THE_NETHER = new DimensionAccess(NamespacedKey.minecraft("nether"));
 
     /**
      * ジ・エンド
      */
-    public static final DimensionProvider THE_END = new DimensionProvider(NamespacedKey.minecraft("the_end"));
+    public static final DimensionAccess THE_END = new DimensionAccess(NamespacedKey.minecraft("the_end"));
 
     private final NamespacedKey key;
 
-    private DimensionProvider(@NotNull NamespacedKey key) {
+    private DimensionAccess(@NotNull NamespacedKey key) {
         this.key = key;
         INSTANCES.put(key, this);
     }
@@ -57,22 +59,22 @@ public final class DimensionProvider {
         return key.toString();
     }
 
-    public static @NotNull Set<DimensionProvider> values() {
+    public static @NotNull Set<DimensionAccess> values() {
         return Set.copyOf(INSTANCES.values());
     }
 
     /**
-     * ディメンションから{@link DimensionProvider}を取得します。
+     * ディメンションから{@link DimensionAccess}を取得します。
      * @param key ディメンションID
-     * @return 対応する {@link DimensionProvider}
+     * @return 対応する {@link DimensionAccess}
      * @throws IllegalArgumentException カスタムディメンションが渡されたとき
      */
-    public static @NotNull DimensionProvider of(@NotNull NamespacedKey key) throws IllegalArgumentException {
+    public static @NotNull DimensionAccess of(@NotNull NamespacedKey key) throws IllegalArgumentException {
         if (INSTANCES.containsKey(key)) {
             return INSTANCES.get(key);
         }
         else if (Bukkit.getWorld(key) != null) {
-            final DimensionProvider provider = new DimensionProvider(key);
+            final DimensionAccess provider = new DimensionAccess(key);
             INSTANCES.put(key, provider);
             return provider;
         }
@@ -82,22 +84,22 @@ public final class DimensionProvider {
     }
 
     /**
-     * ディメンションから{@link DimensionProvider}を取得します。
+     * ディメンションから{@link DimensionAccess}を取得します。
      * @param world ディメンション
-     * @return 対応する {@link DimensionProvider}
+     * @return 対応する {@link DimensionAccess}
      * @throws IllegalArgumentException カスタムディメンションが渡されたとき
      */
-    public static @NotNull DimensionProvider of(@NotNull World world) throws IllegalArgumentException {
+    public static @NotNull DimensionAccess of(@NotNull World world) throws IllegalArgumentException {
         return of(world.getKey());
     }
 
     /**
-     * IDから{@link DimensionProvider}を取得します。
+     * IDから{@link DimensionAccess}を取得します。
      * @param id ディメンションID
-     * @return 対応する {@link DimensionProvider}
+     * @return 対応する {@link DimensionAccess}
      * @throws IllegalArgumentException カスタムディメンションが渡されたとき
      */
-    public static @NotNull DimensionProvider of(@NotNull String id) throws IllegalArgumentException {
+    public static @NotNull DimensionAccess of(@NotNull String id) throws IllegalArgumentException {
         final NamespacedKey key = NamespacedKey.fromString(id);
 
         if (key == null) {

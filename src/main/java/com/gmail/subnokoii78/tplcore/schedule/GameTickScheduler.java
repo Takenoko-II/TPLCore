@@ -1,6 +1,6 @@
 package com.gmail.subnokoii78.tplcore.schedule;
 
-import com.gmail.subnokoii78.tplcore.CoreInitializer;
+import com.gmail.subnokoii78.tplcore.TPLCore;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -51,7 +51,7 @@ public class GameTickScheduler implements Scheduler {
             throw new IllegalArgumentException("負の遅延は無効です");
         }
 
-        return issue(runnable -> runnable.runTaskLater(CoreInitializer.getPlugin(), delay));
+        return issue(runnable -> runnable.runTaskLater(TPLCore.getPlugin(), delay));
     }
 
     public int runTimeout() {
@@ -74,7 +74,7 @@ public class GameTickScheduler implements Scheduler {
             throw new IllegalArgumentException("間隔0は危険です");
         }
 
-        return issue(runnable -> runnable.runTaskTimer(CoreInitializer.getPlugin(), 0L, interval));
+        return issue(runnable -> runnable.runTaskTimer(TPLCore.getPlugin(), 0L, interval));
     }
 
     public int runInterval() {

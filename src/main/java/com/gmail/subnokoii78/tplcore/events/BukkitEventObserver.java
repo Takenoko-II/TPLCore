@@ -1,29 +1,33 @@
 package com.gmail.subnokoii78.tplcore.events;
 
-import com.gmail.subnokoii78.tplcore.CoreInitializer;
 import com.gmail.subnokoii78.tplcore.execute.CommandSourceStack;
 import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
 import com.gmail.subnokoii78.tplcore.execute.SelectorArgument;
 import com.gmail.subnokoii78.tplcore.execute.SourceOrigin;
+import com.gmail.subnokoii78.tplcore.json.JSONParser;
+import com.gmail.subnokoii78.tplcore.json.values.JSONObject;
 import com.gmail.subnokoii78.tplcore.schedule.GameTickScheduler;
 import com.gmail.subnokoii78.tplcore.schedule.RealTimeScheduler;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.plugin.Plugin;
 
 import java.util.*;
 
 public class BukkitEventObserver implements Listener {
-    public static final BukkitEventObserver OBSERVER = new BukkitEventObserver();
+    private BukkitEventObserver() {}
+
+    public static final BukkitEventObserver INSTANCE = new BukkitEventObserver();
 
     private static final class TimeStorage {
         private static final Map<Class<? extends Event>, TimeStorage> storages = new HashMap<>();
@@ -61,44 +65,88 @@ public class BukkitEventObserver implements Listener {
         TimeStorage.getStorage(PlayerDropItemEvent.class).setTime(event.getPlayer());
     }
 
+    @EventHandler(priority = EventPriority.LOW)
+    public void onPlayerInteractAtEntity(PlayerInteractAtEntityEvent event) {
+        TimeStorage.getStorage(PlayerInteractAtEntityEvent.class).setTime(event.getPlayer());
+
+        new GameTickScheduler(() -> {
+            // priorityがLOWだと少し速く発火してしまうのでゲームティックに合わせる
+            EventDispatcher.getDispatcher(EventTypes.PLAYER_CLICK)
+                .dispatch(new PlayerClickEvent(
+                    event.getPlayer(),
+                    event,
+                    PlayerClickEvent.Click.RIGHT,
+                    event.getRightClicked()
+                ));
+        }).runTimeout();
+    }
+
+    @EventHandler
+    public void onPrePlayerAttack(PrePlayerAttackEntityEvent event) {
+        final Player player = event.getPlayer();
+        TimeStorage.getStorage(PrePlayerAttackEntityEvent.class).setTime(player);
+        EventDispatcher.getDispatcher(EventTypes.PLAYER_CLICK)
+            .dispatch(new PlayerClickEvent(
+                event.getPlayer(),
+                event,
+                PlayerClickEvent.Click.LEFT,
+                event.getAttacked()
+            ));
+    }
+
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         final Player player = event.getPlayer();
+        final Block block = event.getClickedBlock();
 
         if (event.getAction().isRightClick()) {
             TimeStorage.getStorage(PlayerInteractEvent.class).setTime(player);
-            EventHandlerRegistry.getRegistry(TPLEvents.PLAYER_CLICK)
-                .call(new PlayerClickEvent(player, event, PlayerClickEvent.Click.RIGHT));
 
-            EventHandlerRegistry.getRegistry(CustomEventType.PLAYER_RIGHT_CLICK).call(new PlayerRightClickEvent(player, event));
+            final long interactAtEntityEventTime = TimeStorage.getStorage(PlayerInteractAtEntityEvent.class).getTime(player);
+
+            // エンティティへの右クリックと同時のとき発火しない
+            if (System.currentTimeMillis() - interactAtEntityEventTime < 50L) return;
+
+            if (block != null) {
+                EventDispatcher.getDispatcher(EventTypes.PLAYER_CLICK)
+                    .dispatch(new PlayerClickEvent(
+                        player,
+                        event,
+                        PlayerClickEvent.Click.RIGHT,
+                        block
+                    ));
+            }
+
             return;
         }
 
         new RealTimeScheduler(() -> {
             final long dropEventTime = TimeStorage.getStorage(PlayerDropItemEvent.class).getTime(player);
             final long interactEventTime = TimeStorage.getStorage(PlayerInteractEvent.class).getTime(player);
+            final long interactAtEntityEventTime = TimeStorage.getStorage(PlayerInteractAtEntityEvent.class).getTime(player);
+            final long preAttackTime = TimeStorage.getStorage(PrePlayerAttackEntityEvent.class).getTime(player);
 
             // ドロップと同時のとき発火しない
             if (System.currentTimeMillis() - dropEventTime < 50L) return;
-                // 右クリックと同時のとき発火しない
+            // 右クリックと同時のとき発火しない
             else if (System.currentTimeMillis() - interactEventTime < 50L) return;
+            // エンティティへの右クリックと同時のとき発火しない
+            else if (System.currentTimeMillis() - interactAtEntityEventTime < 50L) return;
+            // エンティティへの攻撃と同時のとき発火しない
+            else if (System.currentTimeMillis() - preAttackTime < 50L) return;
 
-            new GameTickScheduler(() -> {
-                EventHandlerRegistry.getRegistry(TPLEvents.PLAYER_CLICK)
-                    .call(new PlayerClickEvent(player, event, PlayerClickEvent.Click.LEFT));
-                if (event.getClickedBlock() == null) {
-                    getRegistry(CustomEventType.PLAYER_LEFT_CLICK).call(new PlayerLeftClickEvent(event.getPlayer(), event));
-                }
-                else {
-                    getRegistry(CustomEventType.PLAYER_LEFT_CLICK).call(new PlayerLeftClickEvent(event.getPlayer(), event.getClickedBlock(), event));
-                }
-            }).runTimeout();
+            if (block != null) {
+                new GameTickScheduler(() -> {
+                    EventDispatcher.getDispatcher(EventTypes.PLAYER_CLICK)
+                        .dispatch(new PlayerClickEvent(
+                            player,
+                            event,
+                            PlayerClickEvent.Click.LEFT,
+                            block
+                        ));
+                }).runTimeout();
+            }
         }).runTimeout(8L);
-    }
-
-    @EventHandler
-    public void onPrePlayerAttack(PrePlayerAttackEntityEvent event) {
-        EventHandlerRegistry.getRegistry(CustomEventType.PLAYER_LEFT_CLICK).call(new PlayerLeftClickEvent(event.getPlayer(), event.getAttacked(), event));
     }
 
     @EventHandler
@@ -122,7 +170,12 @@ public class BukkitEventObserver implements Listener {
 
             try {
                 final JSONObject jsonObject = JSONParser.object(message);
-                getRegistry(CustomEventType.DATA_PACK_MESSAGE_RECEIVE).call(new DataPackMessageReceiveEvent(location, targets, jsonObject));
+                EventDispatcher.getDispatcher(EventTypes.DATAPACK_MESSAGE_RECEIVE)
+                    .dispatch(new DatapackMessageReceiveEvent(
+                        location,
+                        targets,
+                        jsonObject
+                    ));
             }
             catch (RuntimeException e) {
                 return;
