@@ -1,10 +1,7 @@
 package com.gmail.subnokoii78.tplcore.json;
 
-import com.gmail.subnokoii78.tplcore.json.values.JSONNull;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 public class JSONPathParser {
@@ -12,13 +9,15 @@ public class JSONPathParser {
 
     private static final char DOT = '.';
 
-    private static final Set<Character> QUOTES = Set.of('"');
+    private static final Set<Character> QUOTES = Set.of('"', '\'');
 
     private static final char[] OBJECT_BRACES = {'{', '}'};
 
     private static final char[] ARRAY_BRACES = {'[', ']'};
 
-    private static final String EMPTY = "";
+    private static final char ESCAPE = '\\';
+
+    private static final String EMPTY_STRING = "";
 
     private String text;
 
@@ -114,6 +113,35 @@ public class JSONPathParser {
         expect(String.valueOf(next));
     }
 
+    private @NotNull String string() {
+        final StringBuilder sb = new StringBuilder();
+        char current = peek(true);
+
+        if (QUOTES.contains(current)) {
+            next();
+
+            final char quote = current;
+            char previous = current;
+            current = peek(false);
+            next();
+
+            while (previous == ESCAPE || current != quote) {
+                if (previous == ESCAPE && current == quote) {
+                    sb.delete(sb.length() - 1, sb.length());
+                }
+
+                sb.append(current);
+
+                previous = current;
+                current = peek(false);
+                next();
+            }
+
+            return sb.toString();
+        }
+        else throw newException("文字列はクォーテーションで開始される必要があります");
+    }
+
     private @NotNull String objectKey(boolean isRoot) {
         if (!isRoot) expect(DOT);
 
@@ -123,6 +151,12 @@ public class JSONPathParser {
 
             if (WHITESPACE.contains(c) || c == OBJECT_BRACES[0] || c == OBJECT_BRACES[1] || c == ARRAY_BRACES[0] || c == ARRAY_BRACES[1]) {
                 throw newException("期待された文字は非記号文字です");
+            }
+            else if (QUOTES.contains(c)) {
+                sb.append(c);
+                sb.append(string());
+                sb.append(c);
+                continue;
             }
             else if (c == DOT) {
                 break;
@@ -139,7 +173,7 @@ public class JSONPathParser {
         expect(ARRAY_BRACES[0]);
 
         if (next(ARRAY_BRACES[1])) {
-            return EMPTY;
+            return EMPTY_STRING;
         }
 
         final StringBuilder sb = new StringBuilder();
@@ -181,7 +215,7 @@ public class JSONPathParser {
             throw newException("textがnullです");
         }
 
-        final Object value = value();
+        final Object value = root();
         extraChars();
         return value;
     }

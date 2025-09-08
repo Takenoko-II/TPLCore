@@ -1,13 +1,16 @@
 package com.gmail.subnokoii78.tplcore.events;
 
+import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.execute.CommandSourceStack;
 import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
 import com.gmail.subnokoii78.tplcore.execute.SelectorArgument;
 import com.gmail.subnokoii78.tplcore.execute.SourceOrigin;
 import com.gmail.subnokoii78.tplcore.json.JSONParser;
+import com.gmail.subnokoii78.tplcore.json.JSONValueTypes;
 import com.gmail.subnokoii78.tplcore.json.values.JSONObject;
 import com.gmail.subnokoii78.tplcore.schedule.GameTickScheduler;
 import com.gmail.subnokoii78.tplcore.schedule.RealTimeScheduler;
+import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -170,12 +173,22 @@ public class BukkitEventObserver implements Listener {
 
             try {
                 final JSONObject jsonObject = JSONParser.object(message);
-                EventDispatcher.getDispatcher(EventTypes.DATAPACK_MESSAGE_RECEIVE)
-                    .dispatch(new DatapackMessageReceiveEvent(
-                        location,
-                        targets,
-                        jsonObject
-                    ));
+
+                if (!jsonObject.hasKey("id")) {
+                    throw new IllegalArgumentException();
+                }
+
+                final DatapackMessageReceiveEvent data = new DatapackMessageReceiveEvent(
+                    location,
+                    targets,
+                    jsonObject
+                );
+
+                EventDispatcher.getDispatcher(EventTypes.DATAPACK_MESSAGE_RECEIVE).dispatch(data);
+
+                if (!TPLCore.scoreboard.hasObjective("plugin_api.return")) return;
+                final ScoreObjective objective = TPLCore.scoreboard.getObjective("plugin_api.return");
+                objective.setScore("#", data.getReturnValue());
             }
             catch (RuntimeException e) {
                 return;

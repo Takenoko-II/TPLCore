@@ -1,5 +1,6 @@
 package com.gmail.subnokoii78.tplcore.events;
 
+import com.gmail.subnokoii78.tplcore.json.JSONValueTypes;
 import com.gmail.subnokoii78.tplcore.json.values.JSONObject;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -13,6 +14,8 @@ public class DatapackMessageReceiveEvent implements Event {
     private final Set<Entity> targets;
 
     private final JSONObject message;
+
+    private int returnValue = 0;
 
     protected DatapackMessageReceiveEvent(@NotNull Location location, @NotNull Set<Entity> targets, @NotNull JSONObject message) {
         this.location = location;
@@ -35,5 +38,17 @@ public class DatapackMessageReceiveEvent implements Event {
 
     public @NotNull JSONObject getMessage() {
         return message;
+    }
+
+    public @NotNull String getId() {
+        return message.getKey("id", JSONValueTypes.STRING).getValue();
+    }
+
+    public int getReturnValue() {
+        return returnValue;
+    }
+
+    public void setReturnValue(int value) {
+        returnValue = value;
     }
 }

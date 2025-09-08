@@ -2,6 +2,9 @@ package com.gmail.subnokoii78.tplcore;
 
 import com.gmail.subnokoii78.tplcore.events.*;
 import com.gmail.subnokoii78.tplcore.execute.*;
+import com.gmail.subnokoii78.tplcore.json.JSONValueTypes;
+import com.gmail.subnokoii78.tplcore.json.values.JSONNumber;
+import com.gmail.subnokoii78.tplcore.json.values.TypedJSONArray;
 import com.gmail.subnokoii78.tplcore.schedule.GameTickScheduler;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.shape.ParticleSpawner;
@@ -61,8 +64,8 @@ public class TPLCore {
     }
 
     /* TODO
-    * - JSONPath
-    * - ItemStackBuilder
-    * - ContainerInteractionBuilder
+    * - JSONPathNode (入れ子構造にしてルートノードのみJSONPathに保持する) だるい
+    * - ItemStackBuilder めんどい
+    * - ContainerInteractionBuilder やるー？
     */
 }
