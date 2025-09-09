@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
-public class DatapackMessageReceiveEvent implements Event {
+public class DatapackMessageReceiveEvent implements TPLEvent {
     private final Location location;
 
     private final Set<Entity> targets;
@@ -24,8 +24,8 @@ public class DatapackMessageReceiveEvent implements Event {
     }
 
     @Override
-    public @NotNull EventType<? extends Event> getType() {
-        return EventTypes.DATAPACK_MESSAGE_RECEIVE;
+    public @NotNull TPLEventType<? extends TPLEvent> getType() {
+        return TPLEventTypes.DATAPACK_MESSAGE_RECEIVE;
     }
 
     public @NotNull Location getLocation() {

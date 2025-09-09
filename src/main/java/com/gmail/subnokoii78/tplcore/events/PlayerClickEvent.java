@@ -48,8 +48,8 @@ public class PlayerClickEvent extends CancellableEvent {
     }
 
     @Override
-    public @NotNull EventType<PlayerClickEvent> getType() {
-        return EventTypes.PLAYER_CLICK;
+    public @NotNull TPLEventType<PlayerClickEvent> getType() {
+        return TPLEventTypes.PLAYER_CLICK;
     }
 
     public @NotNull Player getPlayer() {

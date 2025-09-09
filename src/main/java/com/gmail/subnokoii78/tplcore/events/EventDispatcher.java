@@ -6,21 +6,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class EventDispatcher<T extends Event> {
-    private static final Map<EventType<?>, EventDispatcher<?>> dispatchers = new HashMap<>();
+public class EventDispatcher<T extends TPLEvent> {
+    private static final Map<TPLEventType<?>, EventDispatcher<?>> dispatchers = new HashMap<>();
 
-    private final EventType<T> type;
+    private final TPLEventType<T> type;
 
     private final Map<Integer, Consumer<T>> handlers = new HashMap<>();
 
     private int maxId = Integer.MIN_VALUE;
 
-    private EventDispatcher(@NotNull EventType<T> eventType) {
+    private EventDispatcher(@NotNull TPLEventType<T> eventType) {
         this.type = eventType;
         dispatchers.put(eventType, this);
     }
 
-    public @NotNull EventType<T> getType() {
+    public @NotNull TPLEventType<T> getType() {
         return type;
     }
 
@@ -42,7 +42,7 @@ public class EventDispatcher<T extends Event> {
         handlers.forEach((id, handler) -> handler.accept(event));
     }
 
-    public static <T extends Event> EventDispatcher<T> getDispatcher(@NotNull EventType<T> type) {
+    public static <T extends TPLEvent> EventDispatcher<T> getDispatcher(@NotNull TPLEventType<T> type) {
         if (dispatchers.containsKey(type)) {
             return (EventDispatcher<T>) dispatchers.get(type);
         }

@@ -1,5 +1,6 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
+import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
 import org.bukkit.entity.Entity;
@@ -64,14 +65,14 @@ public abstract class ScoreHolder {
 
         @Override
         protected @Nullable Integer getScore(@NotNull String objective, @NotNull CommandSourceStack stack) {
-            if (!Scoreboard.MAIN.hasObjective(objective)) return null;
-            return Scoreboard.MAIN.getObjective(objective).getScore(stack.getEntities(selector).getFirst());
+            if (!TPLCore.scoreboard.hasObjective(objective)) return null;
+            return TPLCore.scoreboard.getObjective(objective).getScore(stack.getEntities(selector).getFirst());
         }
 
         @Override
         protected void setScore(@NotNull String objective, @NotNull CommandSourceStack stack, int value) {
-            if (!Scoreboard.MAIN.hasObjective(objective)) return;
-            final ScoreObjective o = Scoreboard.MAIN.getObjective(objective);
+            if (!TPLCore.scoreboard.hasObjective(objective)) return;
+            final ScoreObjective o = TPLCore.scoreboard.getObjective(objective);
             stack.getEntities(selector).forEach(entity -> o.setScore(entity, value));
         }
     }
@@ -85,14 +86,14 @@ public abstract class ScoreHolder {
 
         @Override
         protected @Nullable Integer getScore(@NotNull String objective, @NotNull CommandSourceStack stack) {
-            if (!Scoreboard.MAIN.hasObjective(objective)) return null;
-            return Scoreboard.MAIN.getObjective(objective).getScore(name);
+            if (!TPLCore.scoreboard.hasObjective(objective)) return null;
+            return TPLCore.scoreboard.getObjective(objective).getScore(name);
         }
 
         @Override
         protected void setScore(@NotNull String objective, @NotNull CommandSourceStack stack, int value) {
-            if (!Scoreboard.MAIN.hasObjective(objective)) return;
-            Scoreboard.MAIN.getObjective(objective).setScore(name, value);
+            if (!TPLCore.scoreboard.hasObjective(objective)) return;
+            TPLCore.scoreboard.getObjective(objective).setScore(name, value);
         }
     }
 }

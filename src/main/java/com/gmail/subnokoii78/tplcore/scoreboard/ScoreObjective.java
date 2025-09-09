@@ -4,46 +4,56 @@ import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Entity;
 import org.bukkit.scoreboard.Criteria;
-import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public final class ScoreObjective {
-    private final Objective objective;
+    private final Scoreboard scoreboard;
 
-    ScoreObjective(@NotNull Objective objective) {
-        this.objective = objective;
+    private final Objective bukkit;
+
+    ScoreObjective(@NotNull Scoreboard scoreboard, @NotNull Objective objective) {
+        this.scoreboard = scoreboard;
+        this.bukkit = objective;
     }
 
     @Override
     public int hashCode() {
-        return objective.getName().hashCode();
+        return Objects.hash(scoreboard, bukkit);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        else if (!(obj instanceof ScoreObjective)) return false;
+        else return hashCode() == obj.hashCode();
     }
 
     public boolean hasScore(@NotNull Entity entity) {
-        return objective.getScoreFor(entity).isScoreSet();
+        return bukkit.getScoreFor(entity).isScoreSet();
     }
 
     public boolean hasScore(@NotNull String name) {
-        return objective.getScore(name).isScoreSet();
+        return bukkit.getScore(name).isScoreSet();
     }
 
     public int getScore(@NotNull Entity entity) {
-        return objective.getScoreFor(entity).getScore();
+        return bukkit.getScoreFor(entity).getScore();
     }
 
     public int getScore(@NotNull String name) {
-        return objective.getScore(name).getScore();
+        return bukkit.getScore(name).getScore();
     }
 
     public @NotNull ScoreObjective setScore(@NotNull Entity entity, int value) {
-        objective.getScoreFor(entity).setScore(value);
+        bukkit.getScoreFor(entity).setScore(value);
         return this;
     }
 
     public @NotNull ScoreObjective setScore(@NotNull String name, int value) {
-        objective.getScore(name).setScore(value);
+        bukkit.getScore(name).setScore(value);
         return this;
     }
 
@@ -91,44 +101,56 @@ public final class ScoreObjective {
     }
 
     public @NotNull ScoreObjective resetScore(@NotNull Entity entity) {
-        objective.getScoreFor(entity).resetScore();
+        bukkit.getScoreFor(entity).resetScore();
         return this;
     }
 
     public @NotNull ScoreObjective resetScore(@NotNull String name) {
-        objective.getScore(name).resetScore();
+        bukkit.getScore(name).resetScore();
         return this;
     }
 
     public @NotNull String getName() {
-        return objective.getName();
+        return bukkit.getName();
     }
 
     public @NotNull Criteria getCriteria() {
-        return objective.getTrackedCriteria();
+        return bukkit.getTrackedCriteria();
     }
 
     public @NotNull Component getDisplayName() {
-        return objective.displayName();
+        return bukkit.displayName();
     }
 
     public void setDisplayName(@NotNull Component displayName) {
-        objective.displayName(displayName);
+        bukkit.displayName(displayName);
     }
 
     public boolean isDisplayed() {
-        return objective.getDisplaySlot() != null;
+        return bukkit.getDisplaySlot() != null;
     }
 
-    public @NotNull DisplaySlot getDisplaySlot() throws IllegalStateException {
-        final DisplaySlot displaySlot = objective.getDisplaySlot();
-        if (displaySlot == null) {
-            throw new IllegalStateException("オブジェクティブ '" + objective.getName() + "' は現在表示されていません");
-        }
-        else return displaySlot;
+    public boolean isDisplayedOn(@NotNull ScoreDisplay display) {
+        return display.getObjective().equals(this);
     }
 
-    public void setDisplaySlot(@Nullable DisplaySlot displaySlot) {
-        objective.setDisplaySlot(displaySlot);
+    public boolean hasNumberFormat() {
+        return bukkit.numberFormat() != null;
+    }
+
+    public @NotNull NumberFormat getNumberFormat() {
+        return Objects.requireNonNull(bukkit.numberFormat(), "オブジェクティブ '" + bukkit.getName() + "' は数値の書式を持っていません");
+    }
+
+    public void setNumberFormat(@NotNull NumberFormat format) {
+        bukkit.numberFormat(format);
+    }
+
+    public void resetNumberFormat() {
+        bukkit.numberFormat(null);
+    }
+
+    @NotNull Objective toBukkit() {
+        return bukkit;
     }
 }

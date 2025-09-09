@@ -7,55 +7,52 @@ import com.gmail.subnokoii78.tplcore.json.values.JSONStructure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class JSONPathNode<S extends JSONStructure, T, U extends JSONValue<?>> {
+public abstract class JSONPathNode<S extends JSONStructure, T> {
     protected final T parameter;
 
-    protected final JSONValueType<U> returns;
+    protected final JSONPathNode<?, ?> child;
 
-    protected JSONPathNode(@NotNull T parameter, @NotNull JSONValueType<U> returns) {
+    protected JSONPathNode(@NotNull T parameter, @Nullable JSONPathNode<?, ?> child) {
         this.parameter = parameter;
-        this.returns = returns;
+        this.child = child;
     }
 
-    public abstract @Nullable U get(@NotNull S structure);
+    public abstract @Nullable JSONValue<?> get(@NotNull S structure);
 
-    public static final class ObjectKeyNode<U extends JSONValue<?>> extends JSONPathNode<JSONObject, String, U> {
-        private ObjectKeyNode(@NotNull String name, @NotNull JSONValueType<U> returns) {
-            super(name, returns);
+    public static final class ObjectKeyNode extends JSONPathNode<JSONObject, String> {
+        public ObjectKeyNode(@NotNull String name, @Nullable JSONPathNode<?, ?> child) {
+            super(name, child);
         }
 
         @Override
-        public @Nullable U get(@NotNull JSONObject structure) {
+        public @Nullable JSONValue<?> get(@NotNull JSONObject structure) {
             if (!structure.hasKey(parameter)) return null;
-            else if (structure.getTypeOfKey(parameter) != returns) return null;
-            else return structure.getKey(parameter, returns);
+            else return structure.getKey(parameter, structure.getTypeOfKey(parameter));
         }
     }
 
-    public static class ArrayIndexNode<U extends JSONValue<?>> extends JSONPathNode<JSONArray, Integer, U> {
-        protected ArrayIndexNode(@NotNull Integer index, @NotNull JSONValueType<U> returns) {
-            super(index, returns);
+    public static final class ArrayIndexNode extends JSONPathNode<JSONArray, Integer> {
+        public ArrayIndexNode(@NotNull Integer index, @Nullable JSONPathNode<?, ?> child) {
+            super(index, child);
         }
 
         @Override
-        public @Nullable U get(@NotNull JSONArray structure) {
+        public @Nullable JSONValue<?> get(@NotNull JSONArray structure) {
             if (!structure.has(parameter)) return null;
-            else if (structure.getTypeAt(parameter) != returns) return null;
-            else return structure.get(parameter, returns);
+            else return structure.get(parameter, structure.getTypeAt(parameter));
         }
     }
 
-    public static class ObjectKeyCheckerNode extends JSONPathNode<JSONObject, TupleLR<String, JSONObject>, JSONObject> {
-        protected ObjectKeyCheckerNode(@NotNull String name, @NotNull JSONObject jsonObject) {
-            super(new TupleLR<>(name, jsonObject), JSONValueTypes.OBJECT);
+    public static final class ObjectKeyCheckerNode extends JSONPathNode<JSONObject, TupleLR<String, JSONObject>> {
+        public ObjectKeyCheckerNode(@NotNull String name, @NotNull JSONObject jsonObject, @Nullable JSONPathNode<?, ?> child) {
+            super(new TupleLR<>(name, jsonObject), child);
         }
 
         @Override
         public @Nullable JSONObject get(@NotNull JSONObject structure) {
             if (!structure.hasKey(parameter.left())) return null;
-            else if (structure.getTypeOfKey(parameter.left()) != returns) return null;
             else {
-                final JSONObject value = structure.getKey(parameter.left(), returns);
+                final JSONObject value = structure.getKey(parameter.left(), JSONValueTypes.OBJECT);
 
                 if (value instanceof JSONObject target) {
                     final JSONObject condition = parameter.right();
@@ -69,23 +66,23 @@ public abstract class JSONPathNode<S extends JSONStructure, T, U extends JSONVal
         }
     }
 
-    public static class ArrayIndexFinderNode extends JSONPathNode<JSONArray, JSONObject, JSONObject> {
-        protected ArrayIndexFinderNode(@NotNull JSONObject parameter) {
-            super(parameter, JSONValueTypes.OBJECT);
+    public static final class ArrayIndexFinderNode extends JSONPathNode<JSONArray, JSONObject> {
+        public ArrayIndexFinderNode(@NotNull JSONObject parameter, @Nullable JSONPathNode<?, ?> child) {
+            super(parameter, child);
         }
 
         @Override
         public @Nullable JSONObject get(@NotNull JSONArray structure) {
             for (int i = 0; i < structure.length(); i++) {
-                if (structure.getTypeAt(i) != returns) {
+                if (structure.getTypeAt(i) != JSONValueTypes.OBJECT) {
                     continue;
                 }
 
-                final JSONObject element = structure.get(i, returns);
+                final JSONObject element = structure.get(i, JSONValueTypes.OBJECT);
 
                 if (element instanceof JSONObject object) {
                     if (object.isSuperOf(parameter)) {
-                        return element; // definitely object
+                        return element;
                     }
                     else return null;
                 }

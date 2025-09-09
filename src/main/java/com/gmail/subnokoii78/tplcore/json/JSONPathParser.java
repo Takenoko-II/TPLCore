@@ -2,6 +2,8 @@ package com.gmail.subnokoii78.tplcore.json;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class JSONPathParser {
@@ -142,14 +144,16 @@ public class JSONPathParser {
         else throw newException("文字列はクォーテーションで開始される必要があります");
     }
 
-    private @NotNull String objectKey(boolean isRoot) {
+    private @NotNull String[] objectKey(boolean isRoot) {
         if (!isRoot) expect(DOT);
 
         final StringBuilder sb = new StringBuilder();
+        final StringBuilder json = new StringBuilder();
+
         while (!isOver()) {
             final char c = peek(false);
 
-            if (WHITESPACE.contains(c) || c == OBJECT_BRACES[0] || c == OBJECT_BRACES[1] || c == ARRAY_BRACES[0] || c == ARRAY_BRACES[1]) {
+            if (WHITESPACE.contains(c)) {
                 throw newException("期待された文字は非記号文字です");
             }
             else if (QUOTES.contains(c)) {
@@ -158,7 +162,34 @@ public class JSONPathParser {
                 sb.append(c);
                 continue;
             }
-            else if (c == DOT) {
+            else if (c == DOT || c == ARRAY_BRACES[0]) {
+                break;
+            }
+            else if (c == OBJECT_BRACES[0]) {
+                final StringBuilder sb2 = new StringBuilder();
+                int depth = 1;
+
+                while (!isOver()) {
+                    final char c2 = peek(false);
+
+                    if (c2 == ARRAY_BRACES[0]) {
+                        depth++;
+                    }
+                    else if (c2 == ARRAY_BRACES[1]) {
+                        depth--;
+                    }
+
+                    if (depth == 0) {
+                        break;
+                    }
+
+                    sb2.append(c2);
+                    next();
+                }
+
+                expect(OBJECT_BRACES[1]);
+
+                json.append(sb2);
                 break;
             }
 
@@ -166,7 +197,8 @@ public class JSONPathParser {
             next();
         }
 
-        return sb.toString();
+        if (json.isEmpty()) return new String[]{sb.toString()};
+        else return new String[]{sb.toString(), json.toString()};
     }
 
     private @NotNull String arrayIndex() {
@@ -202,21 +234,71 @@ public class JSONPathParser {
         return sb.toString();
     }
 
-    private @NotNull Object root() {
+    private @NotNull JSONPathNode<?, ?> root() {
+        final List<Object> list = new ArrayList<>();
 
+        list.add(objectKey(true));
+
+        while (!isOver()) {
+            if (peek(false) == DOT) {
+                list.add(objectKey(false));
+            }
+            else if (peek(false) == ARRAY_BRACES[0]) {
+                list.add(arrayIndex());
+            }
+            else {
+                throw newException("TODO");
+            }
+        }
+
+        JSONPathNode<?, ?> node = null;
+        for (int i = list.size() - 1; i >= 0; i--) {
+            final Object value = list.get(i);
+
+            if (value instanceof String[] strings) {
+                if (strings.length == 1) {
+                    node = new JSONPathNode.ObjectKeyNode(strings[0], node);
+                }
+                else if (strings.length == 2) {
+                    node = new JSONPathNode.ObjectKeyCheckerNode(strings[0], JSONParser.object(strings[1]), node);
+                }
+                else throw newException("TODO");
+            }
+            else if (value instanceof String string) {
+                if (string.matches("^[+-]?[1-9]*\\d+|0$")) {
+                    node = new JSONPathNode.ArrayIndexNode(Integer.parseInt(string), node);
+                }
+                else {
+                    node = new JSONPathNode.ArrayIndexFinderNode(JSONParser.object(string), node);
+                }
+            }
+            else throw newException("TODO");
+        }
+
+        if (node == null) {
+            throw newException("TODO");
+        }
+
+        return node;
     }
 
     private void extraChars() {
         if (!isOver()) throw newException("解析終了後、末尾に無効な文字列(" + text.substring(location) + ")を検出しました");
     }
 
-    private @NotNull Object parse() {
+    private @NotNull JSONPath parse() {
         if (text == null) {
             throw newException("textがnullです");
         }
 
-        final Object value = root();
+        final JSONPathNode<?, ?> rootNode = root();
         extraChars();
-        return value;
+        return new JSONPath(rootNode);
+    }
+
+    public static @NotNull JSONPath parse(@NotNull String path) {
+        final JSONPathParser parser = new JSONPathParser();
+        parser.text = path;
+        return parser.parse();
     }
 }

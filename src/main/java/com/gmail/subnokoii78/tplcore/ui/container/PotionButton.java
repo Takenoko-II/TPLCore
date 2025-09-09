@@ -1,8 +1,11 @@
 package com.gmail.subnokoii78.tplcore.ui.container;
 
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,7 +18,7 @@ public class PotionButton extends ItemButton {
     }
 
     public PotionButton color(@NotNull Color color) {
-        itemStack.potionContents().setColor(color);
+        itemStackBuilder.potionColor(color);
         return this;
     }
 
@@ -25,13 +28,8 @@ public class PotionButton extends ItemButton {
     }
 
     @Override
-    public @NotNull PotionButton addLore(@NotNull TextComponent component) {
-        return (PotionButton) super.addLore(component);
-    }
-
-    @Override
-    public @NotNull PotionButton setLore(@NotNull List<TextComponent> components) {
-        return (PotionButton) super.setLore(components);
+    public @NotNull PotionButton lore(@NotNull TextComponent component) {
+        return (PotionButton) super.lore(component);
     }
 
     @Override
@@ -45,8 +43,8 @@ public class PotionButton extends ItemButton {
     }
 
     @Override
-    public @NotNull PotionButton customModelData(int data) {
-        return (PotionButton) super.customModelData(data);
+    public @NotNull PotionButton itemModel(@NotNull NamespacedKey id) {
+        return (PotionButton) super.itemModel(id);
     }
 
     @Override
@@ -56,7 +54,7 @@ public class PotionButton extends ItemButton {
 
     @Override
     protected @NotNull ItemStack build() {
-        itemStack.hideAdditionalTooltip().enable();
+        itemStackBuilder.hideComponent(DataComponentTypes.POTION_CONTENTS);
         return super.build();
     }
 

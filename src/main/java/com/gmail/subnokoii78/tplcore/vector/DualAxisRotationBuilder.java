@@ -193,11 +193,11 @@ public class DualAxisRotationBuilder implements VectorBuilder<DualAxisRotationBu
         return new Vector3Builder(x, y, z);
     }
 
-    public Location toLocation(Location location) {
+    public @NotNull Location toLocation(@NotNull Location location) {
         return new Location(location.getWorld(), location.x(), location.y(), location.z(), yaw, pitch);
     }
 
-    public Location toLocation(Vector3Builder coordinate, World world) {
+    public @NotNull Location toLocation(@NotNull Vector3Builder coordinate, @NotNull World world) {
         return new Location(world, coordinate.x(), coordinate.y(), coordinate.z(), yaw, pitch);
     }
 

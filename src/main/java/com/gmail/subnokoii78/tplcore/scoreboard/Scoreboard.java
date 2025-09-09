@@ -3,42 +3,79 @@ package com.gmail.subnokoii78.tplcore.scoreboard;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.Criteria;
+import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
 import org.jetbrains.annotations.NotNull;
 
-public final class Scoreboard {
-    private final org.bukkit.scoreboard.Scoreboard bukkitScoreboard;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-    private Scoreboard(@NotNull org.bukkit.scoreboard.Scoreboard scoreboard) {
-        this.bukkitScoreboard = scoreboard;
+public final class Scoreboard {
+    private static final Set<Scoreboard> scoreboards = new HashSet<>();
+
+    private final org.bukkit.scoreboard.Scoreboard bukkit;
+
+    public Scoreboard(@NotNull org.bukkit.scoreboard.Scoreboard scoreboard) {
+        if (scoreboards.stream().anyMatch(s -> s.bukkit == scoreboard)) {
+            throw new IllegalArgumentException("引数に渡されたスコアボードは既に作成済みです");
+        }
+
+        this.bukkit = scoreboard;
+        Scoreboard.scoreboards.add(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bukkit);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Scoreboard that = (Scoreboard) o;
+        return Objects.equals(bukkit, that.bukkit);
     }
 
     public @NotNull ScoreObjective getObjective(@NotNull String name) {
-        final Objective objective = bukkitScoreboard.getObjective(name);
+        final Objective objective = bukkit.getObjective(name);
 
         if (objective == null) {
             throw new IllegalStateException("オブジェクティブ '" + name + "' は存在しません");
         }
 
-        return new ScoreObjective(objective);
+        return new ScoreObjective(this, objective);
     }
 
     public boolean hasObjective(@NotNull String name) {
-        return bukkitScoreboard.getObjective(name)  == null;
+        return bukkit.getObjective(name)  == null;
     }
 
     public @NotNull ScoreObjective addObjective(@NotNull String name, @NotNull Criteria criteria, @NotNull Component displayName, @NotNull RenderType renderType) {
-        return hasObjective(name) ? getObjective(name) : new ScoreObjective(bukkitScoreboard.registerNewObjective(name, criteria, displayName, renderType));
+        return hasObjective(name) ? getObjective(name) : new ScoreObjective(this, bukkit.registerNewObjective(name, criteria, displayName, renderType));
     }
 
     public void removeObjective(@NotNull String name) {
-        final Objective objective = bukkitScoreboard.getObjective(name);
+        final Objective objective = bukkit.getObjective(name);
 
         if (objective != null) {
             objective.unregister();
         }
     }
 
-    public static final Scoreboard MAIN = new Scoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+    public @NotNull Set<ScoreObjective> getObjectives() {
+        return bukkit.getObjectives().stream().map(o -> new ScoreObjective(this, o)).collect(Collectors.toSet());
+    }
+
+    public static @NotNull Set<Scoreboard> getScoreboards() {
+        return Set.copyOf(scoreboards);
+    }
+
+    public static @NotNull ScoreDisplay getDisplay(@NotNull DisplaySlot slot) {
+        return new ScoreDisplay(slot);
+    }
 }

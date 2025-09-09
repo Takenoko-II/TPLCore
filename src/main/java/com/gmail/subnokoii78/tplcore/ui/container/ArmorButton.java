@@ -1,10 +1,14 @@
 package com.gmail.subnokoii78.tplcore.ui.container;
 
 import com.destroystokyo.paper.MaterialSetTag;
-import com.gmail.subnokoii78.util.itemstack.TypedAttributeModifier;
+import io.papermc.paper.datacomponent.item.attribute.AttributeModifierDisplay;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.inventory.EquipmentSlotGroup;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.trim.ArmorTrim;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
@@ -29,13 +33,8 @@ public class ArmorButton extends ItemButton {
     }
 
     @Override
-    public @NotNull ArmorButton addLore(@NotNull TextComponent component) {
-        return (ArmorButton) super.addLore(component);
-    }
-
-    @Override
-    public @NotNull ArmorButton setLore(@NotNull List<TextComponent> components) {
-        return (ArmorButton) super.setLore(components);
+    public @NotNull ArmorButton lore(@NotNull TextComponent component) {
+        return (ArmorButton) super.lore(component);
     }
 
     @Override
@@ -49,8 +48,8 @@ public class ArmorButton extends ItemButton {
     }
 
     @Override
-    public @NotNull ArmorButton customModelData(int data) {
-        return (ArmorButton) super.customModelData(data);
+    public @NotNull ArmorButton itemModel(@NotNull NamespacedKey id) {
+        return (ArmorButton) super.itemModel(id);
     }
 
     @Override
@@ -59,15 +58,15 @@ public class ArmorButton extends ItemButton {
     }
 
     public @NotNull ArmorButton trim(@NotNull TrimMaterial material, @NotNull TrimPattern pattern) {
-        itemStack.trim().setTrim(new ArmorTrim(material, pattern));
+        itemStackBuilder.trim(material, pattern);
         return this;
     }
 
     @Override
     protected @NotNull ItemStack build() {
-        itemStack.trim().setShowInTooltip(false);
-        itemStack.attributeModifiers().addModifier(new TypedAttributeModifier(Attribute.ARMOR));
-        itemStack.attributeModifiers().setShowInTooltip(false);
+        itemStackBuilder.hideFlag(ItemFlag.HIDE_ARMOR_TRIM);
+        itemStackBuilder.attributeModifier(Attribute.ARMOR, NamespacedKey.minecraft("test"), 0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.ANY, AttributeModifierDisplay.hidden());
+        itemStackBuilder.hideFlag(ItemFlag.HIDE_ATTRIBUTES);
         return super.build();
     }
 }

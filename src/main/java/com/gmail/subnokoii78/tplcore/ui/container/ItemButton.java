@@ -1,10 +1,11 @@
 package com.gmail.subnokoii78.tplcore.ui.container;
 
-import com.gmail.subnokoii78.util.itemstack.components.ComponentItemStackBuilder;
+import com.gmail.subnokoii78.tplcore.itemstack.ItemStackBuilder;
 import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.ItemLore;
 import net.kyori.adventure.text.TextComponent;
+import net.minecraft.nbt.StringTag;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,41 +16,35 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 public class ItemButton {
-    protected final ItemStack itemStack;
+    protected final ItemStackBuilder itemStackBuilder;
 
     protected final UUID id = UUID.randomUUID();
 
-    private final Set<Consumer<ItemButtonClickEvent>> listenerSet = new HashSet<>();
+    private final Set<Consumer<ItemButtonClickEvent>> listeners = new HashSet<>();
 
     private int amount = 1;
 
     public ItemButton(@NotNull Material material) {
-        itemStack = new ItemStack(material);
+        itemStackBuilder = new ItemStackBuilder(material);
     }
 
     public @NotNull ItemButton name(@NotNull TextComponent component) {
-        itemStack.setData(DataComponentTypes.ITEM_NAME, component);
+        itemStackBuilder.itemName(component);
         return this;
     }
 
-    public @NotNull ItemButton addLore(@NotNull TextComponent component) {
-        final var lore = itemStack.getData(DataComponentTypes.LORE).lines();
-        lore.add(component);
-        return this;
-    }
-
-    public @NotNull ItemButton setLore(@NotNull List<TextComponent> components) {
-        itemStack.lore().setLore(components);
+    public @NotNull ItemButton lore(@NotNull TextComponent component) {
+        itemStackBuilder.lore(component);
         return this;
     }
 
     public @NotNull ItemButton amount(int amount) {
-        if (amount < 1 || amount > 127) {
+        if (amount < 1 || amount > 99) {
             throw new IllegalArgumentException("個数としては範囲外の値です");
         }
 
         if (amount > 1) {
-            itemStack.maxDamage().disable();
+            itemStackBuilder.resetMaxDamage();
         }
 
         this.amount = amount;
@@ -57,12 +52,12 @@ public class ItemButton {
     }
 
     public @NotNull ItemButton glint(boolean flag) {
-        itemStack.enchantmentGlintOverride().setGlintOverride(flag);
+        itemStackBuilder.glint(flag);
         return this;
     }
 
-    public @NotNull ItemButton customModelData(int data) {
-        itemStack.customModelData().setCustomModelData(data);
+    public @NotNull ItemButton itemModel(@NotNull NamespacedKey id) {
+        itemStackBuilder.itemModel(id);
         return this;
     }
 
@@ -70,27 +65,26 @@ public class ItemButton {
         if (amount > 1) {
             throw new IllegalStateException("耐久力の表示はアイテムの個数が1のときのみ利用できます");
         }
-        itemStack.maxDamage().setMaxDamage(100);
-        itemStack.damage().setDamage((int) rate * 100);
+        itemStackBuilder.maxDamage(100);
+        itemStackBuilder.damage((int) (rate * 100));
         return this;
     }
 
     public @NotNull ItemButton onClick(Consumer<ItemButtonClickEvent> listener) {
-        listenerSet.add(listener);
+        listeners.add(listener);
         return this;
     }
 
     protected @NotNull ItemStack build() {
-        itemStack.maxStackSize().setMaxStackSize(amount);
+        itemStackBuilder.maxStackSize(amount);
 
-        return itemStack
-            .toItemStackBuilder()
+        return itemStackBuilder
             .count(amount)
-            .dataContainer("id", id.toString())
+            .customData("tpl_core.container_button.id", StringTag.valueOf(id.toString()))
             .build();
     }
 
     protected void click(@NotNull ItemButtonClickEvent event) {
-        listenerSet.forEach(listener -> listener.accept(event));
+        listeners.forEach(listener -> listener.accept(event));
     }
 }

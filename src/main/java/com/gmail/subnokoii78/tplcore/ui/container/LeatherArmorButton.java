@@ -3,6 +3,8 @@ package com.gmail.subnokoii78.tplcore.ui.container;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,13 +23,8 @@ public class LeatherArmorButton extends ArmorButton {
     }
 
     @Override
-    public @NotNull LeatherArmorButton addLore(@NotNull TextComponent component) {
-        return (LeatherArmorButton) super.addLore(component);
-    }
-
-    @Override
-    public @NotNull LeatherArmorButton setLore(@NotNull List<TextComponent> components) {
-        return (LeatherArmorButton) super.setLore(components);
+    public @NotNull LeatherArmorButton lore(@NotNull TextComponent component) {
+        return (LeatherArmorButton) super.lore(component);
     }
 
     @Override
@@ -41,8 +38,8 @@ public class LeatherArmorButton extends ArmorButton {
     }
 
     @Override
-    public @NotNull LeatherArmorButton customModelData(int data) {
-        return (LeatherArmorButton) super.customModelData(data);
+    public @NotNull LeatherArmorButton itemModel(@NotNull NamespacedKey id) {
+        return (LeatherArmorButton) super.itemModel(id);
     }
 
     @Override
@@ -50,15 +47,14 @@ public class LeatherArmorButton extends ArmorButton {
         return (LeatherArmorButton) super.onClick(listener);
     }
 
-    public LeatherArmorButton color(@Nullable Color color) {
-        if (color == null) itemStack.dyedColor().disable();
-        else itemStack.dyedColor().setColor(color);
+    public @NotNull LeatherArmorButton color(@Nullable Color color) {
+        itemStackBuilder.leatherArmorColor(color);
         return this;
     }
 
     @Override
     protected @NotNull ItemStack build() {
-        itemStack.dyedColor().setShowInTooltip(false);
+        itemStackBuilder.hideFlag(ItemFlag.HIDE_DYE);
         return super.build();
     }
 }

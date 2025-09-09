@@ -1,20 +1,15 @@
 package com.gmail.subnokoii78.tplcore.ui.container;
 
-import com.gmail.subnokoii78.util.command.PluginDebugger;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class ContainerUI {
+public class ContainerInteraction {
     private final TextComponent name;
 
     private final int maxColumn;
@@ -33,9 +28,9 @@ public class ContainerUI {
 
     private final Set<Inventory> inventories = new HashSet<>();
 
-    private final Set<Consumer<Player>> onCloseEventListenerSet = new HashSet<>();
+    private final Set<Consumer<Player>> onCloseHandlers = new HashSet<>();
 
-    public ContainerUI(@NotNull TextComponent name, int maxColumn) {
+    public ContainerInteraction(@NotNull TextComponent name, int maxColumn) {
         this.name = name;
         this.maxColumn = maxColumn;
         instances.add(this);
@@ -64,7 +59,7 @@ public class ContainerUI {
         return false;
     }
 
-    public @NotNull ContainerUI set(int slot, @Nullable ItemButton button) throws IllegalArgumentException {
+    public @NotNull ContainerInteraction set(int slot, @Nullable ItemButton button) throws IllegalArgumentException {
         if (!isValid()) {
             throw new IllegalStateException("This instance is invalid");
         }
@@ -78,7 +73,7 @@ public class ContainerUI {
         return this;
     }
 
-    public @NotNull ContainerUI add(@NotNull ItemButton button) throws IllegalStateException {
+    public @NotNull ContainerInteraction add(@NotNull ItemButton button) throws IllegalStateException {
         if (!isValid()) {
             throw new IllegalStateException("This instance is invalid");
         }
@@ -87,7 +82,7 @@ public class ContainerUI {
         return this;
     }
 
-    public @NotNull ContainerUI fillRow(int index, @NotNull ItemButton button) {
+    public @NotNull ContainerInteraction fillRow(int index, @NotNull ItemButton button) {
         if (!isValid()) {
             throw new IllegalStateException("This instance is invalid");
         }
@@ -98,7 +93,7 @@ public class ContainerUI {
         return this;
     }
 
-    public @NotNull ContainerUI fillColumn(int index, @NotNull ItemButton button) {
+    public @NotNull ContainerInteraction fillColumn(int index, @NotNull ItemButton button) {
         if (!isValid()) {
             throw new IllegalStateException("This instance is invalid");
         }
@@ -109,7 +104,7 @@ public class ContainerUI {
         return this;
     }
 
-    public @NotNull ContainerUI clear() {
+    public @NotNull ContainerInteraction clear() {
         if (!isValid()) {
             throw new IllegalStateException("This instance is invalid");
         }
@@ -118,12 +113,12 @@ public class ContainerUI {
         return this;
     }
 
-    public @NotNull ContainerUI onClose(@NotNull Consumer<Player> listener) {
+    public @NotNull ContainerInteraction onClose(@NotNull Consumer<Player> listener) {
         if (!isValid()) {
             throw new IllegalStateException("This instance is invalid");
         }
 
-        onCloseEventListenerSet.add(listener);
+        onCloseHandlers.add(listener);
         return this;
     }
 
@@ -156,17 +151,17 @@ public class ContainerUI {
         return instances.contains(this);
     }
 
-    public void freeUpMemory() {
+    private void freeUpMemory() {
         buttons.clear();
         inventories.forEach(Inventory::close);
         inventories.clear();
         instances.remove(this);
     }
 
-    private static final Set<ContainerUI> instances = new HashSet<>();
+    private static final Set<ContainerInteraction> instances = new HashSet<>();
 
-    public static final class UIEventHandler implements Listener {
-        private UIEventHandler() {}
+    public static final class ContainerEventObserver implements Listener {
+        private ContainerEventObserver() {}
 
         @EventHandler
         public void onClick(InventoryClickEvent event) {
@@ -174,7 +169,7 @@ public class ContainerUI {
 
             final ItemStack itemStack = event.getCurrentItem();
 
-            for (final ContainerUI ui : instances) {
+            for (final ContainerInteraction ui : instances) {
                 if (ui.inventories.contains(event.getClickedInventory())) {
                     final ItemButton button = ui.buttons.get(event.getSlot());
 
@@ -190,7 +185,7 @@ public class ContainerUI {
 
         @EventHandler
         public void onMove(InventoryMoveItemEvent event) {
-            for (final ContainerUI ui : instances) {
+            for (final ContainerInteraction ui : instances) {
                 if (ui.inventories.contains(event.getInitiator())) {
                     event.setCancelled(true);
                     break;
@@ -202,53 +197,16 @@ public class ContainerUI {
         public void onClose(InventoryCloseEvent event) {
             if (!(event.getPlayer() instanceof Player player)) return;
 
-            for (ContainerUI ui : instances) {
+            for (ContainerInteraction ui : instances) {
                 if (ui.inventories.contains(event.getInventory())) {
                     ui.inventories.remove(event.getInventory());
-                    ui.onCloseEventListenerSet.forEach(listener -> listener.accept(player));
+                    ui.onCloseHandlers.forEach(listener -> listener.accept(player));
+                    ui.freeUpMemory();
                     break;
                 }
             }
         }
 
-        private static final UIEventHandler INSTANCE = new UIEventHandler();
-
-        private static boolean initialized = false;
-
-        public static void init(@NotNull Plugin plugin) {
-            if (initialized) return;
-            initialized = true;
-            Bukkit.getServer().getPluginManager().registerEvents(INSTANCE, plugin);
-
-            PluginDebugger.DEFAULT_DEBUGGER.register("instanceCount", stack -> {
-                stack.getSender().sendMessage("instanceCount: " + instances.size());
-                instances.forEach(instance -> {
-                    stack.getSender().sendMessage("inventoryCount: " + instance.inventories.size());
-                });
-                return 1;
-            });
-
-            final ContainerUI ui = new ContainerUI(Component.text("test"), 1)
-                .add(new ItemButtonCreator() {
-                    @NotNull
-                    @Override
-                    public ItemButton create(@NotNull Player player) {
-                        final Material material = player.getEquipment().getItem(EquipmentSlot.HAND).getType();
-                        if (material.equals(Material.AIR)) {
-                            return new ItemButton(Material.APPLE);
-                        }
-                        return new ItemButton(material);
-                    }
-                })
-                .add(new ItemButton(Material.PAPER));
-
-            PluginDebugger.DEFAULT_DEBUGGER.register("openTestUI", stack -> {
-                if (stack.getSender() instanceof Player player) {
-                    ui.open(player);
-                    return 1;
-                }
-                return 0;
-            });
-        }
+        public static final ContainerEventObserver INSTANCE = new ContainerEventObserver();
     }
 }

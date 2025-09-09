@@ -1,14 +1,12 @@
 package com.gmail.subnokoii78.tplcore.itemstack;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import com.gmail.subnokoii78.tplcore.generic.UnImplementedException;
-import com.gmail.subnokoii78.tplcore.network.GameProfileServerConnector;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.*;
 import io.papermc.paper.datacomponent.item.attribute.AttributeModifierDisplay;
-import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.minecraft.commands.arguments.NbtPathArgument;
@@ -28,17 +26,18 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.*;
 import org.bukkit.inventory.meta.Repairable;
+import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import org.bukkit.inventory.meta.trim.ArmorTrim;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class ItemStackBuilder {
     private final ItemStack itemStack;
@@ -149,6 +148,12 @@ public class ItemStackBuilder {
         });
     }
 
+    public @NotNull ItemStackBuilder resetMaxDamage() {
+        return editMeta(Damageable.class, meta -> {
+            meta.setMaxDamage(null);
+        });
+    }
+
     public @NotNull ItemStackBuilder damage(int damage) {
         return editMeta(Damageable.class, meta -> {
             meta.setDamage(damage);
@@ -175,9 +180,9 @@ public class ItemStackBuilder {
         });*/
     }
 
-    public @NotNull ItemStackBuilder playerProfile(@NotNull Player player) {
+    public @NotNull ItemStackBuilder playerProfile(@NotNull PlayerProfile profile) {
         return editMeta(SkullMeta.class, meta -> {
-            meta.setPlayerProfile(player.getPlayerProfile());
+            meta.setPlayerProfile(profile);
         });
     }
 
@@ -194,271 +199,122 @@ public class ItemStackBuilder {
         });
     }
 
-    @Deprecated
-    public ItemStackBuilder customModelData(int value) {
+    public @NotNull ItemStackBuilder removeAttributeModifier(@NotNull Attribute attribute) {
         return editMeta(meta -> {
-            meta.setCustomModelData(value);
+            meta.removeAttributeModifier(attribute);
         });
     }
 
     public @NotNull ItemStackBuilder potionEffect(@NotNull PotionEffect effect) {
-        return editMeta(DataComponentTypes.POTION_CONTENTS, component -> {
-
+        return editMeta(PotionMeta.class, meta -> {
+            meta.addCustomEffect(effect, true);
         });
     }
 
-    public ItemStackBuilder potionEffect(PotionEffectType effectType) {
-        edit(builder -> {
-            if (!(builder instanceof PotionMeta)) {
-                return builder;
-            }
-
-            ((PotionMeta) builder).addCustomEffect(new PotionEffect(effectType, 20 * 30, 0), false);
-            return builder;
+    public @NotNull ItemStackBuilder potionEffectById(@NotNull PotionType potionType) {
+        return editMeta(PotionMeta.class, meta -> {
+            meta.setBasePotionType(potionType);
         });
-
-        return this;
     }
 
-    public ItemStackBuilder potionEffect(PotionEffectType effectType, int duration) {
-        edit(builder -> {
-            if (!(builder instanceof PotionMeta)) {
-                return builder;
-            }
-
-            ((PotionMeta) builder).addCustomEffect(new PotionEffect(effectType, duration, 0), false);
-            return builder;
+    public @NotNull ItemStackBuilder potionColor(@NotNull Color color) {
+        return editMeta(PotionMeta.class, meta -> {
+            meta.setColor(color);
         });
-
-        return this;
     }
 
-    public ItemStackBuilder potionEffect(PotionEffectType effectType, int duration, int amplifier) {
-        edit(builder -> {
-            if (!(builder instanceof PotionMeta)) {
-                return builder;
-            }
-
-            ((PotionMeta) builder).addCustomEffect(new PotionEffect(effectType, duration, amplifier), false);
-            return builder;
+    public @NotNull ItemStackBuilder chargedProjectile(@NotNull ItemStack itemStack) {
+        return editMeta(CrossbowMeta.class, meta -> {
+            meta.addChargedProjectile(itemStack);
         });
-
-        return this;
     }
 
-    public ItemStackBuilder potionEffect(PotionEffectType effectType, int duration, int amplifier, boolean ambient) {
-        edit(builder -> {
-            if (!(builder instanceof PotionMeta)) {
-                return builder;
-            }
-
-            ((PotionMeta) builder).addCustomEffect(new PotionEffect(effectType, duration, amplifier, ambient), false);
-            return builder;
+    public @NotNull ItemStackBuilder leatherArmorColor(Color color) {
+        return editMeta(LeatherArmorMeta.class, meta -> {
+            meta.setColor(color);
         });
-
-        return this;
     }
 
-    public ItemStackBuilder potionEffect(PotionEffectType effectType, int duration, int amplifier, boolean ambient, boolean showParticles) {
-        edit(builder -> {
-            if (!(builder instanceof PotionMeta)) {
-                return builder;
-            }
-
-            ((PotionMeta) builder).addCustomEffect(new PotionEffect(effectType, duration, amplifier, ambient, showParticles), false);
-            return builder;
+    public @NotNull ItemStackBuilder removeLeatherArmorColor() {
+        return editMeta(LeatherArmorMeta.class, meta -> {
+            meta.setColor(null);
         });
-
-        return this;
     }
 
-    public ItemStackBuilder potionColor(Color color) {
-        edit(builder -> {
-            if (!(builder instanceof PotionMeta)) {
-                return builder;
-            }
-
-            ((PotionMeta) builder).setColor(color);
-            return builder;
+    public @NotNull ItemStackBuilder trim(@NotNull TrimMaterial material, @NotNull TrimPattern pattern) {
+        return editMeta(ColorableArmorMeta.class, meta -> {
+            meta.setTrim(new ArmorTrim(material, pattern));
         });
-
-        return this;
     }
 
-    public ItemStackBuilder chargedProjectile(ItemStack itemStack) {
-        edit(builder -> {
-            if (!(builder instanceof CrossbowMeta)) {
-                return builder;
-            }
-
-            ((CrossbowMeta) builder).addChargedProjectile(itemStack);
-            return builder;
-        });
-
-        return this;
+    public @NotNull ItemStackBuilder bookHeader(@NotNull String author, @NotNull String title, @NotNull BookMeta.Generation generation) {
+       return editMeta(BookMeta.class, meta -> {
+           meta.setAuthor(author);
+           meta.setTitle(title);
+           meta.setGeneration(generation);
+       });
     }
 
-    public ItemStackBuilder leatherArmorColor(Color color) {
-        edit(builder -> {
-            if (!(builder instanceof LeatherArmorMeta)) {
-                return builder;
-            }
-
-            ((LeatherArmorMeta) builder).setColor(color);
-            return builder;
+    public @NotNull ItemStackBuilder bookPage(@NotNull Component component) {
+        return editMeta(BookMeta.class, meta -> {
+            meta.addPages(component);
         });
-
-        return this;
     }
 
-    public ItemStackBuilder lodeStoneTracked(boolean flag) {
-        edit(builder -> {
-            if (!(builder instanceof CompassMeta)) {
-                return builder;
-            }
-
-            ((CompassMeta) builder).setLodestoneTracked(true);
-            return builder;
+    public @NotNull ItemStackBuilder fireworkPower(int power) {
+        return editMeta(FireworkMeta.class, meta -> {
+            meta.setPower(power);
         });
-
-        return this;
     }
 
-    public ItemStackBuilder lodeStoneLocation(Location location) {
-        edit(builder -> {
-            if (!(builder instanceof CompassMeta)) {
-                return builder;
-            }
-
-            ((CompassMeta) builder).setLodestoneTracked(true);
-            ((CompassMeta) builder).setLodestone(location);
-            return builder;
+    public @NotNull ItemStackBuilder fireworkEffect(@NotNull FireworkEffect effect) {
+        return editMeta(FireworkEffectMeta.class, meta -> {
+            meta.setEffect(effect);
         });
-
-        return this;
     }
 
-    public ItemStackBuilder armorTrim(TrimMaterial material, TrimPattern pattern) {
-        edit(builder -> {
-            if (!(builder instanceof ColorableArmorMeta)) {
-                return builder;
-            }
-
-            ((ColorableArmorMeta) builder).setTrim(new ArmorTrim(material, pattern));
-            return builder;
+    public @NotNull ItemStackBuilder storedEnchantment(@NotNull Enchantment enchantment, int level) {
+        return editMeta(EnchantmentStorageMeta.class, meta -> {
+            meta.addStoredEnchant(enchantment, level, true);
         });
-
-        return this;
     }
 
-    public ItemStackBuilder bookAuthor(String name) {
-        edit(builder -> {
-            if (!(builder instanceof BookMeta)) {
-                return builder;
-            }
-
-            ((BookMeta) builder).setAuthor(name);
-            return builder;
-        });
-
-        return this;
-    }
-
-    public ItemStackBuilder bookTitle(String name) {
-        edit(builder -> {
-            if (!(builder instanceof BookMeta)) {
-                return builder;
-            }
-
-            ((BookMeta) builder).setTitle(name);
-            return builder;
-        });
-
-        return this;
-    }
-
-    public ItemStackBuilder bookGeneration(BookMeta.Generation generation) {
-        edit(builder -> {
-            if (!(builder instanceof BookMeta)) {
-                return builder;
-            }
-
-            ((BookMeta) builder).setGeneration(generation);
-            return builder;
-        });
-
-        return this;
-    }
-
-    public ItemStackBuilder bookPage(Component component) {
-        edit(builder -> {
-            if (!(builder instanceof BookMeta)) {
-                return builder;
-            }
-
-            ((BookMeta) builder).addPages(component);
-            return builder;
-        });
-
-        return this;
-    }
-
-    public ItemStackBuilder fireworkPower(int power) {
-        edit(builder -> {
-            if (!(builder instanceof FireworkMeta)) {
-                return builder;
-            }
-
-            ((FireworkMeta) builder).setPower(power);
-            return builder;
-        });
-
-        return this;
-    }
-
-    public ItemStackBuilder fireworkEffect(FireworkEffect effect) {
-        edit(builder -> {
-            if (!(builder instanceof FireworkMeta)) {
-                return builder;
-            }
-
-            ((FireworkMeta) builder).addEffect(effect);
-            return builder;
-        });
-
-        return this;
-    }
-
-    public ItemStackBuilder storedEnchantment(Enchantment enchantment, int level) {
-        edit(builder -> {
-            if (!(builder instanceof EnchantmentStorageMeta)) {
-                return builder;
-            }
-
-            ((EnchantmentStorageMeta) builder).addStoredEnchant(enchantment, level, false);
-            return builder;
-        });
-
-        return this;
-    }
-
-    public ItemStackBuilder glint(boolean flag) {
-        edit(meta -> {
+    public @NotNull ItemStackBuilder glint(boolean flag) {
+        editMeta(meta -> {
             meta.setEnchantmentGlintOverride(flag);
-
-            return meta;
         });
 
         return this;
     }
 
-    public ItemStackBuilder damageResistant(@NotNull TagKey<DamageType> damageTypeTagKey) {
-        return editMeta(DataComponentTypes.DAMAGE_RESISTANT, component -> {
-            return DamageResistant.damageResistant(damageTypeTagKey);
+    public @NotNull ItemStackBuilder damageResistant(@NotNull org.bukkit.Tag<DamageType> damageTypeTag) {
+        return editMeta(meta -> {
+            meta.setDamageResistant(damageTypeTag);
         });
     }
 
-    public @NotNull ItemStackBuilder dataContainer(@NotNull String path, @NotNull Tag nbtTag) {
+    public @NotNull ItemStackBuilder itemModel(@NotNull NamespacedKey id) {
+        return editMeta(meta -> {
+            meta.setItemModel(id);
+        });
+    }
+
+    public @NotNull ItemStackBuilder hideComponent(@NotNull DataComponentType.Valued<?> type) {
+        return editComponent(DataComponentTypes.TOOLTIP_DISPLAY, d -> {
+            d.hiddenComponents().add(type);
+        });
+    }
+
+    @ApiStatus.Experimental
+    public @NotNull ItemStackBuilder customModelDataFlags(@NotNull Boolean... flags) {
+        return editMeta(meta -> {
+            final CustomModelDataComponent component = meta.getCustomModelDataComponent();
+            component.setFlags(Arrays.stream(flags).toList());
+            meta.setCustomModelDataComponent(component);
+        });
+    }
+
+    public @NotNull ItemStackBuilder customData(@NotNull String path, @NotNull Tag nbtTag) {
         final net.minecraft.world.item.ItemStack itemStackNMS = ((CraftItemStack) itemStack).handle;
         final CustomData customData = itemStackNMS.get(DataComponents.CUSTOM_DATA);
 
@@ -493,7 +349,7 @@ public class ItemStackBuilder {
     public static ItemStackBuilder from(ItemStack itemStack) {
         final ItemStackBuilder itemStackBuilder = new ItemStackBuilder(itemStack.getType());
 
-        itemStackBuilder.edit(meta -> itemStack.getItemMeta());
+        itemStackBuilder.editMeta(meta -> itemStack.getItemMeta());
 
         return itemStackBuilder;
     }

@@ -1,5 +1,6 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
+import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
@@ -434,9 +435,9 @@ public abstract class SelectorArgument {
             return entities.stream()
                 .filter(entity -> {
                     for (final String name : argument.keySet()) {
-                        if (!Scoreboard.MAIN.hasObjective(name)) return false;
+                        if (!TPLCore.scoreboard.hasObjective(name)) return false;
 
-                        final ScoreObjective objective = Scoreboard.MAIN.getObjective(name);
+                        final ScoreObjective objective = TPLCore.scoreboard.getObjective(name);
                         final NumberRange<Integer> range = argument.get(name);
 
                         if (range.within(objective.getScore(entity))) {

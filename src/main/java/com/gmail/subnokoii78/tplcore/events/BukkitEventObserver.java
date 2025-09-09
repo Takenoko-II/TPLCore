@@ -6,7 +6,6 @@ import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
 import com.gmail.subnokoii78.tplcore.execute.SelectorArgument;
 import com.gmail.subnokoii78.tplcore.execute.SourceOrigin;
 import com.gmail.subnokoii78.tplcore.json.JSONParser;
-import com.gmail.subnokoii78.tplcore.json.JSONValueTypes;
 import com.gmail.subnokoii78.tplcore.json.values.JSONObject;
 import com.gmail.subnokoii78.tplcore.schedule.GameTickScheduler;
 import com.gmail.subnokoii78.tplcore.schedule.RealTimeScheduler;
@@ -74,7 +73,7 @@ public class BukkitEventObserver implements Listener {
 
         new GameTickScheduler(() -> {
             // priorityがLOWだと少し速く発火してしまうのでゲームティックに合わせる
-            EventDispatcher.getDispatcher(EventTypes.PLAYER_CLICK)
+            EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                 .dispatch(new PlayerClickEvent(
                     event.getPlayer(),
                     event,
@@ -88,7 +87,7 @@ public class BukkitEventObserver implements Listener {
     public void onPrePlayerAttack(PrePlayerAttackEntityEvent event) {
         final Player player = event.getPlayer();
         TimeStorage.getStorage(PrePlayerAttackEntityEvent.class).setTime(player);
-        EventDispatcher.getDispatcher(EventTypes.PLAYER_CLICK)
+        EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
             .dispatch(new PlayerClickEvent(
                 event.getPlayer(),
                 event,
@@ -111,7 +110,7 @@ public class BukkitEventObserver implements Listener {
             if (System.currentTimeMillis() - interactAtEntityEventTime < 50L) return;
 
             if (block != null) {
-                EventDispatcher.getDispatcher(EventTypes.PLAYER_CLICK)
+                EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                     .dispatch(new PlayerClickEvent(
                         player,
                         event,
@@ -140,7 +139,7 @@ public class BukkitEventObserver implements Listener {
 
             if (block != null) {
                 new GameTickScheduler(() -> {
-                    EventDispatcher.getDispatcher(EventTypes.PLAYER_CLICK)
+                    EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                         .dispatch(new PlayerClickEvent(
                             player,
                             event,
@@ -184,7 +183,7 @@ public class BukkitEventObserver implements Listener {
                     jsonObject
                 );
 
-                EventDispatcher.getDispatcher(EventTypes.DATAPACK_MESSAGE_RECEIVE).dispatch(data);
+                EventDispatcher.getDispatcher(TPLEventTypes.DATAPACK_MESSAGE_RECEIVE).dispatch(data);
 
                 if (!TPLCore.scoreboard.hasObjective("plugin_api.return")) return;
                 final ScoreObjective objective = TPLCore.scoreboard.getObjective("plugin_api.return");

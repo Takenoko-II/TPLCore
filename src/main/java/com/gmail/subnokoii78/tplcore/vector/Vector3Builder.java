@@ -423,6 +423,7 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
      * このベクトルをZ軸と考えたときのX, Y, Zの三軸を取得します。
      * @return ローカル軸
      */
+    @ApiStatus.Obsolete
     public @NotNull LocalAxisProvider getLocalAxisProvider() {
         return new LocalAxisProvider(this);
     }
@@ -595,6 +596,7 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
     /**
      * ローカル軸を取得するためのクラス
      */
+    @ApiStatus.Obsolete
     public static class LocalAxisProvider {
         private final Vector3Builder forward;
 

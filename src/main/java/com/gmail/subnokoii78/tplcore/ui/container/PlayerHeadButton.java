@@ -3,9 +3,9 @@ package com.gmail.subnokoii78.tplcore.ui.container;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class PlayerHeadButton extends ItemButton {
@@ -19,13 +19,8 @@ public class PlayerHeadButton extends ItemButton {
     }
 
     @Override
-    public @NotNull PlayerHeadButton addLore(@NotNull TextComponent component) {
-        return (PlayerHeadButton) super.addLore(component);
-    }
-
-    @Override
-    public @NotNull PlayerHeadButton setLore(@NotNull List<TextComponent> components) {
-        return (PlayerHeadButton) super.setLore(components);
+    public @NotNull PlayerHeadButton lore(@NotNull TextComponent component) {
+        return (PlayerHeadButton) super.lore(component);
     }
 
     @Override
@@ -39,8 +34,8 @@ public class PlayerHeadButton extends ItemButton {
     }
 
     @Override
-    public @NotNull PlayerHeadButton customModelData(int data) {
-        return (PlayerHeadButton) super.customModelData(data);
+    public @NotNull PlayerHeadButton itemModel(@NotNull NamespacedKey id) {
+        return (PlayerHeadButton) super.itemModel(id);
     }
 
     @Override
@@ -48,8 +43,8 @@ public class PlayerHeadButton extends ItemButton {
         return (PlayerHeadButton) super.onClick(listener);
     }
 
-    public PlayerHeadButton player(@NotNull String name) {
-        itemStack.profile().setOwner(Bukkit.getOfflinePlayer(name));
+    public @NotNull PlayerHeadButton player(@NotNull String gamerTag) {
+        itemStackBuilder.playerProfile(Bukkit.getOfflinePlayer(gamerTag).getPlayerProfile());
         return this;
     }
 }

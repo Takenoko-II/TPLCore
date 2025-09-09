@@ -22,7 +22,7 @@ public abstract class JSONStructureInterpreter<T> {
 
     protected abstract @Nullable T tryInterpret(@NotNull Object value);
 
-    public boolean isConvertable(@NotNull Object value) {
+    public boolean isInterpretable(@NotNull Object value) {
         return tryInterpret(value) != null;
     }
 
@@ -165,7 +165,7 @@ public abstract class JSONStructureInterpreter<T> {
             final Object location = jsonObject.getKey("location", jsonObject.getTypeOfKey("location"));
             final Object rotation = jsonObject.getKey("rotation", jsonObject.getTypeOfKey("rotation"));
 
-            if (VECTOR3.isConvertable(location) && DUAL_AXIS_ROTATION.isConvertable(rotation)) {
+            if (VECTOR3.isInterpretable(location) && DUAL_AXIS_ROTATION.isInterpretable(rotation)) {
                 final Vector3Builder vec3 = VECTOR3.interpret(location);
                 final DualAxisRotationBuilder rot = DUAL_AXIS_ROTATION.interpret(rotation);
                 return new Location(
