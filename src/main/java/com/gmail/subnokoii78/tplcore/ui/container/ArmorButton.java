@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class ArmorButton extends ItemButton {
-    public ArmorButton(@NotNull Material material) {
+    protected ArmorButton(@NotNull Material material) {
         super(material);
 
         if (!MaterialSetTag.ITEMS_TRIMMABLE_ARMOR.isTagged(material)) {

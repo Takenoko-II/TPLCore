@@ -15,9 +15,8 @@ public class EventDispatcher<T extends TPLEvent> {
 
     private int maxId = Integer.MIN_VALUE;
 
-    private EventDispatcher(@NotNull TPLEventType<T> eventType) {
+    public EventDispatcher(@NotNull TPLEventType<T> eventType) {
         this.type = eventType;
-        dispatchers.put(eventType, this);
     }
 
     public @NotNull TPLEventType<T> getType() {
@@ -47,7 +46,9 @@ public class EventDispatcher<T extends TPLEvent> {
             return (EventDispatcher<T>) dispatchers.get(type);
         }
         else {
-            return new EventDispatcher<>(type);
+            final EventDispatcher<T> dispatcher = new EventDispatcher<>(type);
+            dispatchers.put(type, dispatcher);
+            return dispatcher;
         }
     }
 }

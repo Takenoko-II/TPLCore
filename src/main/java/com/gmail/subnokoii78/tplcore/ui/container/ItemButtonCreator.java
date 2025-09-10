@@ -6,14 +6,14 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class ItemButtonCreator extends ItemButton {
-    public ItemButtonCreator() {
+    protected ItemButtonCreator() {
         super(Material.BARRIER);
     }
 
     public abstract @NotNull ItemButton create(@NotNull Player player);
 
     @Override
-    protected @NotNull ItemStack build() throws IllegalStateException {
+    protected final @NotNull ItemStack build() throws IllegalStateException {
         throw new IllegalStateException("create()が返すオブジェクトのbuild()を使用してください");
     }
 }

@@ -1,5 +1,6 @@
 package com.gmail.subnokoii78.tplcore.ui.container;
 
+import com.gmail.subnokoii78.tplcore.events.EventDispatcher;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -28,7 +29,7 @@ public class ContainerInteraction {
 
     private final Set<Inventory> inventories = new HashSet<>();
 
-    private final Set<Consumer<Player>> onCloseHandlers = new HashSet<>();
+    private final EventDispatcher<InteractionCloseEvent> closeEventDispatcher = new EventDispatcher<>(ContainerInteractionEvent.INTERACTION_CLOSE);
 
     public ContainerInteraction(@NotNull TextComponent name, int maxColumn) {
         this.name = name;
@@ -113,12 +114,12 @@ public class ContainerInteraction {
         return this;
     }
 
-    public @NotNull ContainerInteraction onClose(@NotNull Consumer<Player> listener) {
+    public @NotNull ContainerInteraction onClose(@NotNull Consumer<InteractionCloseEvent> listener) {
         if (!isValid()) {
             throw new IllegalStateException("This instance is invalid");
         }
 
-        onCloseHandlers.add(listener);
+        closeEventDispatcher.add(listener);
         return this;
     }
 
@@ -200,7 +201,7 @@ public class ContainerInteraction {
             for (ContainerInteraction ui : instances) {
                 if (ui.inventories.contains(event.getInventory())) {
                     ui.inventories.remove(event.getInventory());
-                    ui.onCloseHandlers.forEach(listener -> listener.accept(player));
+                    ui.closeEventDispatcher.dispatch(new InteractionCloseEvent(ui, player));
                     ui.freeUpMemory();
                     break;
                 }

@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 public class TPLEventType<T extends TPLEvent> {
     private final Class<T> clazz;
 
-    protected TPLEventType(@NotNull Class<T> clazz) {
+    public TPLEventType(@NotNull Class<T> clazz) {
         this.clazz = clazz;
     }
 

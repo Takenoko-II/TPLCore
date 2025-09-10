@@ -1,17 +1,15 @@
 package com.gmail.subnokoii78.tplcore.ui.container;
 
+import com.gmail.subnokoii78.tplcore.events.EventDispatcher;
 import com.gmail.subnokoii78.tplcore.itemstack.ItemStackBuilder;
-import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.TextComponent;
 import net.minecraft.nbt.StringTag;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -20,11 +18,11 @@ public class ItemButton {
 
     protected final UUID id = UUID.randomUUID();
 
-    private final Set<Consumer<ItemButtonClickEvent>> listeners = new HashSet<>();
+    private final EventDispatcher<ItemButtonClickEvent> itemButtonClickEventDispatcher = new EventDispatcher<>(ItemButtonClickEvent.ITEM_BUTTON_CLICK);
 
     private int amount = 1;
 
-    public ItemButton(@NotNull Material material) {
+    protected ItemButton(@NotNull Material material) {
         itemStackBuilder = new ItemStackBuilder(material);
     }
 
@@ -71,7 +69,7 @@ public class ItemButton {
     }
 
     public @NotNull ItemButton onClick(Consumer<ItemButtonClickEvent> listener) {
-        listeners.add(listener);
+        itemButtonClickEventDispatcher.add(listener);
         return this;
     }
 
@@ -85,6 +83,38 @@ public class ItemButton {
     }
 
     protected void click(@NotNull ItemButtonClickEvent event) {
-        listeners.forEach(listener -> listener.accept(event));
+        itemButtonClickEventDispatcher.dispatch(event);
+    }
+
+    public static @NotNull PotionButton potion() {
+        return PotionButton.potion();
+    }
+
+    public static @NotNull PotionButton splashPotion() {
+        return PotionButton.splashPotion();
+    }
+
+    public static @NotNull PotionButton lingeringPotion() {
+        return PotionButton.lingeringPotion();
+    }
+
+    public static @NotNull PotionButton tippedArrow() {
+        return PotionButton.tippedArrow();
+    }
+
+    public static @NotNull PlayerHeadButton playerHead() {
+        return new PlayerHeadButton();
+    }
+
+    public static @NotNull LeatherArmorButton leatherArmor(@NotNull Material material) {
+        return new LeatherArmorButton(material);
+    }
+
+    public static @NotNull ArmorButton armor(@NotNull Material material) {
+        return new ArmorButton(material);
+    }
+
+    public static @NotNull ItemButton item(@NotNull Material material) {
+        return new ItemButton(material);
     }
 }

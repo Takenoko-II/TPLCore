@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class LeatherArmorButton extends ArmorButton {
-    public LeatherArmorButton(@NotNull Material material) {
+    protected LeatherArmorButton(@NotNull Material material) {
         super(material);
     }
 

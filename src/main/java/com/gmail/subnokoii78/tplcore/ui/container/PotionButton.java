@@ -58,19 +58,19 @@ public class PotionButton extends ItemButton {
         return super.build();
     }
 
-    public static PotionButton potion() {
+    public static @NotNull PotionButton potion() {
         return new PotionButton(Material.POTION);
     }
 
-    public static PotionButton splashPotion() {
+    public static @NotNull PotionButton splashPotion() {
         return new PotionButton(Material.SPLASH_POTION);
     }
 
-    public static PotionButton lingeringPotion() {
+    public static @NotNull PotionButton lingeringPotion() {
         return new PotionButton(Material.LINGERING_POTION);
     }
 
-    public static PotionButton tippedArrow() {
+    public static @NotNull PotionButton tippedArrow() {
         return new PotionButton(Material.TIPPED_ARROW);
     }
 }

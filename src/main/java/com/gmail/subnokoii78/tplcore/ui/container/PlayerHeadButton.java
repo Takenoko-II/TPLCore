@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Consumer;
 
 public class PlayerHeadButton extends ItemButton {
-    public PlayerHeadButton() {
+    protected PlayerHeadButton() {
         super(Material.PLAYER_HEAD);
     }
 
