@@ -10,7 +10,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,21 +22,37 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+@ApiStatus.Experimental
 public class ContainerInteraction {
+    private static final class InteractionInventoryHolder implements InventoryHolder {
+        private final ContainerInteraction interactionBuilder;
+
+        private final Inventory inventory;
+
+        private InteractionInventoryHolder(@NotNull ContainerInteraction builder) {
+            interactionBuilder = builder;
+            inventory = Bukkit.createInventory(this, builder.maxColumn, builder.name);
+        }
+
+        @Override
+        public @NotNull Inventory getInventory() {
+            return inventory;
+        }
+    }
+
+    private static final Set<InteractionInventoryHolder> observedInventoryHolders = new HashSet<>();
+
     private final TextComponent name;
 
     private final int maxColumn;
 
     private final Map<Integer, ItemButton> buttons = new HashMap<>();
 
-    private final Set<Inventory> inventories = new HashSet<>();
-
     private final EventDispatcher<InteractionCloseEvent> closeEventDispatcher = new EventDispatcher<>(ContainerInteractionEvent.INTERACTION_CLOSE);
 
     public ContainerInteraction(@NotNull TextComponent name, int maxColumn) {
         this.name = name;
         this.maxColumn = maxColumn;
-        instances.add(this);
     }
 
     public @NotNull TextComponent getName() {
@@ -61,10 +79,6 @@ public class ContainerInteraction {
     }
 
     public @NotNull ContainerInteraction set(int slot, @Nullable ItemButton button) throws IllegalArgumentException {
-        if (!isValid()) {
-            throw new IllegalStateException("This instance is invalid");
-        }
-
         if (getSize() <= slot) {
             throw new IllegalArgumentException("範囲外のスロットが渡されました");
         }
@@ -75,19 +89,11 @@ public class ContainerInteraction {
     }
 
     public @NotNull ContainerInteraction add(@NotNull ItemButton button) throws IllegalStateException {
-        if (!isValid()) {
-            throw new IllegalStateException("This instance is invalid");
-        }
-
         buttons.put(getFirstEmptySlot(), button);
         return this;
     }
 
     public @NotNull ContainerInteraction fillRow(int index, @NotNull ItemButton button) {
-        if (!isValid()) {
-            throw new IllegalStateException("This instance is invalid");
-        }
-
         for (int i = index * 9; i < index * 9 + 9; i++) {
             set(i, button);
         }
@@ -95,10 +101,6 @@ public class ContainerInteraction {
     }
 
     public @NotNull ContainerInteraction fillColumn(int index, @NotNull ItemButton button) {
-        if (!isValid()) {
-            throw new IllegalStateException("This instance is invalid");
-        }
-
         for (int i = 0; i < maxColumn; i++) {
             set(i * 9 + index, button);
         }
@@ -106,29 +108,18 @@ public class ContainerInteraction {
     }
 
     public @NotNull ContainerInteraction clear() {
-        if (!isValid()) {
-            throw new IllegalStateException("This instance is invalid");
-        }
-
         buttons.clear();
         return this;
     }
 
     public @NotNull ContainerInteraction onClose(@NotNull Consumer<InteractionCloseEvent> listener) {
-        if (!isValid()) {
-            throw new IllegalStateException("This instance is invalid");
-        }
-
         closeEventDispatcher.add(listener);
         return this;
     }
 
     public void open(@NotNull Player player) {
-        if (!isValid()) {
-            throw new IllegalStateException("This instance is invalid");
-        }
-
-        final Inventory inventory = Bukkit.createInventory(null, getSize(), name);
+        final InteractionInventoryHolder inventoryHolder = new InteractionInventoryHolder(this);
+        observedInventoryHolders.add(inventoryHolder);
 
         for (int i = 0; i < getSize(); i++) {
             if (!buttons.containsKey(i)) continue;
@@ -136,33 +127,16 @@ public class ContainerInteraction {
             final ItemButton button = buttons.get(i);
 
             if (button instanceof ItemButtonCreator creator) {
-                inventory.setItem(i, creator.create(player).build());
+                inventoryHolder.inventory.setItem(i, creator.create(player).build());
             }
             else {
-                inventory.setItem(i, button.build());
+                inventoryHolder.inventory.setItem(i, button.build());
             }
         }
 
-        inventories.add(inventory);
         player.closeInventory();
-        player.openInventory(inventory);
+        player.openInventory(inventoryHolder.inventory);
     }
-
-    public boolean isValid() {
-        return instances.contains(this);
-    }
-
-    private void freeUpMemory() {
-        buttons.clear();
-        inventories.forEach(inventory -> {
-            inventory.clear();
-            inventory.close();
-        });
-        inventories.clear();
-        instances.remove(this);
-    }
-
-    private static final Set<ContainerInteraction> instances = new HashSet<>();
 
     public static final class ContainerEventObserver implements Listener {
         private ContainerEventObserver() {}
@@ -173,15 +147,14 @@ public class ContainerInteraction {
 
             final ItemStack itemStack = event.getCurrentItem();
 
-            for (final ContainerInteraction ui : instances) {
-                if (ui.inventories.contains(event.getClickedInventory())) {
-                    final ItemButton button = ui.buttons.get(event.getSlot());
+            for (final InteractionInventoryHolder holder : observedInventoryHolders) {
+                if (holder.inventory.equals(event.getClickedInventory())) {
+                    final ItemButton button = holder.interactionBuilder.buttons.get(event.getSlot());
 
                     if (itemStack == null || button == null) return;
 
-                    button.click(new ItemButtonClickEvent(player, ui, event.getSlot(), button));
+                    button.click(new ItemButtonClickEvent(player, holder.interactionBuilder, event.getSlot(), button));
                     event.setCancelled(true);
-
                     break;
                 }
             }
@@ -189,8 +162,8 @@ public class ContainerInteraction {
 
         @EventHandler
         public void onMove(InventoryMoveItemEvent event) {
-            for (final ContainerInteraction ui : instances) {
-                if (ui.inventories.contains(event.getInitiator())) {
+            for (final InteractionInventoryHolder holder : observedInventoryHolders) {
+                if (holder.inventory.equals(event.getInitiator())) {
                     event.setCancelled(true);
                     break;
                 }
@@ -201,17 +174,17 @@ public class ContainerInteraction {
         public void onClose(InventoryCloseEvent event) {
             if (!(event.getPlayer() instanceof Player player)) return;
 
-            for (final ContainerInteraction interaction : instances) {
+            for (final InteractionInventoryHolder holder : observedInventoryHolders) {
                 final Inventory inventory = event.getInventory();
 
-                if (interaction.inventories.contains(inventory)) {
-                    interaction.inventories.remove(inventory);
-                    interaction.closeEventDispatcher.dispatch(new InteractionCloseEvent(interaction, player));
+                if (holder.inventory.equals(inventory)) {
+                    observedInventoryHolders.remove(holder);
+                    holder.interactionBuilder.closeEventDispatcher.dispatch(new InteractionCloseEvent(holder.interactionBuilder, player));
                     break;
                 }
             }
         }
 
-        public static final ContainerEventObserver INSTANCE = new ContainerEventObserver();
+        public static final ContainerInteraction.ContainerEventObserver INSTANCE = new ContainerInteraction.ContainerEventObserver();
     }
 }

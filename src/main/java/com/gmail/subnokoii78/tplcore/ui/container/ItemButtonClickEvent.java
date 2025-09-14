@@ -30,9 +30,6 @@ public class ItemButtonClickEvent implements ContainerInteractionEvent {
 
     @Override
     public @NotNull ContainerInteraction getInteraction() {
-        if (!interaction.isValid()) {
-            throw new IllegalStateException();
-        }
         return interaction;
     }
 
