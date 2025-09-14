@@ -154,7 +154,10 @@ public class ContainerInteraction {
 
     private void freeUpMemory() {
         buttons.clear();
-        inventories.forEach(Inventory::close);
+        inventories.forEach(inventory -> {
+            inventory.clear();
+            inventory.close();
+        });
         inventories.clear();
         instances.remove(this);
     }
@@ -198,11 +201,12 @@ public class ContainerInteraction {
         public void onClose(InventoryCloseEvent event) {
             if (!(event.getPlayer() instanceof Player player)) return;
 
-            for (ContainerInteraction ui : instances) {
-                if (ui.inventories.contains(event.getInventory())) {
-                    ui.inventories.remove(event.getInventory());
-                    ui.closeEventDispatcher.dispatch(new InteractionCloseEvent(ui, player));
-                    ui.freeUpMemory();
+            for (final ContainerInteraction interaction : instances) {
+                final Inventory inventory = event.getInventory();
+
+                if (interaction.inventories.contains(inventory)) {
+                    interaction.inventories.remove(inventory);
+                    interaction.closeEventDispatcher.dispatch(new InteractionCloseEvent(interaction, player));
                     break;
                 }
             }

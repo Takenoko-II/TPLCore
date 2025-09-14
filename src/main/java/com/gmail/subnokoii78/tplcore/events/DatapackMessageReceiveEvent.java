@@ -1,7 +1,7 @@
 package com.gmail.subnokoii78.tplcore.events;
 
-import com.gmail.subnokoii78.tplcore.json.JSONValueTypes;
-import com.gmail.subnokoii78.tplcore.json.values.JSONObject;
+import com.gmail.takenokoii78.json.JSONValueTypes;
+import com.gmail.takenokoii78.json.values.JSONObject;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +41,7 @@ public class DatapackMessageReceiveEvent implements TPLEvent {
     }
 
     public @NotNull String getId() {
-        return message.getKey("id", JSONValueTypes.STRING).getValue();
+        return message.get("id", JSONValueTypes.STRING).getValue();
     }
 
     public int getReturnValue() {

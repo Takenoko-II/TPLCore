@@ -1,11 +1,13 @@
 package com.gmail.subnokoii78.tplcore;
 
 import com.gmail.subnokoii78.tplcore.events.*;
+import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.messaging.Messenger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -13,8 +15,8 @@ import java.util.function.Consumer;
 public class TPLCore {
     private static Plugin plugin;
 
-    public static final class PluginUninitializedException extends RuntimeException {
-        private PluginUninitializedException(@NotNull String message) {
+    public static final class TPLCoreException extends RuntimeException {
+        private TPLCoreException(@NotNull String message) {
             super(message);
         }
     }
@@ -35,27 +37,33 @@ public class TPLCore {
 
     public static final Scoreboard scoreboard = new Scoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
+    public static final PaperVelocityManager paperVelocityManager = new PaperVelocityManager();
+
     private TPLCore() {}
 
-    public static @NotNull Plugin getPlugin() throws PluginUninitializedException {
+    public static @NotNull Plugin getPlugin() throws TPLCoreException {
         if (plugin == null) {
-            throw new PluginUninitializedException("プラグインのインスタンスが用意されていません");
+            throw new TPLCoreException("プラグインのインスタンスが用意されていません");
         }
         else {
             return plugin;
         }
     }
 
-    public static void initialize(@NotNull Plugin plugin) {
-        TPLCore.plugin = plugin;
-        final PluginManager manager = Bukkit.getPluginManager();
-        manager.registerEvents(BukkitEventObserver.INSTANCE, plugin);
-        manager.registerEvents(ContainerInteraction.ContainerEventObserver.INSTANCE, plugin);
-    }
+    public static void initialize(@NotNull Plugin plugin) throws TPLCoreException {
+        if (TPLCore.plugin == null) {
+            TPLCore.plugin = plugin;
 
-    /* TODO
-    * - JSONPathNode (入れ子構造にしてルートノードのみJSONPathに保持する) だるい
-    * - ItemStackBuilder めんどい
-    * - ContainerInteractionBuilder やるー？
-    */
+            final PluginManager manager = Bukkit.getPluginManager();
+            manager.registerEvents(BukkitEventObserver.INSTANCE, plugin);
+            manager.registerEvents(ContainerInteraction.ContainerEventObserver.INSTANCE, plugin);
+
+            final Messenger messenger = Bukkit.getServer().getMessenger();
+            messenger.registerOutgoingPluginChannel(plugin, "BungeeCord");
+            messenger.registerIncomingPluginChannel(plugin, "BungeeCord", paperVelocityManager);
+        }
+        else {
+            throw new TPLCoreException("プラグインのインスタンスが既に登録されています");
+        }
+    }
 }

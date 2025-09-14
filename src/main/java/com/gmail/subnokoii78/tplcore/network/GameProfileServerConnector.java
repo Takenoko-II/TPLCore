@@ -2,9 +2,9 @@ package com.gmail.subnokoii78.tplcore.network;
 
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
-import com.gmail.subnokoii78.tplcore.json.JSONParser;
-import com.gmail.subnokoii78.tplcore.json.JSONValueTypes;
-import com.gmail.subnokoii78.tplcore.json.values.JSONObject;
+import com.gmail.takenokoii78.json.JSONParser;
+import com.gmail.takenokoii78.json.JSONValueTypes;
+import com.gmail.takenokoii78.json.values.JSONObject;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.Bukkit;

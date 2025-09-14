@@ -5,11 +5,11 @@ import com.gmail.subnokoii78.tplcore.execute.CommandSourceStack;
 import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
 import com.gmail.subnokoii78.tplcore.execute.SelectorArgument;
 import com.gmail.subnokoii78.tplcore.execute.SourceOrigin;
-import com.gmail.subnokoii78.tplcore.json.JSONParser;
-import com.gmail.subnokoii78.tplcore.json.values.JSONObject;
+import com.gmail.takenokoii78.json.JSONParser;
 import com.gmail.subnokoii78.tplcore.schedule.GameTickScheduler;
 import com.gmail.subnokoii78.tplcore.schedule.RealTimeScheduler;
 import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
+import com.gmail.takenokoii78.json.values.JSONObject;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -173,7 +173,7 @@ public class BukkitEventObserver implements Listener {
             try {
                 final JSONObject jsonObject = JSONParser.object(message);
 
-                if (!jsonObject.hasKey("id")) {
+                if (!jsonObject.has("id")) {
                     throw new IllegalArgumentException();
                 }
 
