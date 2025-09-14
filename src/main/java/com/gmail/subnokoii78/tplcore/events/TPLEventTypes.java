@@ -6,4 +6,6 @@ public final class TPLEventTypes {
     public static final TPLEventType<PlayerClickEvent> PLAYER_CLICK = new TPLEventType<>(PlayerClickEvent.class);
 
     public static final TPLEventType<DatapackMessageReceiveEvent> DATAPACK_MESSAGE_RECEIVE = new TPLEventType<>(DatapackMessageReceiveEvent.class);
+
+    public static final TPLEventType<TickEvent> TICK = new TPLEventType<>(TickEvent.class);
 }

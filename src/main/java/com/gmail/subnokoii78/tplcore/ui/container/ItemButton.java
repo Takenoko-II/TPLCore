@@ -2,6 +2,7 @@ package com.gmail.subnokoii78.tplcore.ui.container;
 
 import com.gmail.subnokoii78.tplcore.events.EventDispatcher;
 import com.gmail.subnokoii78.tplcore.itemstack.ItemStackBuilder;
+import com.gmail.takenokoii78.mojangson.MojangsonPath;
 import net.kyori.adventure.text.TextComponent;
 import net.minecraft.nbt.StringTag;
 import org.bukkit.Material;
@@ -78,7 +79,7 @@ public class ItemButton {
 
         return itemStackBuilder
             .count(amount)
-            .customData("tpl_core.container_button.id", StringTag.valueOf(id.toString()))
+            .customData(MojangsonPath.of("tpl_core.container_button.id"), id.toString())
             .build();
     }
 

@@ -11,6 +11,7 @@ import com.gmail.subnokoii78.tplcore.schedule.RealTimeScheduler;
 import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
 import com.gmail.takenokoii78.json.values.JSONObject;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -23,11 +24,17 @@ import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
 
 public class BukkitEventObserver implements Listener {
-    private BukkitEventObserver() {}
+    private final GameTickScheduler scheduler = new GameTickScheduler(this::onTick);
+
+    private BukkitEventObserver() {
+        scheduler.runInterval();
+    }
 
     public static final BukkitEventObserver INSTANCE = new BukkitEventObserver();
 
@@ -60,6 +67,13 @@ public class BukkitEventObserver implements Listener {
                 return new TimeStorage(clazz);
             }
         }
+    }
+
+    public void onTick() {
+        EventDispatcher.getDispatcher(TPLEventTypes.TICK).dispatch(new TickEvent(
+            Bukkit.getServer().getServerTickManager().isFrozen(),
+            Bukkit.getServer().isTickingWorlds()
+        ));
     }
 
     @EventHandler

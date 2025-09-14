@@ -2,22 +2,16 @@ package com.gmail.subnokoii78.tplcore.itemstack;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.gmail.subnokoii78.tplcore.generic.UnImplementedException;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.gmail.takenokoii78.mojangson.MojangsonPath;
+import com.gmail.takenokoii78.mojangson.values.MojangsonCompound;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.attribute.AttributeModifierDisplay;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.minecraft.commands.arguments.NbtPathArgument;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.world.item.component.CustomData;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.damage.DamageType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlotGroup;
@@ -313,31 +307,11 @@ public class ItemStackBuilder {
         });
     }
 
-    public @NotNull ItemStackBuilder customData(@NotNull String path, @NotNull Tag nbtTag) {
-        final net.minecraft.world.item.ItemStack itemStackNMS = ((CraftItemStack) itemStack).handle;
-        final CustomData customData = itemStackNMS.get(DataComponents.CUSTOM_DATA);
-
-        final CompoundTag compound;
-        if (customData == null) compound = new CompoundTag();
-        else compound = customData.copyTag();
-
-        final NbtPathArgument.NbtPath nbtPath;
-        try {
-            nbtPath = NbtPathArgument.nbtPath().parse(new StringReader(path));
-        }
-        catch (CommandSyntaxException exception) {
-            throw new IllegalArgumentException("NBTパスの解析に失敗しました", exception);
-        }
-
-        try {
-            nbtPath.set(compound, nbtTag);
-        }
-        catch (CommandSyntaxException exception) {
-            throw new IllegalArgumentException("NBTパスに値をセットできませんでした", exception);
-        }
-
-        itemStackNMS.set(DataComponents.CUSTOM_DATA, CustomData.of(compound));
-
+    public @NotNull ItemStackBuilder customData(@NotNull MojangsonPath path, @NotNull Object value) {
+        final ItemStackCustomDataAccess access = ItemStackCustomDataAccess.of(itemStack);
+        final MojangsonCompound compound = access.read();
+        compound.set(path, value);
+        access.write(compound);
         return this;
     }
 

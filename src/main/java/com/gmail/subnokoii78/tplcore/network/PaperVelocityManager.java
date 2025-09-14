@@ -1,11 +1,13 @@
 package com.gmail.subnokoii78.tplcore.network;
 
 import com.gmail.subnokoii78.tplcore.TPLCore;
+import com.gmail.subnokoii78.tplcore.itemstack.ItemStackBuilder;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
 import com.gmail.subnokoii78.tplcore.ui.container.ItemButton;
 import com.gmail.takenokoii78.json.JSONParser;
 import com.gmail.takenokoii78.json.JSONSerializer;
 import com.gmail.takenokoii78.json.values.JSONObject;
+import com.gmail.takenokoii78.mojangson.MojangsonPath;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -15,11 +17,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
@@ -137,7 +141,7 @@ public final class PaperVelocityManager implements PluginMessageListener {
         customPluginMessageReceivers.add(callback);
     }
 
-    public final ContainerInteraction SERVER_SELECTOR = new ContainerInteraction(Component.text("Battle of Apostolos"), 1)
+    private final ContainerInteraction SERVER_SELECTOR = new ContainerInteraction(Component.text("Battle of Apostolos"), 1)
         .set(1, ItemButton.item(Material.NETHER_STAR)
             .name(Component.text("Game").color(NamedTextColor.AQUA))
             .lore(Component.text("ゲームサーバーに接続する").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
@@ -183,7 +187,18 @@ public final class PaperVelocityManager implements PluginMessageListener {
             })
         );
 
-    public void openServerSelector(@NotNull Player player) {
+    public @NotNull ItemStack getServerSelectorItemStack() {
+        return new ItemStackBuilder(Material.COMPASS)
+            .itemName(Component.text("Server Selector").color(NamedTextColor.GREEN))
+            .lore(Component.text("Right Click to Open").color(NamedTextColor.GRAY))
+            .glint(true)
+            .maxStackSize(1)
+            .customData(MojangsonPath.of("locked"), true)
+            .customData(MojangsonPath.of("custom_item_tag"), "server_selector")
+            .build();
+    }
+
+    public void openServerSelectorInteraction(@NotNull Player player) {
         SERVER_SELECTOR.open(player);
     }
 

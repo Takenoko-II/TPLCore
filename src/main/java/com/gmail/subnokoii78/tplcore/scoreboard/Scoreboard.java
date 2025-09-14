@@ -1,15 +1,15 @@
 package com.gmail.subnokoii78.tplcore.scoreboard;
 
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -55,8 +55,15 @@ public final class Scoreboard {
         return bukkit.getObjective(name)  == null;
     }
 
-    public @NotNull ScoreObjective addObjective(@NotNull String name, @NotNull Criteria criteria, @NotNull Component displayName, @NotNull RenderType renderType) {
-        return hasObjective(name) ? getObjective(name) : new ScoreObjective(this, bukkit.registerNewObjective(name, criteria, displayName, renderType));
+    public @NotNull ScoreObjective addObjective(@NotNull String name, @Nullable Criteria criteria, @Nullable Component displayName, @Nullable RenderType renderType) {
+        if (hasObjective(name)) {
+            throw new IllegalStateException("オブジェクティブ '" + name + "' は既に存在します");
+        }
+        else return new ScoreObjective(this, bukkit.registerNewObjective(name, criteria == null ? Criteria.DUMMY : criteria, displayName, renderType == null ? RenderType.INTEGER : renderType));
+    }
+
+    public @NotNull ScoreObjective getOrAddObjective(@NotNull String name, @Nullable Criteria criteria, @Nullable Component displayName, @Nullable RenderType renderType) {
+        return hasObjective(name) ? getObjective(name) : addObjective(name, criteria, displayName, renderType);
     }
 
     public void removeObjective(@NotNull String name) {
