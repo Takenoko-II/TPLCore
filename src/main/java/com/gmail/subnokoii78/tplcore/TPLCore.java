@@ -4,6 +4,7 @@ import com.gmail.subnokoii78.tplcore.events.*;
 import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
+import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -14,6 +15,8 @@ import java.util.function.Consumer;
 
 public class TPLCore {
     private static Plugin plugin;
+
+    private static PluginBootstrap bootstrap;
 
     public static final class TPLCoreException extends RuntimeException {
         private TPLCoreException(@NotNull String message) {
@@ -50,9 +53,19 @@ public class TPLCore {
         }
     }
 
-    public static void initialize(@NotNull Plugin plugin) throws TPLCoreException {
+    public static @NotNull PluginBootstrap getBootstrap() throws TPLCoreException {
+        if (bootstrap == null) {
+            throw new TPLCoreException("プラグインのインスタンスが用意されていません");
+        }
+        else {
+            return bootstrap;
+        }
+    }
+
+    public static void initialize(@NotNull Plugin plugin, @NotNull PluginBootstrap bootstrap) throws TPLCoreException {
         if (TPLCore.plugin == null) {
             TPLCore.plugin = plugin;
+            TPLCore.bootstrap = bootstrap;
 
             final PluginManager manager = Bukkit.getPluginManager();
             manager.registerEvents(BukkitEventObserver.INSTANCE, plugin);
