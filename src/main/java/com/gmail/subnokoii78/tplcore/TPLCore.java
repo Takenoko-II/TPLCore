@@ -80,3 +80,5 @@ public class TPLCore {
         }
     }
 }
+
+// TODO: ConsoleColorizerをクラスパスに追加
