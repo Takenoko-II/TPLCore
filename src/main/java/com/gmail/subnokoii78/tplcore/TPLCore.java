@@ -4,6 +4,7 @@ import com.gmail.subnokoii78.tplcore.events.*;
 import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
+import com.gmail.takenokoii78.consolecolorizer.Output;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;

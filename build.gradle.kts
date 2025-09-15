@@ -23,7 +23,8 @@ java {
 dependencies {
     paperweight.paperDevBundle("1.21.8-R0.1-SNAPSHOT")
     implementation(files(
-        "C:/Users/wakab/IdeaProjects/JSON/target/JSON-1.0-SNAPSHOT.jar"
+        "../JSON/target/JSON-1.0-SNAPSHOT.jar",
+        "../ConsoleColorizer/target/ConsoleColorizer-1.0-SNAPSHOT.jar"
     ))
 }
 
