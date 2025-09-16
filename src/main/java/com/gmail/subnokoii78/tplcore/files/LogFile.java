@@ -56,9 +56,10 @@ public class LogFile {
                     line = reader.readLine();
                     if (line == null) break;
 
-                    final String tempLine = line;
-                    if (words.stream().noneMatch(tempLine::contains)) {
-                        continue;
+                    if (!words.isEmpty()) {
+                        if (words.stream().noneMatch(line::contains)) {
+                            continue;
+                        }
                     }
 
                     if (i < begin) {

@@ -40,7 +40,7 @@ public final class ConsoleCommand extends AbstractCommand {
                                         return query(
                                             ctx.getSource().getSender(),
                                             ctx.getArgument("page_number", Integer.class),
-                                            Set.of()
+                                            Arrays.stream(ctx.getArgument("words", String.class).split(",")).collect(Collectors.toSet())
                                         );
                                     })
                             )
@@ -48,7 +48,7 @@ public final class ConsoleCommand extends AbstractCommand {
                                 return query(
                                     ctx.getSource().getSender(),
                                     ctx.getArgument("page_number", Integer.class),
-                                    Arrays.stream(ctx.getArgument("words", String.class).split(",")).collect(Collectors.toSet())
+                                    Set.of()
                                 );
                             })
                     )
@@ -89,13 +89,18 @@ public final class ConsoleCommand extends AbstractCommand {
 
         if (logFile.exists()) {
             final LogPage logPage = logFile.readPage(pageNumber, words);
-            final TextComponent.Builder builder = Component.text("検索語句 '" + words + "' を満たすログを取得しました: ")
+            final TextComponent.Builder builder = Component.text(
+                    words.isEmpty()
+                        ? "ログを取得しました (" + logPage.texts().size() + "): "
+                        : "検索語句 '" + words + "' を満たすログを取得しました (" + logPage.texts().size() + "): "
+                )
                 .color(NamedTextColor.WHITE)
                 .toBuilder();
 
             int i = 1;
             for (final String text : logPage.texts()) {
-                builder.append(Component.text(text).color(
+                builder.appendNewline()
+                    .append(Component.text(text).color(
                     i == 1 ? NamedTextColor.WHITE : NamedTextColor.GRAY
                 ));
                 i *= -1;
@@ -111,6 +116,7 @@ public final class ConsoleCommand extends AbstractCommand {
         sender.sendMessage(
             Component.text("ログに書き込みました:")
                 .color(NamedTextColor.WHITE)
+                .appendNewline()
                 .append(Component.text("    " + message).color(NamedTextColor.GRAY))
         );
 
