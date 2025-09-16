@@ -10,6 +10,7 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.world.item.component.CustomData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -35,12 +36,15 @@ public final class ItemStackCustomDataAccess {
     }
 
     private @NotNull CompoundTag getCustomData() {
-        final CustomData customData = ((CraftItemStack) itemStack).handle.get(DataComponents.CUSTOM_DATA);
+        final CustomData customData = CraftItemStack.asNMSCopy(itemStack).get(DataComponents.CUSTOM_DATA);
         return (customData == null) ? new CompoundTag() : customData.copyTag();
     }
 
     private void setCustomData(@NotNull CompoundTag compound) {
-        ((CraftItemStack) itemStack).handle.set(DataComponents.CUSTOM_DATA, CustomData.of(compound));
+        final net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(itemStack);
+        nms.set(DataComponents.CUSTOM_DATA, CustomData.of(compound));
+        final ItemMeta meta = CraftItemStack.asBukkitCopy(nms).getItemMeta();
+        itemStack.setItemMeta(meta);
     }
 
     public @NotNull MojangsonCompound read() {
