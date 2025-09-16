@@ -65,14 +65,14 @@ public abstract class ScoreHolder {
 
         @Override
         protected @Nullable Integer getScore(@NotNull String objective, @NotNull CommandSourceStack stack) {
-            if (!TPLCore.scoreboard.hasObjective(objective)) return null;
-            return TPLCore.scoreboard.getObjective(objective).getScore(stack.getEntities(selector).getFirst());
+            if (!TPLCore.getScoreboard().hasObjective(objective)) return null;
+            return TPLCore.getScoreboard().getObjective(objective).getScore(stack.getEntities(selector).getFirst());
         }
 
         @Override
         protected void setScore(@NotNull String objective, @NotNull CommandSourceStack stack, int value) {
-            if (!TPLCore.scoreboard.hasObjective(objective)) return;
-            final ScoreObjective o = TPLCore.scoreboard.getObjective(objective);
+            if (!TPLCore.getScoreboard().hasObjective(objective)) return;
+            final ScoreObjective o = TPLCore.getScoreboard().getObjective(objective);
             stack.getEntities(selector).forEach(entity -> o.setScore(entity, value));
         }
     }
@@ -86,14 +86,14 @@ public abstract class ScoreHolder {
 
         @Override
         protected @Nullable Integer getScore(@NotNull String objective, @NotNull CommandSourceStack stack) {
-            if (!TPLCore.scoreboard.hasObjective(objective)) return null;
-            return TPLCore.scoreboard.getObjective(objective).getScore(name);
+            if (!TPLCore.getScoreboard().hasObjective(objective)) return null;
+            return TPLCore.getScoreboard().getObjective(objective).getScore(name);
         }
 
         @Override
         protected void setScore(@NotNull String objective, @NotNull CommandSourceStack stack, int value) {
-            if (!TPLCore.scoreboard.hasObjective(objective)) return;
-            TPLCore.scoreboard.getObjective(objective).setScore(name, value);
+            if (!TPLCore.getScoreboard().hasObjective(objective)) return;
+            TPLCore.getScoreboard().getObjective(objective).setScore(name, value);
         }
     }
 }

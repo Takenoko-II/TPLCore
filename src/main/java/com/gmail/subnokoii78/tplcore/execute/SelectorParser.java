@@ -295,7 +295,7 @@ public class SelectorParser {
 
     /*
     private NumberRange.DistanceRange distanceRange() {
-        final String s = text.substring(location);
+        final String s = texts.substring(location);
         for (int i = 0; i < s.length() - 1; i++) {
 
         }

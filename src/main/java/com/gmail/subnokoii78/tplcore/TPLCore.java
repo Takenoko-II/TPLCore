@@ -1,11 +1,13 @@
 package com.gmail.subnokoii78.tplcore;
 
+import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
 import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
-import com.gmail.takenokoii78.consolecolorizer.Output;
+import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -39,7 +41,7 @@ public class TPLCore {
 
     public static final Events events = new Events();
 
-    public static final Scoreboard scoreboard = new Scoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+    private static Scoreboard scoreboard;
 
     public static final PaperVelocityManager paperVelocityManager = new PaperVelocityManager();
 
@@ -56,10 +58,19 @@ public class TPLCore {
 
     public static @NotNull PluginBootstrap getBootstrap() throws TPLCoreException {
         if (bootstrap == null) {
-            throw new TPLCoreException("プラグインのインスタンスが用意されていません");
+            throw new TPLCoreException("ブートストラップのインスタンスが用意されていません");
         }
         else {
             return bootstrap;
+        }
+    }
+
+    public static @NotNull Scoreboard getScoreboard() throws TPLCoreException {
+        if (scoreboard == null) {
+            throw new TPLCoreException("スコアボードのインスタンスが用意されていません");
+        }
+        else {
+            return scoreboard;
         }
     }
 
@@ -67,6 +78,7 @@ public class TPLCore {
         if (TPLCore.plugin == null) {
             TPLCore.plugin = plugin;
             TPLCore.bootstrap = bootstrap;
+            TPLCore.scoreboard = new Scoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
             final PluginManager manager = Bukkit.getPluginManager();
             manager.registerEvents(BukkitEventObserver.INSTANCE, plugin);
@@ -75,11 +87,14 @@ public class TPLCore {
             final Messenger messenger = Bukkit.getServer().getMessenger();
             messenger.registerOutgoingPluginChannel(plugin, "BungeeCord");
             messenger.registerIncomingPluginChannel(plugin, "BungeeCord", paperVelocityManager);
+
+            plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
+                final Commands registrar = event.registrar();
+                registrar.register(ConsoleCommand.CONSOLE_COMMAND.getCommandNode());
+            });
         }
         else {
             throw new TPLCoreException("プラグインのインスタンスが既に登録されています");
         }
     }
 }
-
-// TODO: ConsoleColorizerをクラスパスに追加

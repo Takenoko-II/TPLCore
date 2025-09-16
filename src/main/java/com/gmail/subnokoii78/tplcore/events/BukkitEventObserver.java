@@ -199,8 +199,8 @@ public class BukkitEventObserver implements Listener {
 
                 EventDispatcher.getDispatcher(TPLEventTypes.DATAPACK_MESSAGE_RECEIVE).dispatch(data);
 
-                if (!TPLCore.scoreboard.hasObjective("plugin_api.return")) return;
-                final ScoreObjective objective = TPLCore.scoreboard.getObjective("plugin_api.return");
+                if (!TPLCore.getScoreboard().hasObjective("plugin_api.return")) return;
+                final ScoreObjective objective = TPLCore.getScoreboard().getObjective("plugin_api.return");
                 objective.setScore("#", data.getReturnValue());
             }
             catch (RuntimeException e) {

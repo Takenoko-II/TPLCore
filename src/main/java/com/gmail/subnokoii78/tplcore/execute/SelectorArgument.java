@@ -435,9 +435,9 @@ public abstract class SelectorArgument {
             return entities.stream()
                 .filter(entity -> {
                     for (final String name : argument.keySet()) {
-                        if (!TPLCore.scoreboard.hasObjective(name)) return false;
+                        if (!TPLCore.getScoreboard().hasObjective(name)) return false;
 
-                        final ScoreObjective objective = TPLCore.scoreboard.getObjective(name);
+                        final ScoreObjective objective = TPLCore.getScoreboard().getObjective(name);
                         final NumberRange<Integer> range = argument.get(name);
 
                         if (range.within(objective.getScore(entity))) {
