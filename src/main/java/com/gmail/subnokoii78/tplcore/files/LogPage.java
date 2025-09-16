@@ -5,6 +5,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public record LogPage(@NotNull List<String> texts, @Nullable LogHistoryType type) {
+public record LogPage(@NotNull List<String> texts) {
     public static final int ONE_PAGE_LINES_COUNT = 15;
 }

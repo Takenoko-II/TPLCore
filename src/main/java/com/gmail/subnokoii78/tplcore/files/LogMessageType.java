@@ -7,7 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
 
-public enum PluginMessageType {
+public enum LogMessageType {
     ANNOUNCEMENT(NamedTextColor.LIGHT_PURPLE, true),
 
     INFORMATION(NamedTextColor.AQUA, false),
@@ -22,12 +22,12 @@ public enum PluginMessageType {
 
     private final boolean isContentColored;
 
-    PluginMessageType(@NotNull TextColor color, boolean isContentColored) {
+    LogMessageType(@NotNull TextColor color, boolean isContentColored) {
         this.color = color;
         this.isContentColored = isContentColored;
     }
 
-    @NotNull TextComponent toDecoratedMessage(@NotNull String message) {
+    public @NotNull TextComponent toDecoratedMessage(@NotNull String message) {
         return Component.text('[').color(NamedTextColor.WHITE)
             .append(
                 Component.text(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, toString()))

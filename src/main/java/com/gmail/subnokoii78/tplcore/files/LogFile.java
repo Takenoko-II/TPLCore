@@ -3,7 +3,6 @@ package com.gmail.subnokoii78.tplcore.files;
 import com.gmail.subnokoii78.tplcore.TPLCore;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class LogFile {
     public static final String LATEST_LOG_FILE_PATH = "logs/latest.log";
@@ -37,7 +37,7 @@ public class LogFile {
         return this.path;
     }
 
-    protected @NotNull List<String> readPageLines(int pageNumber, @Nullable LogHistoryType type) throws IllegalStateException, IllegalArgumentException {
+    protected @NotNull List<String> readPageLines(int pageNumber, @NotNull Set<String> words) throws IllegalStateException, IllegalArgumentException {
         if (pageNumber < 1) throw new IllegalArgumentException("Invalid argument: pageNumber (<=0)");
 
         if (this.exists()) {
@@ -56,10 +56,9 @@ public class LogFile {
                     line = reader.readLine();
                     if (line == null) break;
 
-                    if (type != null) {
-                        if (!type.matches(line)) {
-                            continue;
-                        }
+                    final String tempLine = line;
+                    if (words.stream().noneMatch(tempLine::contains)) {
+                        continue;
                     }
 
                     if (i < begin) {
@@ -126,11 +125,11 @@ public class LogFile {
         }
     }
 
-    public @NotNull LogPage readPage(int pageNumber, @Nullable LogHistoryType type) throws IllegalStateException, IllegalArgumentException {
-        return new LogPage(readPageLines(pageNumber, type), type);
+    public @NotNull LogPage readPage(int pageNumber, @NotNull Set<String> words) throws IllegalStateException, IllegalArgumentException {
+        return new LogPage(readPageLines(pageNumber, words));
     }
 
-    public void write(@NotNull String message, @NotNull PluginMessageType type) throws IllegalStateException {
+    public void write(@NotNull String message, @NotNull LogMessageType type) throws IllegalStateException {
         TPLCore.getPlugin().getComponentLogger().info(type.toDecoratedMessage(message));
     }
 }

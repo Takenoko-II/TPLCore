@@ -1,12 +1,12 @@
 package com.gmail.subnokoii78.tplcore.commands.arguments;
 
-import com.gmail.subnokoii78.tplcore.files.PluginMessageType;
+import com.gmail.subnokoii78.tplcore.files.LogMessageType;
 import org.jetbrains.annotations.NotNull;
 
-public class PluginMessageTypeArgument extends AbstractEnumerationArgument<PluginMessageType> {
+public class PluginMessageTypeArgument extends AbstractEnumerationArgument<LogMessageType> {
     @Override
-    protected @NotNull Class<PluginMessageType> getEnumClass() {
-        return PluginMessageType.class;
+    protected @NotNull Class<LogMessageType> getEnumClass() {
+        return LogMessageType.class;
     }
 
     @Override

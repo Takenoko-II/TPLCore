@@ -2,21 +2,25 @@ package com.gmail.subnokoii78.tplcore.commands;
 
 import com.gmail.subnokoii78.tplcore.commands.arguments.PluginMessageTypeArgument;
 import com.gmail.subnokoii78.tplcore.files.LogFile;
-import com.gmail.subnokoii78.tplcore.files.LogHistoryType;
 import com.gmail.subnokoii78.tplcore.files.LogPage;
-import com.gmail.subnokoii78.tplcore.files.PluginMessageType;
+import com.gmail.subnokoii78.tplcore.files.LogMessageType;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import com.gmail.subnokoii78.tplcore.commands.arguments.LogTypeHistoryArgument;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class ConsoleCommand extends AbstractCommand {
     private ConsoleCommand() {
@@ -29,22 +33,22 @@ public final class ConsoleCommand extends AbstractCommand {
             .then(
                 Commands.literal("query")
                     .then(
-                        Commands.argument("log_history_type", LogTypeHistoryArgument.logType())
+                        Commands.argument("page_number", IntegerArgumentType.integer())
                             .then(
-                                Commands.argument("page_number", IntegerArgumentType.integer())
+                                Commands.argument("words", StringArgumentType.string())
                                     .executes(ctx -> {
                                         return query(
                                             ctx.getSource().getSender(),
-                                            ctx.getArgument("log_history_type", LogHistoryType.class),
-                                            ctx.getArgument("page_number", Integer.class)
+                                            ctx.getArgument("page_number", Integer.class),
+                                            Set.of()
                                         );
                                     })
                             )
                             .executes(ctx -> {
                                 return query(
                                     ctx.getSource().getSender(),
-                                    ctx.getArgument("log_history_type", LogHistoryType.class),
-                                    1
+                                    ctx.getArgument("page_number", Integer.class),
+                                    Arrays.stream(ctx.getArgument("words", String.class).split(",")).collect(Collectors.toSet())
                                 );
                             })
                     )
@@ -55,11 +59,23 @@ public final class ConsoleCommand extends AbstractCommand {
                         Commands.argument("plugin_message_type", PluginMessageTypeArgument.pluginMessageType())
                             .then(
                                 Commands.argument("message", StringArgumentType.string())
+                                    .then(
+                                        Commands.argument("sends_chat", BoolArgumentType.bool())
+                                            .executes(ctx -> {
+                                                return put(
+                                                    ctx.getSource().getSender(),
+                                                    ctx.getArgument("plugin_message_type", LogMessageType.class),
+                                                    ctx.getArgument("message", String.class),
+                                                    ctx.getArgument("sends_chat", Boolean.class)
+                                                );
+                                            })
+                                    )
                                     .executes(ctx -> {
                                         return put(
                                             ctx.getSource().getSender(),
-                                            ctx.getArgument("plugin_message_type", PluginMessageType.class),
-                                            ctx.getArgument("message", String.class)
+                                            ctx.getArgument("plugin_message_type", LogMessageType.class),
+                                            ctx.getArgument("message", String.class),
+                                            true
                                         );
                                     })
                             )
@@ -68,12 +84,12 @@ public final class ConsoleCommand extends AbstractCommand {
             .build();
     }
 
-    private int query(@NotNull CommandSender sender, @NotNull LogHistoryType logHistoryType, @NotNull Integer pageNumber) {
+    private int query(@NotNull CommandSender sender, int pageNumber, @NotNull Set<String> words) {
         final LogFile logFile = new LogFile(LogFile.LATEST_LOG_FILE_PATH);
 
         if (logFile.exists()) {
-            final LogPage logPage = logFile.readPage(pageNumber, logHistoryType);
-            final TextComponent.Builder builder = Component.text("ログ '" + logHistoryType.toString().toLowerCase() + "' を取得しました: ")
+            final LogPage logPage = logFile.readPage(pageNumber, words);
+            final TextComponent.Builder builder = Component.text("検索語句 '" + words + "' を満たすログを取得しました: ")
                 .color(NamedTextColor.WHITE)
                 .toBuilder();
 
@@ -91,14 +107,19 @@ public final class ConsoleCommand extends AbstractCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private int put(@NotNull CommandSender sender, @NotNull PluginMessageType type, @NotNull String message) {
+    private int put(@NotNull CommandSender sender, @NotNull LogMessageType type, @NotNull String message, boolean sendsChat) {
         sender.sendMessage(
             Component.text("ログに書き込みました:")
                 .color(NamedTextColor.WHITE)
                 .append(Component.text("    " + message).color(NamedTextColor.GRAY))
         );
 
-        new LogFile(LogFile.LATEST_LOG_FILE_PATH).write(message, type);
+        if (sendsChat) {
+            Bukkit.getServer().sendMessage(type.toDecoratedMessage(message));
+        }
+        else {
+            new LogFile(LogFile.LATEST_LOG_FILE_PATH).write(message, type);
+        }
 
         return Command.SINGLE_SUCCESS;
     }
