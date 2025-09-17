@@ -1,6 +1,7 @@
 package com.gmail.subnokoii78.tplcore;
 
 import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
+import com.gmail.subnokoii78.tplcore.commands.ScriptCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
 import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
@@ -91,6 +92,7 @@ public class TPLCore {
             plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
                 final Commands registrar = event.registrar();
                 registrar.register(ConsoleCommand.CONSOLE_COMMAND.getCommandNode());
+                registrar.register(ScriptCommand.SCRIPT_COMMAND.getCommandNode());
             });
         }
         else {
