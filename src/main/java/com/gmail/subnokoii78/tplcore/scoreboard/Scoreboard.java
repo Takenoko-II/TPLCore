@@ -52,7 +52,7 @@ public final class Scoreboard {
     }
 
     public boolean hasObjective(@NotNull String name) {
-        return bukkit.getObjective(name)  == null;
+        return bukkit.getObjective(name) != null;
     }
 
     public @NotNull ScoreObjective addObjective(@NotNull String name, @Nullable Criteria criteria, @Nullable Component displayName, @Nullable RenderType renderType) {

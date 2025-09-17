@@ -30,6 +30,9 @@ public final class ConsoleCommand extends AbstractCommand {
     @Override
     public @NotNull LiteralCommandNode<CommandSourceStack> getCommandNode() {
         return Commands.literal("console")
+            .requires(stack -> {
+                return stack.getSender().isOp();
+            })
             .then(
                 Commands.literal("query")
                     .then(

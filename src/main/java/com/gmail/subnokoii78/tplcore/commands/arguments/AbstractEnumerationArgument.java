@@ -53,7 +53,7 @@ public abstract class AbstractEnumerationArgument<T extends Enum<T>> implements 
 
             // Only suggest if the log_type name matches the user input
             if (name.startsWith(builder.getRemainingLowerCase())) {
-                builder.suggest(name);
+                builder.suggest(name.toLowerCase(Locale.ROOT));
             }
         }
 

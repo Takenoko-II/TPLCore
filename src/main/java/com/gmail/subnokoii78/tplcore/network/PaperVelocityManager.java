@@ -4,6 +4,7 @@ import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.itemstack.ItemStackBuilder;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
 import com.gmail.subnokoii78.tplcore.ui.container.ItemButton;
+import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
 import com.gmail.takenokoii78.json.JSONParser;
 import com.gmail.takenokoii78.json.JSONSerializer;
 import com.gmail.takenokoii78.json.values.JSONObject;
@@ -181,7 +182,11 @@ public final class PaperVelocityManager implements PluginMessageListener {
             .onClick(event -> {
                 final Location spawnPoint = event.getPlayer().getRespawnLocation();
                 event.close();
-                event.getPlayer().teleport(spawnPoint == null ? event.getPlayer().getWorld().getSpawnLocation() : spawnPoint);
+                event.getPlayer().teleport(
+                    spawnPoint == null
+                        ? event.getPlayer().getWorld().getSpawnLocation().add(new Vector3Builder(0.5, 0.5, 0.5).toBukkitVector())
+                        : spawnPoint.add(new Vector3Builder(0.5, 0.5, 0.5).toBukkitVector())
+                );
                 event.playClickingSound();
             })
         );
@@ -192,7 +197,7 @@ public final class PaperVelocityManager implements PluginMessageListener {
             .lore(Component.text("Right Click to Open").color(NamedTextColor.GRAY))
             .glint(true)
             .maxStackSize(1)
-            .customData(MojangsonPath.of("locked"), true)
+            .customData(MojangsonPath.of("locked"), (byte) 1)
             .customData(MojangsonPath.of("custom_item_tag"), "server_selector")
             .build();
     }
@@ -300,7 +305,7 @@ public final class PaperVelocityManager implements PluginMessageListener {
             this.id = id;
         }
 
-        static BoAServer getById(@NotNull String id) {
+        static @NotNull BoAServer getById(@NotNull String id) {
             for (BoAServer value : values()) {
                 if (value.id.equals(id)) return value;
             }

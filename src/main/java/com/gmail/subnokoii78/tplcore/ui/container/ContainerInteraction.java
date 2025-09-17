@@ -31,7 +31,7 @@ public class ContainerInteraction {
 
         private InteractionInventoryHolder(@NotNull ContainerInteraction builder) {
             interactionBuilder = builder;
-            inventory = Bukkit.createInventory(this, builder.maxColumn, builder.name);
+            inventory = Bukkit.createInventory(this, builder.maxColumn * 9, builder.name);
         }
 
         @Override
