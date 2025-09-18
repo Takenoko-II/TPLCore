@@ -40,7 +40,7 @@ public class ContainerInteraction {
         }
     }
 
-    private static final Set<InteractionInventoryHolder> observedInventoryHolders = new HashSet<>();
+    private static final Set<InteractionInventoryHolder> inventoryHolders = new HashSet<>();
 
     private final TextComponent name;
 
@@ -119,19 +119,11 @@ public class ContainerInteraction {
 
     public void open(@NotNull Player player) {
         final InteractionInventoryHolder inventoryHolder = new InteractionInventoryHolder(this);
-        observedInventoryHolders.add(inventoryHolder);
+        inventoryHolders.add(inventoryHolder);
 
         for (int i = 0; i < getSize(); i++) {
             if (!buttons.containsKey(i)) continue;
-
-            final ItemButton button = buttons.get(i);
-
-            if (button instanceof ItemButtonCreator creator) {
-                inventoryHolder.inventory.setItem(i, creator.create(player).build());
-            }
-            else {
-                inventoryHolder.inventory.setItem(i, button.build());
-            }
+            inventoryHolder.inventory.setItem(i, buttons.get(i).build());
         }
 
         player.closeInventory();
@@ -146,14 +138,17 @@ public class ContainerInteraction {
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
             final ItemStack itemStack = event.getCurrentItem();
+            if (itemStack == null) return;
 
-            for (final InteractionInventoryHolder holder : observedInventoryHolders) {
+            final int slot = event.getSlot();
+
+            for (final InteractionInventoryHolder holder : inventoryHolders) {
                 if (holder.inventory.equals(event.getClickedInventory())) {
-                    final ItemButton button = holder.interactionBuilder.buttons.get(event.getSlot());
+                    final ItemButton button = holder.interactionBuilder.buttons.get(slot);
 
-                    if (itemStack == null || button == null) return;
+                    if (button == null) return;
 
-                    button.click(new ItemButtonClickEvent(player, holder.interactionBuilder, event.getSlot(), button));
+                    button.click(new ItemButtonClickEvent(player, holder.interactionBuilder, slot, button));
                     event.setCancelled(true);
                     break;
                 }
@@ -162,7 +157,7 @@ public class ContainerInteraction {
 
         @EventHandler
         public void onMove(InventoryMoveItemEvent event) {
-            for (final InteractionInventoryHolder holder : observedInventoryHolders) {
+            for (final InteractionInventoryHolder holder : inventoryHolders) {
                 if (holder.inventory.equals(event.getInitiator())) {
                     event.setCancelled(true);
                     break;
@@ -174,11 +169,11 @@ public class ContainerInteraction {
         public void onClose(InventoryCloseEvent event) {
             if (!(event.getPlayer() instanceof Player player)) return;
 
-            for (final InteractionInventoryHolder holder : observedInventoryHolders) {
+            for (final InteractionInventoryHolder holder : inventoryHolders) {
                 final Inventory inventory = event.getInventory();
 
                 if (holder.inventory.equals(inventory)) {
-                    observedInventoryHolders.remove(holder);
+                    inventoryHolders.remove(holder);
                     holder.interactionBuilder.closeEventDispatcher.dispatch(new InteractionCloseEvent(holder.interactionBuilder, player));
                     break;
                 }

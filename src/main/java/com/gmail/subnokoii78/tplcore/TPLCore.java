@@ -6,10 +6,14 @@ import com.gmail.subnokoii78.tplcore.events.*;
 import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
+import com.gmail.subnokoii78.tplcore.ui.container.ItemButtonBuildEvent;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.messaging.Messenger;
@@ -94,6 +98,8 @@ public class TPLCore {
                 registrar.register(ConsoleCommand.CONSOLE_COMMAND.getCommandNode());
                 registrar.register(ScriptCommand.SCRIPT_COMMAND.getCommandNode());
             });
+
+            plugin.getComponentLogger().info(Component.text("TPLCore が起動しました").color(NamedTextColor.BLUE));
         }
         else {
             throw new TPLCoreException("プラグインのインスタンスが既に登録されています");

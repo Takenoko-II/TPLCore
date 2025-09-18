@@ -2,7 +2,6 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     `java-library`
-    kotlin("jvm") version "1.9.23"
     id("io.papermc.paperweight.userdev").version("2.0.0-beta.18")
     // id("xyz.jpenilla.run-paper") version("3.0.0-beta.1")
     // id("xyz.jpenilla.resource-factory-bukkit-convention").version("1.3.0")
@@ -27,10 +26,6 @@ dependencies {
         "../JSON/target/JSON-1.0-SNAPSHOT.jar",
         "../ConsoleColorizer/target/ConsoleColorizer-1.0-SNAPSHOT.jar"
     ))
-    implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlin:kotlin-scripting-jsr223:1.9.23")
-    implementation("org.jetbrains.kotlin:kotlin-scripting-common:1.9.23")
-    implementation("org.jetbrains.kotlin:kotlin-scripting-jvm:1.9.23")
 }
 
 tasks {

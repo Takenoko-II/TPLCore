@@ -4,10 +4,8 @@ import com.gmail.subnokoii78.tplcore.events.EventDispatcher;
 import com.gmail.subnokoii78.tplcore.itemstack.ItemStackBuilder;
 import com.gmail.takenokoii78.mojangson.MojangsonPath;
 import net.kyori.adventure.text.TextComponent;
-import net.minecraft.nbt.StringTag;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -88,19 +86,19 @@ public class ItemButton {
     }
 
     public static @NotNull PotionButton potion() {
-        return PotionButton.potion();
+        return new PotionButton(Material.POTION);
     }
 
     public static @NotNull PotionButton splashPotion() {
-        return PotionButton.splashPotion();
+        return new PotionButton(Material.SPLASH_POTION);
     }
 
     public static @NotNull PotionButton lingeringPotion() {
-        return PotionButton.lingeringPotion();
+        return new PotionButton(Material.LINGERING_POTION);
     }
 
     public static @NotNull PotionButton tippedArrow() {
-        return PotionButton.tippedArrow();
+        return new PotionButton(Material.TIPPED_ARROW);
     }
 
     public static @NotNull PlayerHeadButton playerHead() {

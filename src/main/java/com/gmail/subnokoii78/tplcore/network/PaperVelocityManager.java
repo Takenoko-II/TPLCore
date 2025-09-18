@@ -39,7 +39,7 @@ public final class PaperVelocityManager implements PluginMessageListener {
     public PaperVelocityManager() {}
 
     @Override
-    public void onPluginMessageReceived(@NotNull String subChannel, @NotNull Player player, @NotNull byte[] message) {
+    public void onPluginMessageReceived(@NotNull String subChannel, @NotNull Player player, byte@NotNull[] message) {
         if (subChannel.equals("Forward")) {
             final ByteArrayDataInput input = ByteStreams.newDataInput(message);
             final String channel = input.readUTF();
@@ -102,6 +102,9 @@ public final class PaperVelocityManager implements PluginMessageListener {
         output.writeUTF(serverType.id);
         player.sendPluginMessage(TPLCore.getPlugin(), "BungeeCord", output.toByteArray());
         player.sendMessage(Component.text(String.format("%s サーバーへの接続を試行中...", serverType.id)));
+        TPLCore.getPlugin().getComponentLogger().info(Component.text(
+            String.format("%s (%s) の '%s' サーバーへの転送リクエストが送信されました", player.getName(), player.getUniqueId(), serverType.id)
+        ));
     }
 
     public void kick(@NotNull Player player, @NotNull TextComponent reason) {

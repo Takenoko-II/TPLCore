@@ -16,4 +16,6 @@ public interface ContainerInteractionEvent extends TPLEvent {
     TPLEventType<InteractionCloseEvent> INTERACTION_CLOSE = new TPLEventType<>(InteractionCloseEvent.class);
 
     TPLEventType<ItemButtonClickEvent> ITEM_BUTTON_CLICK = new TPLEventType<>(ItemButtonClickEvent.class);
+
+    TPLEventType<ItemButtonBuildEvent> ITEM_BUTTON_CREATE = new TPLEventType<>(ItemButtonBuildEvent.class);
 }

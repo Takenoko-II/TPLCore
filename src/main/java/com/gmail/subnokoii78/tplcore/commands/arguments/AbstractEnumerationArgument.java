@@ -31,7 +31,8 @@ public abstract class AbstractEnumerationArgument<T extends Enum<T>> implements 
             return (T) getEnumClass()
                 .getMethod("valueOf", String.class)
                 .invoke(null, nativeType.toUpperCase(Locale.ROOT));
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+        }
+        catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
             throw ERROR.create(getErrorMessage(nativeType));
         }
     }

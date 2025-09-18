@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class PotionButton extends ItemButton {
-    private PotionButton(@NotNull Material material) {
+    protected PotionButton(@NotNull Material material) {
         super(material);
     }
 
@@ -56,21 +56,5 @@ public class PotionButton extends ItemButton {
     protected @NotNull ItemStack build() {
         itemStackBuilder.hideComponent(DataComponentTypes.POTION_CONTENTS);
         return super.build();
-    }
-
-    public static @NotNull PotionButton potion() {
-        return new PotionButton(Material.POTION);
-    }
-
-    public static @NotNull PotionButton splashPotion() {
-        return new PotionButton(Material.SPLASH_POTION);
-    }
-
-    public static @NotNull PotionButton lingeringPotion() {
-        return new PotionButton(Material.LINGERING_POTION);
-    }
-
-    public static @NotNull PotionButton tippedArrow() {
-        return new PotionButton(Material.TIPPED_ARROW);
     }
 }
