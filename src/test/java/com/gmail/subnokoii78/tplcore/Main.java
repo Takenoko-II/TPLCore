@@ -7,9 +7,7 @@ import com.gmail.takenokoii78.json.values.JSONObject;
 
 public class Main {
     public static void main(String[] args) {
-        // TODO: events
-        // TODO: init() を呼ぶのをこのライブラリひとつで一回にしたい
-        // TODO: LR Click Event から　ClickEventをよびたい
+        // TODO: ContainerInteraction for消す
 
         final JSONObject object = JSONParser.object("""
             {
