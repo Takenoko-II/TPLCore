@@ -117,6 +117,12 @@ public class ContainerInteraction {
         return this;
     }
 
+    public @NotNull ContainerInteraction copy() {
+        final ContainerInteraction copy = new ContainerInteraction(name, maxColumn).onClose(closeEventDispatcher::dispatch);
+        buttons.forEach(copy::set);
+        return copy;
+    }
+
     public void open(@NotNull Player player) {
         final InteractionInventoryHolder inventoryHolder = new InteractionInventoryHolder(this);
         inventoryHolders.add(inventoryHolder);
@@ -139,6 +145,7 @@ public class ContainerInteraction {
 
             final ItemStack itemStack = event.getCurrentItem();
             if (itemStack == null) return;
+            if (ItemButton.isButton(itemStack)) return;
 
             final int slot = event.getSlot();
 

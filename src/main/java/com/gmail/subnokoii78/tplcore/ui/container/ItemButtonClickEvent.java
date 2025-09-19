@@ -14,8 +14,6 @@ public class ItemButtonClickEvent implements ContainerInteractionEvent {
 
     private final ItemButton button;
 
-    private boolean played = false;
-
     protected ItemButtonClickEvent(@NotNull Player player, @NotNull ContainerInteraction interaction, int slot, @NotNull ItemButton button) {
         this.player = player;
         this.interaction = interaction;
@@ -39,12 +37,6 @@ public class ItemButtonClickEvent implements ContainerInteractionEvent {
 
     public @NotNull ItemButton getClickedButton() {
         return button;
-    }
-
-    public void playClickingSound() {
-        if (played) return;
-        played = true;
-        player.playSound(player.getLocation(), Sound.BLOCK_STONE_BUTTON_CLICK_ON, 10.0f, 2.0f);
     }
 
     public void close() {

@@ -31,6 +31,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 public class ItemStackBuilder {
     private final ItemStack itemStack;
@@ -59,6 +61,24 @@ public class ItemStackBuilder {
 
         consumer.accept(meta);
         itemStack.setItemMeta(meta);
+
+        return this;
+    }
+
+    private <T extends ItemMeta> @NotNull ItemStackBuilder editMeta(@NotNull Class<T> clazz, @NotNull UnaryOperator<T> unaryOperator) {
+        final ItemMeta meta = itemStack.getItemMeta();
+
+        if (clazz.isInstance(meta)) {
+            itemStack.setItemMeta(unaryOperator.apply(clazz.cast(meta)));
+        }
+
+        return this;
+    }
+
+    private @NotNull ItemStackBuilder editMeta(@NotNull UnaryOperator<ItemMeta> unaryOperator) {
+        final ItemMeta meta = itemStack.getItemMeta();
+
+        itemStack.setItemMeta(unaryOperator.apply(meta));
 
         return this;
     }
@@ -315,14 +335,20 @@ public class ItemStackBuilder {
         return this;
     }
 
-    public ItemStack build() {
+    public @NotNull ItemStackBuilder copy() {
+        return ItemStackBuilder.from(itemStack.clone());
+    }
+
+    public @NotNull ItemStack build() {
         return itemStack.clone();
     }
 
     public static ItemStackBuilder from(ItemStack itemStack) {
         final ItemStackBuilder itemStackBuilder = new ItemStackBuilder(itemStack.getType());
 
-        itemStackBuilder.editMeta(meta -> itemStack.getItemMeta());
+        itemStackBuilder.editMeta(meta -> {
+            return itemStack.getItemMeta();
+        });
 
         return itemStackBuilder;
     }

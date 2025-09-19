@@ -4,6 +4,7 @@ import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.itemstack.ItemStackBuilder;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
 import com.gmail.subnokoii78.tplcore.ui.container.ItemButton;
+import com.gmail.subnokoii78.tplcore.ui.container.ItemButtonClickSound;
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
 import com.gmail.takenokoii78.json.JSONParser;
 import com.gmail.takenokoii78.json.JSONSerializer;
@@ -20,6 +21,7 @@ import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -146,30 +148,30 @@ public final class PaperVelocityManager implements PluginMessageListener {
 
     private final ContainerInteraction SERVER_SELECTOR = new ContainerInteraction(Component.text("Battle of Apostolos"), 1)
         .set(1, ItemButton.item(Material.NETHER_STAR)
+            .clickSound(ItemButtonClickSound.BASIC)
             .name(Component.text("Game").color(NamedTextColor.AQUA))
             .lore(Component.text("ゲームサーバーに接続する").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
             .onClick(event -> {
-                event.playClickingSound();
                 event.close();
                 transfer(event.getPlayer(), BoAServer.GAME);
             })
         )
         .set(3, ItemButton.item(Material.PAPER)
+            .clickSound(ItemButtonClickSound.BASIC)
             .name(Component.text("Lobby").color(NamedTextColor.GOLD))
             .lore(Component.text("ロビーサーバーに接続する").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
             .glint(true)
             .onClick(event -> {
-                event.playClickingSound();
                 event.close();
                 transfer(event.getPlayer(), BoAServer.LOBBY);
             })
         )
         .set(5, ItemButton.item(Material.COMMAND_BLOCK)
+            .clickSound(ItemButtonClickSound.BASIC)
             .name(Component.text("Development").color(NamedTextColor.GOLD))
             .lore(Component.text("開発サーバーに接続する").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
             .glint(true)
             .onClick(event -> {
-                event.playClickingSound();
                 event.close();
                 if (event.getPlayer().isOp()) {
                     transfer(event.getPlayer(), BoAServer.DEVELOPMENT);
@@ -180,6 +182,7 @@ public final class PaperVelocityManager implements PluginMessageListener {
             })
         )
         .set(7, ItemButton.item(Material.RED_BED)
+            .clickSound(ItemButtonClickSound.BASIC)
             .name(Component.text("Spawn").color(NamedTextColor.RED))
             .lore(Component.text("スポーン地点に戻る").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
             .onClick(event -> {
@@ -190,7 +193,6 @@ public final class PaperVelocityManager implements PluginMessageListener {
                         ? event.getPlayer().getWorld().getSpawnLocation().add(new Vector3Builder(0.5, 0.5, 0.5).toBukkitVector())
                         : spawnPoint.add(new Vector3Builder(0.5, 0.5, 0.5).toBukkitVector())
                 );
-                event.playClickingSound();
             })
         );
 
@@ -205,8 +207,8 @@ public final class PaperVelocityManager implements PluginMessageListener {
             .build();
     }
 
-    public void openServerSelectorInteraction(@NotNull Player player) {
-        SERVER_SELECTOR.open(player);
+    public @NotNull ContainerInteraction getServerSelectorInteraction() {
+        return SERVER_SELECTOR.copy();
     }
 
     public void sendDataPackMessage(@NotNull Location location, @NotNull Set<Entity> targets, @NotNull JSONObject message) {

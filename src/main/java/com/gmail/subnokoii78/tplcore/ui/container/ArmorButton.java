@@ -1,10 +1,12 @@
 package com.gmail.subnokoii78.tplcore.ui.container;
 
 import com.destroystokyo.paper.MaterialSetTag;
+import com.gmail.subnokoii78.tplcore.itemstack.ItemStackBuilder;
 import io.papermc.paper.datacomponent.item.attribute.AttributeModifierDisplay;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.EquipmentSlotGroup;
@@ -19,12 +21,12 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class ArmorButton extends ItemButton {
+    protected ArmorButton(@NotNull ItemStackBuilder itemStackBuilder) {
+        super(itemStackBuilder);
+    }
+
     protected ArmorButton(@NotNull Material material) {
         super(material);
-
-        if (!MaterialSetTag.ITEMS_TRIMMABLE_ARMOR.isTagged(material)) {
-            throw new IllegalArgumentException();
-        }
     }
 
     @Override
@@ -53,6 +55,16 @@ public class ArmorButton extends ItemButton {
     }
 
     @Override
+    public @NotNull ArmorButton clickSound(@NotNull ItemButtonClickSound sound) {
+        return (ArmorButton) super.clickSound(sound);
+    }
+
+    @Override
+    public @NotNull ArmorButton clickSound(@NotNull Sound sound, float volume, float pitch) {
+        return (ArmorButton) super.clickSound(sound, volume, pitch);
+    }
+
+    @Override
     public @NotNull ArmorButton onClick(Consumer<ItemButtonClickEvent> listener) {
         return (ArmorButton) super.onClick(listener);
     }
@@ -60,6 +72,11 @@ public class ArmorButton extends ItemButton {
     public @NotNull ArmorButton trim(@NotNull TrimMaterial material, @NotNull TrimPattern pattern) {
         itemStackBuilder.trim(material, pattern);
         return this;
+    }
+
+    @Override
+    public @NotNull ArmorButton copy() {
+        return copy(this, ArmorButton::new);
     }
 
     @Override

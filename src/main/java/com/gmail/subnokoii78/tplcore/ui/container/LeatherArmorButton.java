@@ -1,9 +1,11 @@
 package com.gmail.subnokoii78.tplcore.ui.container;
 
+import com.gmail.subnokoii78.tplcore.itemstack.ItemStackBuilder;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +15,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class LeatherArmorButton extends ArmorButton {
+    protected LeatherArmorButton(@NotNull ItemStackBuilder itemStackBuilder) {
+        super(itemStackBuilder);
+    }
+
     protected LeatherArmorButton(@NotNull Material material) {
         super(material);
     }
@@ -50,6 +56,21 @@ public class LeatherArmorButton extends ArmorButton {
     public @NotNull LeatherArmorButton color(@Nullable Color color) {
         itemStackBuilder.leatherArmorColor(color);
         return this;
+    }
+
+    @Override
+    public @NotNull LeatherArmorButton clickSound(@NotNull ItemButtonClickSound sound) {
+        return (LeatherArmorButton) super.clickSound(sound);
+    }
+
+    @Override
+    public @NotNull LeatherArmorButton clickSound(@NotNull Sound sound, float volume, float pitch) {
+        return (LeatherArmorButton) super.clickSound(sound, volume, pitch);
+    }
+
+    @Override
+    public @NotNull LeatherArmorButton copy() {
+        return copy(this, LeatherArmorButton::new);
     }
 
     @Override
