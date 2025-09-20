@@ -7,7 +7,7 @@ import com.gmail.subnokoii78.tplcore.execute.SelectorArgument;
 import com.gmail.subnokoii78.tplcore.execute.SourceOrigin;
 import com.gmail.takenokoii78.json.JSONParser;
 import com.gmail.subnokoii78.tplcore.schedule.GameTickScheduler;
-import com.gmail.subnokoii78.tplcore.schedule.RealTimeScheduler;
+import com.gmail.subnokoii78.tplcore.schedule.SystemTimeScheduler;
 import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
 import com.gmail.takenokoii78.json.values.JSONObject;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
@@ -25,8 +25,6 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
 
@@ -161,7 +159,7 @@ public class BukkitEventObserver implements Listener {
             return;
         }
 
-        new RealTimeScheduler(() -> {
+        new SystemTimeScheduler(() -> {
             final long dropEventTime = TimeStorage.getStorage(PlayerDropItemEvent.class.getName()).getTime(player);
             final long interactEventTime = TimeStorage.getStorage(PlayerInteractEvent.class.getName()).getTime(player);
             final long interactAtEntityEventTime = TimeStorage.getStorage(PlayerInteractAtEntityEvent.class.getName()).getTime(player);

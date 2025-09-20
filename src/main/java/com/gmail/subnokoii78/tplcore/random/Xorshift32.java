@@ -21,26 +21,26 @@ public class Xorshift32 implements RangeRandomizer {
         z = w;
         w = (w ^ (w >>> 19)) ^ (t ^ (t >>> 8));
 
-        return w - NumberRange.INT32.min();
+        return w;
     }
 
     @Override
     public int randInt(@NotNull NumberRange<Integer> range) {
-        return next() % (range.max() - range.min() + 1) + range.min();
+        return (next() & Integer.MAX_VALUE /* -2^31対策 */) % (range.max() - range.min() + 1) + range.min();
     }
 
     @Override
     public long randLong(@NotNull NumberRange<Long> range) {
-        return  (long) next() % (range.max() - range.min() + 1) + range.min();
+        return  (next() & Long.MAX_VALUE) % (range.max() - range.min() + 1) + range.min();
     }
 
     @Override
     public float randFloat(@NotNull NumberRange<Float> range) {
-        return ((float) next() / (float) NumberRange.UINT32.max()) * (range.max() - range.min()) + range.min();
+        return (((float) (next() & Integer.MAX_VALUE)) / Integer.MAX_VALUE) * (range.max() - range.min()) + range.min();
     }
 
     @Override
     public double randDouble(@NotNull NumberRange<Double> range) {
-        return (next() / (double) NumberRange.UINT32.max()) * (range.max() - range.min()) + range.min();
+        return (((double) (next() & Integer.MAX_VALUE)) / Integer.MAX_VALUE) * (range.max() - range.min()) + range.min();
     }
 }

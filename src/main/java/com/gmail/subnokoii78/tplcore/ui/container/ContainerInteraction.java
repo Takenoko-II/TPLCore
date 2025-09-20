@@ -1,6 +1,7 @@
 package com.gmail.subnokoii78.tplcore.ui.container;
 
 import com.gmail.subnokoii78.tplcore.events.EventDispatcher;
+import com.gmail.subnokoii78.tplcore.random.RandomService;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -12,14 +13,13 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.loot.LootTable;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 @ApiStatus.Experimental
@@ -39,8 +39,6 @@ public class ContainerInteraction {
             return inventory;
         }
     }
-
-    private static final Set<InteractionInventoryHolder> inventoryHolders = new HashSet<>();
 
     private final TextComponent name;
 
@@ -107,6 +105,10 @@ public class ContainerInteraction {
         return this;
     }
 
+    /*public @NotNull ContainerInteraction fillRandomly(@NotNull RandomService randomService) {
+        return this;
+    }*/
+
     public @NotNull ContainerInteraction clear() {
         buttons.clear();
         return this;
@@ -125,7 +127,6 @@ public class ContainerInteraction {
 
     public void open(@NotNull Player player) {
         final InteractionInventoryHolder inventoryHolder = new InteractionInventoryHolder(this);
-        inventoryHolders.add(inventoryHolder);
 
         for (int i = 0; i < getSize(); i++) {
             if (!buttons.containsKey(i)) continue;
@@ -143,32 +144,28 @@ public class ContainerInteraction {
         public void onClick(InventoryClickEvent event) {
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
+            final Inventory inventory = event.getClickedInventory();
+            if (inventory == null) return;
+
             final ItemStack itemStack = event.getCurrentItem();
             if (itemStack == null) return;
             if (ItemButton.isButton(itemStack)) return;
 
             final int slot = event.getSlot();
 
-            for (final InteractionInventoryHolder holder : inventoryHolders) {
-                if (holder.inventory.equals(event.getClickedInventory())) {
-                    final ItemButton button = holder.interactionBuilder.buttons.get(slot);
+            if (!(inventory.getHolder(false) instanceof InteractionInventoryHolder holder)) return;
 
-                    if (button == null) return;
+            final ItemButton button = holder.interactionBuilder.buttons.get(slot);
+            if (button == null) return;
 
-                    button.click(new ItemButtonClickEvent(player, holder.interactionBuilder, slot, button));
-                    event.setCancelled(true);
-                    break;
-                }
-            }
+            button.click(new ItemButtonClickEvent(player, holder.interactionBuilder, slot, button));
+            event.setCancelled(true);
         }
 
         @EventHandler
         public void onMove(InventoryMoveItemEvent event) {
-            for (final InteractionInventoryHolder holder : inventoryHolders) {
-                if (holder.inventory.equals(event.getInitiator())) {
-                    event.setCancelled(true);
-                    break;
-                }
+            if (event.getDestination().getHolder(false) instanceof InteractionInventoryHolder) {
+                event.setCancelled(true);
             }
         }
 
@@ -176,14 +173,8 @@ public class ContainerInteraction {
         public void onClose(InventoryCloseEvent event) {
             if (!(event.getPlayer() instanceof Player player)) return;
 
-            for (final InteractionInventoryHolder holder : inventoryHolders) {
-                final Inventory inventory = event.getInventory();
-
-                if (holder.inventory.equals(inventory)) {
-                    inventoryHolders.remove(holder);
-                    holder.interactionBuilder.closeEventDispatcher.dispatch(new InteractionCloseEvent(holder.interactionBuilder, player));
-                    break;
-                }
+            if (event.getInventory().getHolder(false) instanceof InteractionInventoryHolder holder) {
+                holder.interactionBuilder.closeEventDispatcher.dispatch(new InteractionCloseEvent(holder.interactionBuilder, player));
             }
         }
 

@@ -7,21 +7,21 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class RealTimeScheduler implements Scheduler {
+public class SystemTimeScheduler implements Scheduler {
     private final Runnable callback;
 
     private final Map<Integer, Timer> tasks = new HashMap<>();
 
-    public RealTimeScheduler(Runnable callback) {
+    public SystemTimeScheduler(Runnable callback) {
         this.callback = callback;
     }
 
-    public RealTimeScheduler(Consumer<RealTimeScheduler> callback) {
+    public SystemTimeScheduler(Consumer<SystemTimeScheduler> callback) {
         this.callback = () -> callback.accept(this);
     }
 
-    public RealTimeScheduler(BiConsumer<RealTimeScheduler, Integer> callback) {
-        this.callback = () -> callback.accept(this, RealTimeScheduler.id);
+    public SystemTimeScheduler(BiConsumer<SystemTimeScheduler, Integer> callback) {
+        this.callback = () -> callback.accept(this, SystemTimeScheduler.id);
     }
 
     private int issue(BiConsumer<Timer, TimerTask> function) {
