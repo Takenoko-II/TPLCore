@@ -114,6 +114,45 @@ public class NumberRange<T extends Number> {
         else return value;
     }
 
+    public byte@NotNull[] bytes() {
+        final byte max = this.max.byteValue();
+        final byte min = this.min.byteValue();
+
+        final byte[] array = new byte[max - min + 1];
+
+        for (byte i = min; i <= max; i++) {
+            array[i] = i;
+        }
+
+        return array;
+    }
+
+    public short@NotNull[] shorts() {
+        final short max = this.max.shortValue();
+        final short min = this.min.shortValue();
+
+        final short[] array = new short[max - min + 1];
+
+        for (short i = min; i <= max; i++) {
+            array[i] = i;
+        }
+
+        return array;
+    }
+
+    public int@NotNull[] ints() {
+        final int max = this.max.intValue();
+        final int min = this.min.intValue();
+
+        final int[] array = new int[max - min + 1];
+
+        for (int i = min; i <= max; i++) {
+            array[i] = i;
+        }
+
+        return array;
+    }
+
     private static final class Parser<T extends Number> {
         private static final String SIGN = "[+-]?";
 

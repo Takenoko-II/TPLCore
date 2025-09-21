@@ -3,8 +3,6 @@ package com.gmail.subnokoii78.tplcore.random;
 import com.gmail.subnokoii78.tplcore.execute.NumberRange;
 import com.gmail.subnokoii78.tplcore.vector.DualAxisRotationBuilder;
 import com.gmail.subnokoii78.tplcore.vector.TripleAxisRotationBuilder;
-import net.minecraft.Util;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,6 +13,10 @@ public class RandomService {
 
     public RandomService(@NotNull RangeRandomizer randomizer) {
         this.randomizer = randomizer;
+    }
+
+    public @NotNull RangeRandomizer getRandomizer() {
+        return randomizer;
     }
 
     @ApiStatus.Obsolete
@@ -104,8 +106,6 @@ public class RandomService {
             final T current = clone.get(i);
             final int random = this.randomizer.randInt(NumberRange.of(0, i));
 
-            System.out.println("randInt(0, " + i + "): "+ random);
-
             clone.set(i, clone.get(random));
             clone.set(random, current);
         }
@@ -128,7 +128,7 @@ public class RandomService {
         );
     }
 
-    public <T extends AbstractCountable<?>> void split(@NotNull List<T> list, int slots, float splittability) {
+    public <T extends AbstractCountable<?>> void split(@NotNull List<T> list, int availableSlots, float splittability) {
         final List<T> splittables = new ArrayList<>();
 
         final Iterator<T> iterator = list.iterator();
@@ -176,7 +176,7 @@ public class RandomService {
             }
 
             // 空きスロットがもうない！
-            if (slots - list.size() - splittables.size() <= 0) {
+            if (availableSlots - list.size() - splittables.size() <= 0) {
                 // 分割できなかったやつ入れて終了
                 list.addAll(splittables);
                 break;
