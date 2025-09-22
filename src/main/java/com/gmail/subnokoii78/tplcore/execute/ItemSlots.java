@@ -4,25 +4,30 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import jdk.jfr.Experimental;
 import net.minecraft.commands.arguments.SlotArgument;
+import org.bukkit.Material;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.*;
-import org.bukkit.inventory.BlockInventoryHolder;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-// TODO: MultiAccessorの中身つくる <- なに作る予定だったの過去の私！！！！！！！
-// TODO: ほかにもいっぱいフィールドつくる
+// TODO: MultiAccessorの中身つくる <- なに作る予定だったの過去の私！！！！！！！ <- たぶんmatches()とかじゃね
 // TODO: matches(Predicate<ItemStack>)とかもつくる
 @Experimental
 @NullMarked
 public final class ItemSlots {
+    private ItemSlots() {}
+
+    static {
+        // TODO: クラス作ってからフィールドにインスタンス渡そうね
+        // TODO: weapon
+    }
+
     public static abstract class SlotCategory<T> {
         protected abstract List<SingleAccessor<T>> $();
     }
@@ -42,10 +47,12 @@ public final class ItemSlots {
 
         public abstract SingleAccessor<T> $(int index) throws UnknownSlotNumberException;
 
-        @Override
-        protected final List<SingleAccessor<T>> $() {
+        protected final List<SingleAccessor<T>> getAllNumberableSlots() {
             return Arrays.stream(getAvailableSlotRange().ints()).mapToObj(this::$).toList();
         }
+
+        @Override
+        public abstract List<SingleAccessor<T>> $();
 
         public static final class UnknownSlotNumberException extends RuntimeException {
             private UnknownSlotNumberException(int i) {
@@ -58,6 +65,11 @@ public final class ItemSlots {
         @Override
         protected NumberRange<Integer> getAvailableSlotRange() {
             return NumberRange.of(0, 26);
+        }
+
+        @Override
+        public List<SingleAccessor<BlockInventoryHolder>> $() {
+            return getAllNumberableSlots();
         }
 
         @Override
@@ -83,6 +95,11 @@ public final class ItemSlots {
         }
 
         @Override
+        public List<SingleAccessor<HumanEntity>> $() {
+            return getAllNumberableSlots();
+        }
+
+        @Override
         public SingleAccessor<HumanEntity> $(int index) throws UnknownSlotNumberException {
             return new SingleAccessor<>() {
                 @Override
@@ -102,6 +119,11 @@ public final class ItemSlots {
         @Override
         protected NumberRange<Integer> getAvailableSlotRange() {
             return NumberRange.of(0, 8);
+        }
+
+        @Override
+        public List<SingleAccessor<Player>> $() {
+            return getAllNumberableSlots();
         }
 
         @Override
@@ -127,6 +149,11 @@ public final class ItemSlots {
         }
 
         @Override
+        public List<SingleAccessor<InventoryHolder>> $() {
+            return getAllNumberableSlots();
+        }
+
+        @Override
         public SingleAccessor<InventoryHolder> $(int index) throws UnknownSlotNumberException {
             return new SingleAccessor<>() {
                 @Override
@@ -146,17 +173,24 @@ public final class ItemSlots {
         }
     };
 
-    public static final NumberableSlotCategory<AbstractHorse> horse = new NumberableSlotCategory<>() {
+    public static final NumberableSlotCategory<ChestedHorse> horse = new NumberableSlotCategory<>() {
         @Override
         protected NumberRange<Integer> getAvailableSlotRange() {
             return NumberRange.of(0, 14);
         }
 
         @Override
-        public SingleAccessor<AbstractHorse> $(int index) throws UnknownSlotNumberException {
+        public List<SingleAccessor<ChestedHorse>> $() {
+            final List<SingleAccessor<ChestedHorse>> list = new ArrayList<>(getAllNumberableSlots());
+            list.add(chest);
+            return list;
+        }
+
+        @Override
+        public SingleAccessor<ChestedHorse> $(int index) throws UnknownSlotNumberException {
             return new SingleAccessor<>() {
                 @Override
-                public @Nullable ItemStack getOrNull(AbstractHorse target) {
+                public @Nullable ItemStack getOrNull(ChestedHorse target) {
                     if (getAvailableSlotRange().within(index)) {
                         return target.getInventory().getItem(index);
                     }
@@ -167,10 +201,10 @@ public final class ItemSlots {
             };
         }
 
-        public final SingleAccessor<AbstractHorse> chest = new SingleAccessor<>() {
+        public final SingleAccessor<ChestedHorse> chest = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(AbstractHorse target) {
-                // TODO: chest
+            public @Nullable ItemStack getOrNull(ChestedHorse target) {
+                return target.isCarryingChest() ? new ItemStack(Material.CHEST) : null;
             }
         };
     };
@@ -179,6 +213,11 @@ public final class ItemSlots {
         @Override
         protected NumberRange<Integer> getAvailableSlotRange() {
             return NumberRange.of(0, 7);
+        }
+
+        @Override
+        public List<SingleAccessor<AbstractVillager>> $() {
+            return getAllNumberableSlots();
         }
 
         @Override
@@ -200,13 +239,20 @@ public final class ItemSlots {
     public static final SlotCategory<Player> player = new SlotCategory<>() {
         @Override
         protected List<SingleAccessor<Player>> $() {
-            return List.of();
+            final List<SingleAccessor<Player>> list = new ArrayList<>(crafting.$());
+            list.add(cursor);
+            return list;
         }
 
         public final NumberableSlotCategory<Player> crafting = new NumberableSlotCategory<>() {
             @Override
             protected NumberRange<Integer> getAvailableSlotRange() {
                 return NumberRange.of(0, 3);
+            }
+
+            @Override
+            public List<SingleAccessor<Player>> $() {
+                return getAllNumberableSlots();
             }
 
             private int getCraftingSlotId(int index) {
@@ -256,11 +302,119 @@ public final class ItemSlots {
     };
 
     public static final SingleAccessor<AbstractHorse> saddle = new SingleAccessor<>() {
+        private EntityEquipment getEquipment(LivingEntity target) {
+            final EntityEquipment equipment = target.getEquipment();
+
+            if (equipment == null) {
+                throw new IllegalArgumentException("EntityEquipment の取得に失敗しました: " + target.getClass().getName());
+            }
+
+            return equipment;
+        }
+
         @Override
         public @Nullable ItemStack getOrNull(AbstractHorse target) {
-            return target.getInventory().getSaddle();
+            final ItemStack itemStack = getEquipment(target).getItem(EquipmentSlot.SADDLE);
+
+            return itemStack.isEmpty() ? null : itemStack;
         }
     };
 
-    // TODO: weapon, weapon.mainhand, weapon.offhand, armor.*, armor.head, armor.chest, armor.legs, armor.feet, armor.body
+    public static final SlotCategory<LivingEntity> weapon = new SlotCategory<>() {
+
+        @Override
+        public List<SingleAccessor<LivingEntity>> $() {
+            return List.of(mainhand, offhand);
+        }
+
+        private EntityEquipment getEquipment(LivingEntity target) {
+            final EntityEquipment equipment = target.getEquipment();
+
+            if (equipment == null) {
+                throw new IllegalArgumentException("EntityEquipment の取得に失敗しました: " + target.getClass().getName());
+            }
+
+            return equipment;
+        }
+
+        public final SingleAccessor<LivingEntity> mainhand = new SingleAccessor<>() {
+            @Override
+            public @Nullable ItemStack getOrNull(LivingEntity target) {
+                final ItemStack itemStack = getEquipment(target).getItemInMainHand();
+
+                return itemStack.isEmpty() ? null : itemStack;
+            }
+        };
+
+        public final SingleAccessor<LivingEntity> offhand = new SingleAccessor<>() {
+            @Override
+            public @Nullable ItemStack getOrNull(LivingEntity target) {
+                final ItemStack itemStack = getEquipment(target).getItemInOffHand();
+
+                return itemStack.isEmpty() ? null : itemStack;
+            }
+        };
+    };
+
+    public static final SlotCategory<LivingEntity> armor = new SlotCategory<>() {
+        private EntityEquipment getEquipment(LivingEntity target) {
+            final EntityEquipment equipment = target.getEquipment();
+
+            if (equipment == null) {
+                throw new IllegalArgumentException("EntityEquipment の取得に失敗しました: " + target.getClass().getName());
+            }
+
+            return equipment;
+        }
+
+        @Override
+        public List<SingleAccessor<LivingEntity>> $() {
+            return List.of(head, chest, legs, feet, body);
+        }
+
+        public final SingleAccessor<LivingEntity> head = new SingleAccessor<>() {
+            @Override
+            public @Nullable ItemStack getOrNull(LivingEntity target) {
+                final ItemStack itemStack = getEquipment(target).getHelmet();
+
+                return itemStack.isEmpty() ? null : itemStack;
+            }
+        };
+
+        public final SingleAccessor<LivingEntity> chest = new SingleAccessor<>() {
+            @Override
+            public @Nullable ItemStack getOrNull(LivingEntity target) {
+                final ItemStack itemStack = getEquipment(target).getChestplate();
+
+                return itemStack.isEmpty() ? null : itemStack;
+            }
+        };
+
+        public final SingleAccessor<LivingEntity> legs = new SingleAccessor<>() {
+            @Override
+            public @Nullable ItemStack getOrNull(LivingEntity target) {
+                final ItemStack itemStack = getEquipment(target).getLeggings();
+
+                return itemStack.isEmpty() ? null : itemStack;
+            }
+        };
+
+        public final SingleAccessor<LivingEntity> feet = new SingleAccessor<>() {
+            @Override
+            public @Nullable ItemStack getOrNull(LivingEntity target) {
+                final ItemStack itemStack = getEquipment(target).getBoots();
+
+                return itemStack.isEmpty() ? null : itemStack;
+            }
+        };
+
+        public final SingleAccessor<LivingEntity> body = new SingleAccessor<>() {
+            @Override
+            public @Nullable ItemStack getOrNull(LivingEntity target) {
+                final ItemStack itemStack = getEquipment(target).getItem(EquipmentSlot.BODY);
+
+                return itemStack.isEmpty() ? null : itemStack;
+            }
+        };
+    };
 }
