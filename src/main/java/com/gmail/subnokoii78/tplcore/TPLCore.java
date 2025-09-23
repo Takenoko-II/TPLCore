@@ -3,6 +3,10 @@ package com.gmail.subnokoii78.tplcore;
 import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
 import com.gmail.subnokoii78.tplcore.commands.ScriptCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
+import com.gmail.subnokoii78.tplcore.execute.Conditional;
+import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
+import com.gmail.subnokoii78.tplcore.execute.Execute;
+import com.gmail.subnokoii78.tplcore.execute.ItemSlots;
 import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
@@ -17,6 +21,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.messaging.Messenger;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class TPLCore {
@@ -102,5 +107,8 @@ public class TPLCore {
         else {
             throw new TPLCoreException("プラグインのインスタンスが既に登録されています");
         }
+
+        /**new Execute().guard(Conditional.IF)
+            .items.entity(EntitySelector.R, ItemSlots.armor.$(), Objects::isNull);*/
     }
 }

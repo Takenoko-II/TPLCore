@@ -1,22 +1,20 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
+import com.gmail.subnokoii78.tplcore.parse.AbstractParser;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.*;
 
 @ApiStatus.Experimental
-public class SelectorParser {
-    private static final Set<Character> IGNORED = Set.of(' ', '\n');
-
-    private static final Set<Character> INTEGERS = Set.of('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
-
-    private static final char DECIMAL_POINT = '.';
-
-    private static final Set<Character> SIGNS = Set.of('+', '-');
-
+@NullMarked
+public final class SelectorParser extends AbstractParser<EntitySelector<?>> {
     private static final Map<String, EntitySelector.Builder<? extends Entity>> SELECTOR_TYPES = new HashMap<>(Map.of(
         "@p", EntitySelector.P,
         "@a", EntitySelector.A,
@@ -26,7 +24,7 @@ public class SelectorParser {
         "@n", EntitySelector.N
     ));
 
-    private static final List<Character> SELECTOR_ARGUMENT_BRACES = List.of('[', ']');
+    private static final char[] SELECTOR_ARGUMENT_BRACES = {'[', ']'};
 
     private static final Map<String, SelectorArgument.Builder<?>> ARGUMENT_TYPES = new HashMap<>();
 
@@ -51,271 +49,113 @@ public class SelectorParser {
         ARGUMENT_TYPES.put("predicate", SelectorArgument.PREDICATE); // entityPredicate()
     }
 
-    private final String text;
-
-    private int location = 0;
-
     private SelectorParser(@NotNull String text) {
-        this.text = text;
+        super(text);
     }
 
-    private boolean isOver() {
-        return location >= text.length();
+    @Override
+    protected Set<Character> getWhitespace() {
+        return Set.of(' ', '\n');
     }
 
-    private char next() {
-        if (isOver()) {
-            throw new IllegalStateException();
-        }
-
-        final char current = text.charAt(location++);
-
-        if (IGNORED.contains(current)) return next();
-
-        return current;
+    @Override
+    protected Set<Character> getQuotes() {
+        return Set.of('"');
     }
 
-    private void back() {
-        location--;
+    @Override
+    protected String getTrue() {
+        return "true";
     }
 
-    private boolean test(@NotNull String next) {
-        if (isOver()) return false;
-
-        ignore();
-
-        final String str = text.substring(location);
-
-        return str.startsWith(next);
-    }
-
-    private boolean test(char next) {
-        return test(String.valueOf(next));
-    }
-
-    private boolean next(@NotNull String next) {
-        if (isOver()) return false;
-
-        ignore();
-
-        final String str = text.substring(location);
-
-        if (str.startsWith(next)) {
-            location += next.length();
-            ignore();
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean next(char next) {
-        return next(String.valueOf(next));
-    }
-
-    private void expect(@NotNull String next) {
-        if (!test(next)) {
-            throw new SelectorParseException("位置 " + location + "では文字列 '" + next + "' が期待されていましたが、テストが偽を返しました");
-        }
-    }
-
-    private void expect(char next) {
-        expect(String.valueOf(next));
-    }
-
-    private void ignore() {
-        if (isOver()) return;
-
-        final char current = text.charAt(location++);
-
-        if (IGNORED.contains(current)) {
-            ignore();
-        }
-        else {
-            location--;
-        }
+    @Override
+    protected String getFalse() {
+        return "false";
     }
 
     private @NotNull EntitySelector<? extends Entity> type() {
         if (isOver()) {
-            throw new IllegalStateException();
+            throw exception("type(): isOver");
         }
 
-        ignore();
+        final String typeId = expect(true, SELECTOR_TYPES.keySet().toArray(String[]::new));
 
-        for (final String type : SELECTOR_TYPES.keySet().stream().sorted((a, b) -> b.length() - a.length()).toList()) {
-            if (next(type)) {
-                return SELECTOR_TYPES.get(type).build();
-            }
-        }
-
-        throw new IllegalStateException();
+        return SELECTOR_TYPES.get(typeId).build();
     }
 
     private @NotNull Set<SelectorArgument> arguments() {
         if (isOver()) {
-            throw new IllegalStateException();
+            throw exception("arguments(): isOver");
         }
 
         final Set<SelectorArgument> arguments = new HashSet<>();
 
-        expect(SELECTOR_ARGUMENT_BRACES.get(0));
+        expect(true, SELECTOR_ARGUMENT_BRACES[0]);
 
         do {
-            for (final var name : ARGUMENT_TYPES.keySet().stream().sorted((a, b) -> b.length() - a.length()).toList()) {
-                if (next(name) && next('=')) {
-                    final SelectorArgument.Builder<Object> builder = (SelectorArgument.Builder<Object>) ARGUMENT_TYPES.get(name);
-                    arguments.add(builder.build(
-                        argumentValue(builder.getArgumentType())
-                    ));
-                }
+            final String argumentId = expect(true, ARGUMENT_TYPES.keySet().toArray(String[]::new));
+            final SelectorArgument.Builder<Object> builder = (SelectorArgument.Builder<Object>) ARGUMENT_TYPES.get(argumentId);
+
+            expect(true, '=');
+
+            final boolean not = next(false, '!') != null;
+
+            final SelectorArgument argument = builder.build(
+                argumentValue(builder.getArgumentType())
+            );
+
+            if (not) {
+                arguments.add(SelectorArgument.NOT.build(argument));
+            }
+            else {
+                arguments.add(argument);
             }
         }
-        while (next(','));
+        while (next(true, ',') != null);
 
-        expect(SELECTOR_ARGUMENT_BRACES.get(1));
+        expect(true, SELECTOR_ARGUMENT_BRACES[1]);
 
         return arguments;
     }
 
-    private @NotNull Object argumentValue(@NotNull Class<?> clazz) {
+    private Object argumentValue(Class<?> clazz) {
+        // switchに変えんな
         if (clazz.equals(String.class)) {
-            return string();
+            return string(false, ',', ']');
         }
         else if (clazz.equals(Integer.class)) {
-            return integer();
+            return number(true);
         }
         else if (clazz.equals(Boolean.class)) {
             return bool();
         }
-        else if (clazz.equals(Double.class)) {
-            return decimal();
-        }
-        else if (clazz.equals(Float.class)) {
-            return (float) decimal();
+        else if (clazz.equals(Float.class) || clazz.equals(Double.class)) {
+            return number(false);
         }
         else if (clazz.equals(EntityType.class)) {
-            final EntityType type = EntityType.fromName(string());
+            final NamespacedKey namespacedKey = NamespacedKey.fromString(string(false, ',', ']'));
+
+            if (namespacedKey == null) {
+                throw exception("無効なIDです");
+            }
+
+            final EntityType type = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENTITY_TYPE).get(namespacedKey);
             if (type == null) {
-                throw new SelectorParseException("不明なエンティティタイプです");
+                throw exception("不明なエンティティタイプです");
             }
             return type;
         }
-
-        throw new SelectorParseException("パーサーが対応していない型が渡されました");
-    }
-
-    private @NotNull String string() {
-        final String string;
-
-        if (next('"')) {
-            string = text.substring(location).split("(?<!\\\\)\"")[0];
-            location += string.length();
-            expect('"');
-        }
         else {
-           string = text.substring(location).split(",")[0];
-           location += string.length();
-        }
-
-        return string;
-    }
-
-    private int integer() {
-        final StringBuilder stringBuilder = new StringBuilder();
-
-        final char initial = next();
-
-        if (SIGNS.contains(initial)) {
-            stringBuilder.append(initial);
-        }
-
-        while (!isOver()) {
-           final char next = next();
-
-           if (INTEGERS.contains(next)) {
-               stringBuilder.append(next);
-           }
-           else {
-               back();
-               break;
-           }
-        }
-
-        try {
-            return Integer.parseInt(stringBuilder.toString());
-        }
-        catch (NumberFormatException e) {
-            throw new SelectorParseException("小数の解析に失敗しました", e);
+            throw new SelectorParseException("パーサーが対応していない型が渡されました");
         }
     }
 
-    private boolean bool() {
-        if (next("true")) return true;
-        else if (next("false")) return false;
-        else throw new SelectorParseException("真偽値の解析に失敗しました");
-    }
-
-    private double decimal() {
-        final StringBuilder stringBuilder = new StringBuilder();
-
-        boolean intAppeared = false;
-        boolean pointAppeared = false;
-
-        final char initial = next();
-
-        if (SIGNS.contains(initial)) {
-            stringBuilder.append(initial);
-        }
-
-        while (!isOver()) {
-            final char next = next();
-
-            if (INTEGERS.contains(next)) {
-                stringBuilder.append(next);
-                intAppeared = true;
-            }
-            else if (next == DECIMAL_POINT && intAppeared && !pointAppeared) {
-                stringBuilder.append(next);
-                pointAppeared = true;
-            }
-            else {
-                back();
-                break;
-            }
-        }
-
-        try {
-            return Double.parseDouble(stringBuilder.toString());
-        }
-        catch (NumberFormatException e) {
-            throw new SelectorParseException("小数の解析に失敗しました", e);
-        }
-    }
-
-    /*
-    private NumberRange.DistanceRange distanceRange() {
-        final String s = texts.substring(location);
-        for (int i = 0; i < s.length() - 1; i++) {
-
-        }
-    }
-*/
-    private void extra() {
-        ignore();
-
-        if (!text.substring(location).isEmpty()) {
-            throw new SelectorParseException("解析終了後に無効な文字列を検知しました: " + text.substring(location));
-        }
-    }
-
-    private @NotNull EntitySelector<? extends Entity> parse() {
+    @Override
+    protected EntitySelector<? extends Entity> parse() {
         final EntitySelector<? extends Entity> selector = type();
         for (final SelectorArgument argument : arguments()) {
             selector.addArgument(argument);
         }
-
-        extra();
 
         return selector;
     }
@@ -323,5 +163,9 @@ public class SelectorParser {
     @ApiStatus.Experimental
     public static @NotNull EntitySelector<? extends Entity> parse(@NotNull String selector) {
         return new SelectorParser(selector).parse();
+    }
+
+    static {
+        SelectorParser.parse("@e[type=player]");
     }
 }

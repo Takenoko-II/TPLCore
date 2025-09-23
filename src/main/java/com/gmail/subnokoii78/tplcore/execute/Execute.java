@@ -17,6 +17,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -544,10 +545,10 @@ public class Execute {
         public final Items items = new Items(this);
 
         public static final class Items {
-            private final GuardSubCommand ifUnless;
+            private final GuardSubCommand guardSubCommand;
 
-            private Items(@NotNull GuardSubCommand ifUnless) {
-                this.ifUnless = ifUnless;
+            private Items(@NotNull GuardSubCommand guardSubCommand) {
+                this.guardSubCommand = guardSubCommand;
             }
 
             /**
@@ -557,23 +558,24 @@ public class Execute {
              * @param predicate 条件
              * @return that
              */
+            @Deprecated
             public <T extends Entity> @NotNull Execute entity(@NotNull EntitySelector<? extends Entity> selector, @NotNull ItemSlotsGroup.ItemSlotsMatcher<T, ?> itemSlots, @NotNull Predicate<ItemStack> predicate) {
                 if (!selector.isSingle()) {
                     throw new IllegalArgumentException("セレクターは単一のエンティティを指定する必要があります");
                 }
 
-                return ifUnless.execute.fork(stack -> {
+                return guardSubCommand.execute.fork(stack -> {
                     final T target = itemSlots.getGroup().tryCastTarget(stack.getEntities(selector).getFirst());
                     if (target == null) return List.of();
 
                     if (itemSlots.matches(target, predicate)) {
-                        if (ifUnless.toggle.equals(Conditional.IF)) {
+                        if (guardSubCommand.toggle.equals(Conditional.IF)) {
                             return List.of(stack);
                         }
                         else return List.of();
                     }
 
-                    if (ifUnless.toggle.equals(Conditional.IF)) {
+                    if (guardSubCommand.toggle.equals(Conditional.IF)) {
                         return List.of();
                     }
                     else return List.of(stack);
@@ -587,6 +589,7 @@ public class Execute {
              * @param predicate 条件
              * @return that
              */
+            @Deprecated
             public <T extends Entity> @NotNull Execute entity(@NotNull EntitySelector.Builder<? extends Entity> selector, @NotNull ItemSlotsGroup.ItemSlotsMatcher<T, ?> itemSlots, @NotNull Predicate<ItemStack> predicate) {
                 return entity(selector.build(), itemSlots, predicate);
             }
@@ -598,8 +601,9 @@ public class Execute {
              * @param predicate 条件
              * @return that
              */
+            @Deprecated
             public @NotNull Execute block(@NotNull String input, @NotNull ItemSlotsGroup.ItemSlotsMatcher<InventoryHolder, ?> itemSlots, @NotNull Predicate<ItemStack> predicate) {
-                return ifUnless.execute.fork(stack -> {
+                return guardSubCommand.execute.fork(stack -> {
                     final BlockState blockState = stack.getDimension()
                         .getBlockAt(stack.readCoordinates(input).withWorld(stack.getDimension()))
                         .getState();
@@ -608,7 +612,57 @@ public class Execute {
                         return List.of();
                     }
 
-                    if (ifUnless.toggle.apply(itemSlots.matches(blockInventoryHolder, predicate))) {
+                    if (guardSubCommand.toggle.apply(itemSlots.matches(blockInventoryHolder, predicate))) {
+                        return List.of(stack);
+                    }
+                    else {
+                        return List.of();
+                    }
+                });
+            }
+
+            public <T extends Entity> @NotNull Execute entity(@NotNull EntitySelector<? extends T> selector, @NotNull ItemSlots.Matcher<T> matcher, @NotNull Predicate<@Nullable ItemStack> predicate) {
+                if (!selector.isSingle()) {
+                    throw new IllegalArgumentException("セレクターは単一のエンティティを指定する必要があります");
+                }
+
+                return guardSubCommand.execute.fork(stack -> {
+                    final Entity entity = stack.getEntities(selector).getFirst();
+
+                    if (!matcher.getClazz().isInstance(entity)) {
+                        return List.of();
+                    }
+
+                    if (matcher.matches(matcher.getClazz().cast(entity), predicate)) {
+                        if (guardSubCommand.toggle.equals(Conditional.IF)) {
+                            return List.of(stack);
+                        }
+                        else return List.of();
+                    }
+                    else {
+                        if (guardSubCommand.toggle.equals(Conditional.IF)) {
+                            return List.of();
+                        }
+                        else return List.of(stack);
+                    }
+                });
+            }
+
+            public <T extends Entity> @NotNull Execute entity(@NotNull EntitySelector.Builder<? extends T> selector, @NotNull ItemSlots.Matcher<T> matcher, @NotNull Predicate<ItemStack> predicate) {
+                return entity(selector.build(), matcher, predicate);
+            }
+
+            public @NotNull Execute block(@NotNull String input, @NotNull ItemSlots.Matcher<BlockInventoryHolder> matcher, @NotNull Predicate<@Nullable ItemStack> predicate) {
+                return guardSubCommand.execute.fork(stack -> {
+                    final BlockState blockState = stack.getDimension()
+                        .getBlockAt(stack.readCoordinates(input).withWorld(stack.getDimension()))
+                        .getState();
+
+                    if (!(blockState instanceof BlockInventoryHolder blockInventoryHolder)) {
+                        return List.of();
+                    }
+
+                    if (guardSubCommand.toggle.apply(matcher.matches(blockInventoryHolder, predicate))) {
                         return List.of(stack);
                     }
                     else {

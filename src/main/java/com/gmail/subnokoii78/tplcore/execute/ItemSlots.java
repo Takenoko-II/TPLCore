@@ -15,34 +15,42 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
-// TODO: MultiAccessorの中身つくる <- なに作る予定だったの過去の私！！！！！！！ <- たぶんmatches()とかじゃね
-// TODO: matches(Predicate<ItemStack>)とかもつくる
+// TODO: $() が返す値をMatcherを継承したもの(=MultiAccessor)にする
+// TODO: 現 $() の名称を getAccessorList() にする
 @Experimental
 @NullMarked
 public final class ItemSlots {
-    private ItemSlots() {}
+    public interface Matcher<T> {
+        boolean matches(T target, Predicate<@Nullable ItemStack> predicate);
 
-    static {
-        // TODO: クラス作ってからフィールドにインスタンス渡そうね
-        // TODO: weapon
+        Class<T> getClazz();
     }
 
-    public static abstract class SlotCategory<T> {
+    private static abstract class SlotCategory<T> implements Matcher<T> {
+        protected SlotCategory() {}
+
         protected abstract List<SingleAccessor<T>> $();
+
+        @Override
+        public final boolean matches(T target, Predicate<@Nullable ItemStack> predicate) {
+            return $().stream().anyMatch(accessor -> predicate.test(accessor.getOrNull(target)));
+        }
     }
 
-    public static abstract class AbstractAccessor<T> {}
-
-    public static abstract class SingleAccessor<T> extends AbstractAccessor<T> {
+    public static abstract class SingleAccessor<T> implements Matcher<T> {
         public abstract @Nullable ItemStack getOrNull(T target);
-    }
 
-    public static abstract class MultiAccessor<T> extends AbstractAccessor<T> {
-
+        @Override
+        public boolean matches(T target, Predicate<@Nullable ItemStack> predicate) {
+            return predicate.test(getOrNull(target));
+        }
     }
 
     public static abstract class NumberableSlotCategory<T> extends SlotCategory<T> {
+        protected NumberableSlotCategory() {}
+
         protected abstract NumberRange<Integer> getAvailableSlotRange();
 
         public abstract SingleAccessor<T> $(int index) throws UnknownSlotNumberException;
@@ -84,7 +92,17 @@ public final class ItemSlots {
                         throw new UnknownSlotNumberException(index);
                     }
                 }
+
+                @Override
+                public Class<BlockInventoryHolder> getClazz() {
+                    return BlockInventoryHolder.class;
+                }
             };
+        }
+
+        @Override
+        public Class<BlockInventoryHolder> getClazz() {
+            return BlockInventoryHolder.class;
         }
     };
 
@@ -111,7 +129,17 @@ public final class ItemSlots {
                         throw new UnknownSlotNumberException(index);
                     }
                 }
+
+                @Override
+                public Class<HumanEntity> getClazz() {
+                    return HumanEntity.class;
+                }
             };
+        }
+
+        @Override
+        public Class<HumanEntity> getClazz() {
+            return HumanEntity.class;
         }
     };
 
@@ -138,7 +166,17 @@ public final class ItemSlots {
                         throw new UnknownSlotNumberException(index);
                     }
                 }
+
+                @Override
+                public Class<Player> getClazz() {
+                    return Player.class;
+                }
             };
+        }
+
+        @Override
+        public Class<Player> getClazz() {
+            return Player.class;
         }
     };
 
@@ -169,11 +207,23 @@ public final class ItemSlots {
                         throw new UnknownSlotNumberException(index);
                     }
                 }
+
+                @Override
+                public Class<InventoryHolder> getClazz() {
+                    return InventoryHolder.class;
+                }
             };
+        }
+
+        @Override
+        public Class<InventoryHolder> getClazz() {
+            return InventoryHolder.class;
         }
     };
 
-    public static final NumberableSlotCategory<ChestedHorse> horse = new NumberableSlotCategory<>() {
+    public static final class HorseSlotCategory extends NumberableSlotCategory<ChestedHorse> {
+        private HorseSlotCategory() {}
+
         @Override
         protected NumberRange<Integer> getAvailableSlotRange() {
             return NumberRange.of(0, 14);
@@ -198,6 +248,11 @@ public final class ItemSlots {
                         throw new UnknownSlotNumberException(index);
                     }
                 }
+
+                @Override
+                public Class<ChestedHorse> getClazz() {
+                    return ChestedHorse.class;
+                }
             };
         }
 
@@ -206,8 +261,20 @@ public final class ItemSlots {
             public @Nullable ItemStack getOrNull(ChestedHorse target) {
                 return target.isCarryingChest() ? new ItemStack(Material.CHEST) : null;
             }
+
+            @Override
+            public Class<ChestedHorse> getClazz() {
+                return ChestedHorse.class;
+            }
         };
-    };
+
+        @Override
+        public Class<ChestedHorse> getClazz() {
+            return ChestedHorse.class;
+        }
+    }
+
+    public static final HorseSlotCategory horse = new HorseSlotCategory();
 
     public static final NumberableSlotCategory<AbstractVillager> villager = new NumberableSlotCategory<>() {
         @Override
@@ -232,11 +299,23 @@ public final class ItemSlots {
                         throw new UnknownSlotNumberException(index);
                     }
                 }
+
+                @Override
+                public Class<AbstractVillager> getClazz() {
+                    return AbstractVillager.class;
+                }
             };
+        }
+
+        @Override
+        public Class<AbstractVillager> getClazz() {
+            return AbstractVillager.class;
         }
     };
 
-    public static final SlotCategory<Player> player = new SlotCategory<>() {
+    public static final class PlayerSlotCategory extends SlotCategory<Player> {
+        private PlayerSlotCategory() {}
+
         @Override
         protected List<SingleAccessor<Player>> $() {
             final List<SingleAccessor<Player>> list = new ArrayList<>(crafting.$());
@@ -284,7 +363,17 @@ public final class ItemSlots {
                             throw new UnknownSlotNumberException(index);
                         }
                     }
+
+                    @Override
+                    public Class<Player> getClazz() {
+                        return Player.class;
+                    }
                 };
+            }
+
+            @Override
+            public Class<Player> getClazz() {
+                return Player.class;
             }
         };
 
@@ -298,8 +387,20 @@ public final class ItemSlots {
                 }
                 else return itemStack;
             }
+
+            @Override
+            public Class<Player> getClazz() {
+                return Player.class;
+            }
         };
-    };
+
+        @Override
+        public Class<Player> getClazz() {
+            return Player.class;
+        }
+    }
+
+    public static final PlayerSlotCategory player = new PlayerSlotCategory();
 
     public static final SingleAccessor<AbstractHorse> saddle = new SingleAccessor<>() {
         private EntityEquipment getEquipment(LivingEntity target) {
@@ -318,9 +419,15 @@ public final class ItemSlots {
 
             return itemStack.isEmpty() ? null : itemStack;
         }
+
+        @Override
+        public Class<AbstractHorse> getClazz() {
+            return AbstractHorse.class;
+        }
     };
 
-    public static final SlotCategory<LivingEntity> weapon = new SlotCategory<>() {
+    public static final class WeaponSlotCategory extends SlotCategory<LivingEntity> {
+        private WeaponSlotCategory() {}
 
         @Override
         public List<SingleAccessor<LivingEntity>> $() {
@@ -344,6 +451,11 @@ public final class ItemSlots {
 
                 return itemStack.isEmpty() ? null : itemStack;
             }
+
+            @Override
+            public Class<LivingEntity> getClazz() {
+                return LivingEntity.class;
+            }
         };
 
         public final SingleAccessor<LivingEntity> offhand = new SingleAccessor<>() {
@@ -353,10 +465,24 @@ public final class ItemSlots {
 
                 return itemStack.isEmpty() ? null : itemStack;
             }
-        };
-    };
 
-    public static final SlotCategory<LivingEntity> armor = new SlotCategory<>() {
+            @Override
+            public Class<LivingEntity> getClazz() {
+                return LivingEntity.class;
+            }
+        };
+
+        @Override
+        public Class<LivingEntity> getClazz() {
+            return LivingEntity.class;
+        }
+    }
+
+    public static final WeaponSlotCategory weapon = new WeaponSlotCategory();
+
+    public static final class ArmorSlotCategory extends SlotCategory<LivingEntity> {
+        private ArmorSlotCategory() {}
+
         private EntityEquipment getEquipment(LivingEntity target) {
             final EntityEquipment equipment = target.getEquipment();
 
@@ -379,6 +505,11 @@ public final class ItemSlots {
 
                 return itemStack.isEmpty() ? null : itemStack;
             }
+
+            @Override
+            public Class<LivingEntity> getClazz() {
+                return LivingEntity.class;
+            }
         };
 
         public final SingleAccessor<LivingEntity> chest = new SingleAccessor<>() {
@@ -387,6 +518,11 @@ public final class ItemSlots {
                 final ItemStack itemStack = getEquipment(target).getChestplate();
 
                 return itemStack.isEmpty() ? null : itemStack;
+            }
+
+            @Override
+            public Class<LivingEntity> getClazz() {
+                return LivingEntity.class;
             }
         };
 
@@ -397,6 +533,11 @@ public final class ItemSlots {
 
                 return itemStack.isEmpty() ? null : itemStack;
             }
+
+            @Override
+            public Class<LivingEntity> getClazz() {
+                return LivingEntity.class;
+            }
         };
 
         public final SingleAccessor<LivingEntity> feet = new SingleAccessor<>() {
@@ -405,6 +546,11 @@ public final class ItemSlots {
                 final ItemStack itemStack = getEquipment(target).getBoots();
 
                 return itemStack.isEmpty() ? null : itemStack;
+            }
+
+            @Override
+            public Class<LivingEntity> getClazz() {
+                return LivingEntity.class;
             }
         };
 
@@ -415,6 +561,18 @@ public final class ItemSlots {
 
                 return itemStack.isEmpty() ? null : itemStack;
             }
+
+            @Override
+            public Class<LivingEntity> getClazz() {
+                return LivingEntity.class;
+            }
         };
-    };
+
+        @Override
+        public Class<LivingEntity> getClazz() {
+            return LivingEntity.class;
+        }
+    }
+
+    public static final ArmorSlotCategory armor = new ArmorSlotCategory();
 }

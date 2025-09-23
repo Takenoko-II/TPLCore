@@ -8,6 +8,7 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +23,7 @@ import java.util.function.Predicate;
  * @param <T> そのスロットグループを取得できるクラス
  * @param <U> スロットグループからスロットを取得するときに必要な値の型
  */
+@Deprecated
 public abstract class ItemSlotsGroup<T, U> {
     /**
      * コンテナスロット
