@@ -31,11 +31,11 @@ public final class ItemSlots {
     private static abstract class SlotCategory<T> implements Matcher<T> {
         protected SlotCategory() {}
 
-        protected abstract List<SingleAccessor<T>> $();
+        protected abstract List<SingleAccessor<T>> getAccessorList();
 
         @Override
         public final boolean matches(T target, Predicate<@Nullable ItemStack> predicate) {
-            return $().stream().anyMatch(accessor -> predicate.test(accessor.getOrNull(target)));
+            return getAccessorList().stream().anyMatch(accessor -> predicate.test(accessor.getOrNull(target)));
         }
     }
 
@@ -60,7 +60,7 @@ public final class ItemSlots {
         }
 
         @Override
-        public abstract List<SingleAccessor<T>> $();
+        public abstract List<SingleAccessor<T>> getAccessorList();
 
         public static final class UnknownSlotNumberException extends RuntimeException {
             private UnknownSlotNumberException(int i) {
@@ -76,7 +76,7 @@ public final class ItemSlots {
         }
 
         @Override
-        public List<SingleAccessor<BlockInventoryHolder>> $() {
+        public List<SingleAccessor<BlockInventoryHolder>> getAccessorList() {
             return getAllNumberableSlots();
         }
 
@@ -113,7 +113,7 @@ public final class ItemSlots {
         }
 
         @Override
-        public List<SingleAccessor<HumanEntity>> $() {
+        public List<SingleAccessor<HumanEntity>> getAccessorList() {
             return getAllNumberableSlots();
         }
 
@@ -150,7 +150,7 @@ public final class ItemSlots {
         }
 
         @Override
-        public List<SingleAccessor<Player>> $() {
+        public List<SingleAccessor<Player>> getAccessorList() {
             return getAllNumberableSlots();
         }
 
@@ -187,7 +187,7 @@ public final class ItemSlots {
         }
 
         @Override
-        public List<SingleAccessor<InventoryHolder>> $() {
+        public List<SingleAccessor<InventoryHolder>> getAccessorList() {
             return getAllNumberableSlots();
         }
 
@@ -230,7 +230,7 @@ public final class ItemSlots {
         }
 
         @Override
-        public List<SingleAccessor<ChestedHorse>> $() {
+        public List<SingleAccessor<ChestedHorse>> getAccessorList() {
             final List<SingleAccessor<ChestedHorse>> list = new ArrayList<>(getAllNumberableSlots());
             list.add(chest);
             return list;
@@ -283,7 +283,7 @@ public final class ItemSlots {
         }
 
         @Override
-        public List<SingleAccessor<AbstractVillager>> $() {
+        public List<SingleAccessor<AbstractVillager>> getAccessorList() {
             return getAllNumberableSlots();
         }
 
@@ -317,8 +317,8 @@ public final class ItemSlots {
         private PlayerSlotCategory() {}
 
         @Override
-        protected List<SingleAccessor<Player>> $() {
-            final List<SingleAccessor<Player>> list = new ArrayList<>(crafting.$());
+        protected List<SingleAccessor<Player>> getAccessorList() {
+            final List<SingleAccessor<Player>> list = new ArrayList<>(crafting.getAccessorList());
             list.add(cursor);
             return list;
         }
@@ -330,7 +330,7 @@ public final class ItemSlots {
             }
 
             @Override
-            public List<SingleAccessor<Player>> $() {
+            public List<SingleAccessor<Player>> getAccessorList() {
                 return getAllNumberableSlots();
             }
 
@@ -430,7 +430,7 @@ public final class ItemSlots {
         private WeaponSlotCategory() {}
 
         @Override
-        public List<SingleAccessor<LivingEntity>> $() {
+        public List<SingleAccessor<LivingEntity>> getAccessorList() {
             return List.of(mainhand, offhand);
         }
 
@@ -494,7 +494,7 @@ public final class ItemSlots {
         }
 
         @Override
-        public List<SingleAccessor<LivingEntity>> $() {
+        public List<SingleAccessor<LivingEntity>> getAccessorList() {
             return List.of(head, chest, legs, feet, body);
         }
 

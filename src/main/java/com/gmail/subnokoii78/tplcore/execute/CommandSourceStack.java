@@ -2,18 +2,27 @@ package com.gmail.subnokoii78.tplcore.execute;
 
 import com.gmail.subnokoii78.tplcore.vector.DualAxisRotationBuilder;
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -372,6 +381,44 @@ public class CommandSourceStack {
             location.format("$c $c $c", 5),
             rotation.format("$c $c", 5)
         );
+
+        /*MinecraftServer.getServer().getCommands().getDispatcher()
+            .execute(command, new net.minecraft.commands.CommandSourceStack(
+                new CommandSource() {
+                    @Override
+                    public void sendSystemMessage(Component component) {
+
+                    }
+
+                    @Override
+                    public boolean acceptsSuccess() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean acceptsFailure() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean shouldInformAdmins() {
+                        return false;
+                    }
+
+                    @Override
+                    public CommandSender getBukkitSender(net.minecraft.commands.CommandSourceStack commandSourceStack) {
+                        return null;
+                    }
+                },
+                new Vec3(getPosition().x(), getPosition().y(), getPosition().z()),
+                new Vec2(getRotation().yaw(), getRotation().pitch()),
+                ((CraftWorld) getDimension()).getHandle(),
+                Commands.LEVEL_OWNERS,
+                getSender().toString(),
+                Component.literal(getSender().getDisplayName().toString()),
+                MinecraftServer.getServer(),
+                ((CraftEntity) getExecutor()).getHandle()
+            ));*/
 
         final String commandString;
 
