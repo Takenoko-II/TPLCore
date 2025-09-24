@@ -71,6 +71,10 @@ public final class EntitySelector<T extends Entity> {
         return this;
     }
 
+    public @NotNull ScoreHolder toScoreHolder() {
+        return ScoreHolder.of(this);
+    }
+
     private @NotNull List<T> modifier(@NotNull List<T> entities, @NotNull CommandSourceStack stack) {
         final CommandSourceStack copy = stack.copy();
         List<Entity> out = entities.stream().map(entity -> (Entity) entity).toList();
@@ -248,6 +252,10 @@ public final class EntitySelector<T extends Entity> {
          */
         public <U> @NotNull EntitySelector<T> notArg(@NotNull SelectorArgument.Builder<U> modifier, @NotNull U value) {
             return build().notArg(modifier, value);
+        }
+
+        public @NotNull ScoreHolder toScoreHolder() {
+            return ScoreHolder.of(this);
         }
     }
 }

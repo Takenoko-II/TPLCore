@@ -415,9 +415,9 @@ public class CommandSourceStack {
             i = (OptionalInt) method.invoke(
                 null,
                 nms.getLevel(),
-                beginV.toIntVector().toNMSBlockPos(),
-                endV.toIntVector().toNMSBlockPos(),
-                destinationV.toIntVector().toNMSBlockPos(),
+                beginV.toIntVector(true).toNMSBlockPos(),
+                endV.toIntVector(true).toNMSBlockPos(),
+                destinationV.toIntVector(true).toNMSBlockPos(),
                 scanMode.equals(ScanMode.MASKED)
             );
         }

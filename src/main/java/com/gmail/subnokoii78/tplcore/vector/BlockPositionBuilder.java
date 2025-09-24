@@ -2,6 +2,7 @@ package com.gmail.subnokoii78.tplcore.vector;
 
 import com.gmail.subnokoii78.tplcore.generic.TriFunction;
 import net.minecraft.core.BlockPos;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.BiFunction;
@@ -143,6 +144,7 @@ public class BlockPositionBuilder implements VectorBuilder<BlockPositionBuilder,
         return new Vector3Builder(x, y, z);
     }
 
+    @ApiStatus.Internal
     public @NotNull BlockPos toNMSBlockPos() {
         return new BlockPos(x, y, z);
     }

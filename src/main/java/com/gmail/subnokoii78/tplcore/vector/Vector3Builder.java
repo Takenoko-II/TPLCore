@@ -498,8 +498,9 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
         return new org.bukkit.util.Vector(x, y, z);
     }
 
-    public @NotNull BlockPositionBuilder toIntVector() {
-        return new BlockPositionBuilder((int) x, (int) y, (int) z);
+    public @NotNull BlockPositionBuilder toIntVector(boolean floor) {
+        if (floor) return new BlockPositionBuilder((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
+        else return new BlockPositionBuilder((int) x, (int) y, (int) z);
     }
 
     /**

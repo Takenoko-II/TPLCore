@@ -2,7 +2,6 @@ package com.gmail.subnokoii78.tplcore.execute;
 
 import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
-import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -16,6 +15,7 @@ import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * セレクター引数を表現するクラス
@@ -30,6 +30,19 @@ public abstract class SelectorArgument {
     abstract @NotNull List<Entity> modify(@NotNull List<Entity> entities, @NotNull CommandSourceStack stack);
 
     abstract int getPriority();
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        SelectorArgument argument = (SelectorArgument) object;
+        return Objects.equals(value, argument.value) && Objects.equals(getId(), argument.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, getId());
+    }
 
     abstract @NotNull String getId();
 

@@ -14,6 +14,7 @@ import org.bukkit.entity.*;
 import org.bukkit.inventory.BlockInventoryHolder;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.intellij.lang.annotations.Pattern;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
@@ -312,7 +313,7 @@ public class Execute {
      * @param axes 切り捨てる軸
      * @return this
      */
-    public @NotNull Execute align(@NotNull String axes) {
+    public @NotNull Execute align(@NotNull @Pattern("^(?:x|y|z|xy|xz|yx|yz|zx|zy|xyz|xzy|yxz|yzx|zxy|zyx)$") String axes) {
         return redirect(stack -> {
             final Set<String> chars = Set.of(axes.split(""));
 
@@ -616,7 +617,7 @@ public class Execute {
                 });
             }
 
-            public <T extends Entity> @NotNull Execute entity(@NotNull EntitySelector<? extends T> selector, @NotNull ItemSlots.Matcher<T> matcher, @NotNull Predicate<@Nullable ItemStack> predicate) {
+            public <T extends Entity> @NotNull Execute entity(@NotNull EntitySelector<? extends Entity> selector, @NotNull ItemSlots.Matcher<T> matcher, @NotNull Predicate<@Nullable ItemStack> predicate) {
                 if (!selector.isSingle()) {
                     throw new IllegalArgumentException("セレクターは単一のエンティティを指定する必要があります");
                 }
@@ -643,7 +644,7 @@ public class Execute {
                 });
             }
 
-            public <T extends Entity> @NotNull Execute entity(@NotNull EntitySelector.Builder<? extends T> selector, @NotNull ItemSlots.Matcher<T> matcher, @NotNull Predicate<ItemStack> predicate) {
+            public <T extends Entity> @NotNull Execute entity(@NotNull EntitySelector.Builder<? extends Entity> selector, @NotNull ItemSlots.Matcher<T> matcher, @NotNull Predicate<ItemStack> predicate) {
                 return entity(selector.build(), matcher, predicate);
             }
 

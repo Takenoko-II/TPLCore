@@ -2,13 +2,14 @@ package com.gmail.subnokoii78.tplcore.execute;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import jdk.jfr.Experimental;
 import net.minecraft.commands.arguments.SlotArgument;
+import net.minecraft.world.entity.SlotAccess;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.*;
+import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -17,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-@Experimental
+@ApiStatus.Experimental
 @NullMarked
 public final class ItemSlots {
     public interface Matcher<T> {
@@ -33,16 +34,18 @@ public final class ItemSlots {
 
         @Override
         public final boolean matches(T target, Predicate<@Nullable ItemStack> predicate) {
-            return getAccessorList().stream().anyMatch(accessor -> predicate.test(accessor.getOrNull(target)));
+            return getAccessorList().stream().anyMatch(accessor -> predicate.test(accessor.get(target)));
         }
     }
 
     public static abstract class SingleAccessor<T> implements Matcher<T> {
-        public abstract @Nullable ItemStack getOrNull(T target);
+        public abstract @Nullable ItemStack get(T target);
+
+        public abstract void set(T target, @Nullable ItemStack itemStack);
 
         @Override
         public boolean matches(T target, Predicate<@Nullable ItemStack> predicate) {
-            return predicate.test(getOrNull(target));
+            return predicate.test(get(target));
         }
     }
 
@@ -82,9 +85,19 @@ public final class ItemSlots {
         public SingleAccessor<BlockInventoryHolder> $(int index) throws UnknownSlotNumberException {
             return new SingleAccessor<>() {
                 @Override
-                public @Nullable ItemStack getOrNull(BlockInventoryHolder target) {
+                public @Nullable ItemStack get(BlockInventoryHolder target) {
                     if (getAvailableSlotRange().within(index)) {
                         return target.getInventory().getItem(index);
+                    }
+                    else {
+                        throw new UnknownSlotNumberException(index);
+                    }
+                }
+
+                @Override
+                public void set(BlockInventoryHolder target, @Nullable ItemStack itemStack) {
+                    if (getAvailableSlotRange().within(index)) {
+                        target.getInventory().setItem(index, itemStack);
                     }
                     else {
                         throw new UnknownSlotNumberException(index);
@@ -119,9 +132,19 @@ public final class ItemSlots {
         public SingleAccessor<HumanEntity> $(int index) throws UnknownSlotNumberException {
             return new SingleAccessor<>() {
                 @Override
-                public @Nullable ItemStack getOrNull(HumanEntity target) {
+                public @Nullable ItemStack get(HumanEntity target) {
                     if (getAvailableSlotRange().within(index)) {
                         return target.getEnderChest().getItem(index);
+                    }
+                    else {
+                        throw new UnknownSlotNumberException(index);
+                    }
+                }
+
+                @Override
+                public void set(HumanEntity target, @Nullable ItemStack itemStack) {
+                    if (getAvailableSlotRange().within(index)) {
+                        target.getEnderChest().setItem(index, itemStack);
                     }
                     else {
                         throw new UnknownSlotNumberException(index);
@@ -156,9 +179,19 @@ public final class ItemSlots {
         public SingleAccessor<Player> $(int index) throws UnknownSlotNumberException {
             return new SingleAccessor<>() {
                 @Override
-                public @Nullable ItemStack getOrNull(Player target) {
+                public @Nullable ItemStack get(Player target) {
                     if (getAvailableSlotRange().within(index)) {
                         return target.getInventory().getItem(index);
+                    }
+                    else {
+                        throw new UnknownSlotNumberException(index);
+                    }
+                }
+
+                @Override
+                public void set(Player target, @Nullable ItemStack itemStack) {
+                    if (getAvailableSlotRange().within(index)) {
+                        target.getInventory().setItem(index, itemStack);
                     }
                     else {
                         throw new UnknownSlotNumberException(index);
@@ -193,13 +226,27 @@ public final class ItemSlots {
         public SingleAccessor<InventoryHolder> $(int index) throws UnknownSlotNumberException {
             return new SingleAccessor<>() {
                 @Override
-                public @Nullable ItemStack getOrNull(InventoryHolder target) {
+                public @Nullable ItemStack get(InventoryHolder target) {
                     if (!(target instanceof Entity)) {
                         throw new IllegalArgumentException("スロット inventory はエンティティにのみ有効です");
                     }
 
                     if (getAvailableSlotRange().within(index)) {
                         return target.getInventory().getItem(index);
+                    }
+                    else {
+                        throw new UnknownSlotNumberException(index);
+                    }
+                }
+
+                @Override
+                public void set(InventoryHolder target, @Nullable ItemStack itemStack) {
+                    if (!(target instanceof Entity)) {
+                        throw new IllegalArgumentException("スロット inventory はエンティティにのみ有効です");
+                    }
+
+                    if (getAvailableSlotRange().within(index)) {
+                        target.getInventory().setItem(index, itemStack);
                     }
                     else {
                         throw new UnknownSlotNumberException(index);
@@ -238,9 +285,19 @@ public final class ItemSlots {
         public SingleAccessor<ChestedHorse> $(int index) throws UnknownSlotNumberException {
             return new SingleAccessor<>() {
                 @Override
-                public @Nullable ItemStack getOrNull(ChestedHorse target) {
+                public @Nullable ItemStack get(ChestedHorse target) {
                     if (getAvailableSlotRange().within(index)) {
                         return target.getInventory().getItem(index);
+                    }
+                    else {
+                        throw new UnknownSlotNumberException(index);
+                    }
+                }
+
+                @Override
+                public void set(ChestedHorse target, @Nullable ItemStack itemStack) {
+                    if (getAvailableSlotRange().within(index)) {
+                        target.getInventory().setItem(index, itemStack);
                     }
                     else {
                         throw new UnknownSlotNumberException(index);
@@ -256,8 +313,24 @@ public final class ItemSlots {
 
         public final SingleAccessor<ChestedHorse> chest = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(ChestedHorse target) {
+            public @Nullable ItemStack get(ChestedHorse target) {
                 return target.isCarryingChest() ? new ItemStack(Material.CHEST) : null;
+            }
+
+            @Override
+            public void set(ChestedHorse target, @Nullable ItemStack itemStack) {
+                if (itemStack == null) {
+                    target.setCarryingChest(false);
+                }
+                else if (itemStack.isEmpty()) {
+                    target.setCarryingChest(false);
+                }
+                else if (itemStack.getType().equals(Material.CHEST)) {
+                    target.setCarryingChest(true);
+                }
+                else {
+                    throw new IllegalArgumentException("チェストでないアイテムが渡されました");
+                }
             }
 
             @Override
@@ -289,9 +362,19 @@ public final class ItemSlots {
         public SingleAccessor<AbstractVillager> $(int index) throws UnknownSlotNumberException {
             return new SingleAccessor<>() {
                 @Override
-                public @Nullable ItemStack getOrNull(AbstractVillager target) {
+                public @Nullable ItemStack get(AbstractVillager target) {
                     if (getAvailableSlotRange().within(index)) {
                         return target.getInventory().getItem(index);
+                    }
+                    else {
+                        throw new UnknownSlotNumberException(index);
+                    }
+                }
+
+                @Override
+                public void set(AbstractVillager target, @Nullable ItemStack itemStack) {
+                    if (getAvailableSlotRange().within(index)) {
+                        target.getInventory().setItem(index, itemStack);
                     }
                     else {
                         throw new UnknownSlotNumberException(index);
@@ -345,7 +428,7 @@ public final class ItemSlots {
             public SingleAccessor<Player> $(int index) throws UnknownSlotNumberException {
                 return new SingleAccessor<>() {
                     @Override
-                    public @Nullable ItemStack getOrNull(Player target) {
+                    public @Nullable ItemStack get(Player target) {
                         if (getAvailableSlotRange().within(index)) {
                             final ItemStack itemStack = CraftItemStack.asBukkitCopy(
                                 ((CraftPlayer) target)
@@ -356,6 +439,28 @@ public final class ItemSlots {
 
                             if (itemStack.isEmpty()) return null;
                             else return itemStack;
+                        }
+                        else {
+                            throw new UnknownSlotNumberException(index);
+                        }
+                    }
+
+                    @Override
+                    public void set(Player target, @Nullable ItemStack itemStack) {
+                        if (getAvailableSlotRange().within(index)) {
+                            final SlotAccess access = ((CraftPlayer) target)
+                                .getHandle()
+                                .getSlot(getCraftingSlotId(index));
+
+                            if (itemStack == null) {
+                                access.set(net.minecraft.world.item.ItemStack.EMPTY);
+                            }
+                            else if (itemStack.isEmpty()) {
+                                access.set(net.minecraft.world.item.ItemStack.EMPTY);
+                            }
+                            else {
+                                access.set(CraftItemStack.asNMSCopy(itemStack));
+                            }
                         }
                         else {
                             throw new UnknownSlotNumberException(index);
@@ -377,13 +482,18 @@ public final class ItemSlots {
 
         public final SingleAccessor<Player> cursor = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(Player target) {
+            public @Nullable ItemStack get(Player target) {
                 final ItemStack itemStack = target.getItemOnCursor();
 
                 if (itemStack.isEmpty()) {
                     return null;
                 }
                 else return itemStack;
+            }
+
+            @Override
+            public void set(Player target, @Nullable ItemStack itemStack) {
+                target.setItemOnCursor(itemStack);
             }
 
             @Override
@@ -412,10 +522,15 @@ public final class ItemSlots {
         }
 
         @Override
-        public @Nullable ItemStack getOrNull(AbstractHorse target) {
+        public @Nullable ItemStack get(AbstractHorse target) {
             final ItemStack itemStack = getEquipment(target).getItem(EquipmentSlot.SADDLE);
 
             return itemStack.isEmpty() ? null : itemStack;
+        }
+
+        @Override
+        public void set(AbstractHorse target, @Nullable ItemStack itemStack) {
+            getEquipment(target).setItem(EquipmentSlot.SADDLE, itemStack);
         }
 
         @Override
@@ -444,10 +559,15 @@ public final class ItemSlots {
 
         public final SingleAccessor<LivingEntity> mainhand = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(LivingEntity target) {
+            public @Nullable ItemStack get(LivingEntity target) {
                 final ItemStack itemStack = getEquipment(target).getItemInMainHand();
 
                 return itemStack.isEmpty() ? null : itemStack;
+            }
+
+            @Override
+            public void set(LivingEntity target, @Nullable ItemStack itemStack) {
+                getEquipment(target).setItem(EquipmentSlot.HAND, itemStack);
             }
 
             @Override
@@ -458,10 +578,15 @@ public final class ItemSlots {
 
         public final SingleAccessor<LivingEntity> offhand = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(LivingEntity target) {
+            public @Nullable ItemStack get(LivingEntity target) {
                 final ItemStack itemStack = getEquipment(target).getItemInOffHand();
 
                 return itemStack.isEmpty() ? null : itemStack;
+            }
+
+            @Override
+            public void set(LivingEntity target, @Nullable ItemStack itemStack) {
+                getEquipment(target).setItem(EquipmentSlot.OFF_HAND, itemStack);
             }
 
             @Override
@@ -498,10 +623,15 @@ public final class ItemSlots {
 
         public final SingleAccessor<LivingEntity> head = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(LivingEntity target) {
+            public @Nullable ItemStack get(LivingEntity target) {
                 final ItemStack itemStack = getEquipment(target).getHelmet();
 
                 return itemStack.isEmpty() ? null : itemStack;
+            }
+
+            @Override
+            public void set(LivingEntity target, @Nullable ItemStack itemStack) {
+                getEquipment(target).setHelmet(itemStack);
             }
 
             @Override
@@ -512,10 +642,15 @@ public final class ItemSlots {
 
         public final SingleAccessor<LivingEntity> chest = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(LivingEntity target) {
+            public @Nullable ItemStack get(LivingEntity target) {
                 final ItemStack itemStack = getEquipment(target).getChestplate();
 
                 return itemStack.isEmpty() ? null : itemStack;
+            }
+
+            @Override
+            public void set(LivingEntity target, @Nullable ItemStack itemStack) {
+                getEquipment(target).setChestplate(itemStack);
             }
 
             @Override
@@ -526,10 +661,15 @@ public final class ItemSlots {
 
         public final SingleAccessor<LivingEntity> legs = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(LivingEntity target) {
+            public @Nullable ItemStack get(LivingEntity target) {
                 final ItemStack itemStack = getEquipment(target).getLeggings();
 
                 return itemStack.isEmpty() ? null : itemStack;
+            }
+
+            @Override
+            public void set(LivingEntity target, @Nullable ItemStack itemStack) {
+                getEquipment(target).setLeggings(itemStack);
             }
 
             @Override
@@ -540,10 +680,15 @@ public final class ItemSlots {
 
         public final SingleAccessor<LivingEntity> feet = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(LivingEntity target) {
+            public @Nullable ItemStack get(LivingEntity target) {
                 final ItemStack itemStack = getEquipment(target).getBoots();
 
                 return itemStack.isEmpty() ? null : itemStack;
+            }
+
+            @Override
+            public void set(LivingEntity target, @Nullable ItemStack itemStack) {
+                getEquipment(target).setBoots(itemStack);
             }
 
             @Override
@@ -554,10 +699,15 @@ public final class ItemSlots {
 
         public final SingleAccessor<LivingEntity> body = new SingleAccessor<>() {
             @Override
-            public @Nullable ItemStack getOrNull(LivingEntity target) {
+            public @Nullable ItemStack get(LivingEntity target) {
                 final ItemStack itemStack = getEquipment(target).getItem(EquipmentSlot.BODY);
 
                 return itemStack.isEmpty() ? null : itemStack;
+            }
+
+            @Override
+            public void set(LivingEntity target, @Nullable ItemStack itemStack) {
+                getEquipment(target).setItem(EquipmentSlot.BODY, itemStack);
             }
 
             @Override

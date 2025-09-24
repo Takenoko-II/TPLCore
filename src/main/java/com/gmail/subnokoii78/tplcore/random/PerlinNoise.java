@@ -99,7 +99,7 @@ public class PerlinNoise {
 
         final Vector3Builder floored = vb.copy().calculate(Math::floor);
 
-        final BlockPositionBuilder indices = floored.toIntVector().calculate(component -> component & 255);
+        final BlockPositionBuilder indices = floored.toIntVector(true).calculate(component -> component & 255);
 
         vb.subtract(floored).calculate(this::fade);
 
