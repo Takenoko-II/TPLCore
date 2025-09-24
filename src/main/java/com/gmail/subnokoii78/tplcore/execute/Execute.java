@@ -10,7 +10,6 @@ import org.bukkit.Location;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.BlockInventoryHolder;
 import org.bukkit.inventory.InventoryHolder;
@@ -429,14 +428,10 @@ public class Execute {
          * @param scanMode 比較時のオプション
          * @return that
          */
+        @ApiStatus.Experimental
         public @NotNull Execute blocks(@NotNull String begin, @NotNull String end, @NotNull String destination, @NotNull ScanMode scanMode) {
             return execute.fork(stack -> {
-                final String command = String.format(
-                    "execute if blocks %s %s %s %s",
-                    begin, end, destination, scanMode.getId()
-                );
-
-                if (toggle.apply(stack.runCommand(command))) {
+                if (toggle.apply(stack.matchRegions(begin, end, destination, scanMode) > 0)) {
                     return List.of(stack);
                 }
                 else return List.of();
@@ -920,11 +915,11 @@ public class Execute {
          * 現在の実行文脈を使用して指定のコマンドを実行します。
          * @param command コマンド文字列
          * @return 成功した場合true、失敗した場合false
-         * @apiNote {@link org.bukkit.Server#dispatchCommand(CommandSender, String)}によって呼び出されるコマンドの実行タイミングがティック内のかなり後のほうのため、様々なバグの温床になる恐れがあります
+         * @apiNote NMSに大いに依存しているためこまめにメンテ
          */
-        @ApiStatus.Obsolete
+        @ApiStatus.Experimental
         public boolean command(@NotNull String command) {
-            return callback(stack -> stack.runCommand(command) ? SUCCESS : FAILURE);
+            return callback(stack -> stack.runCommand(command, false) ? SUCCESS : FAILURE);
         }
 
         /**

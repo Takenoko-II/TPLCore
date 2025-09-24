@@ -17,6 +17,7 @@ import java.util.function.Function;
  * executeコマンドの送信者(実行者ではない)を表現するクラス
  * @param <T> 制限なし
  */
+@Deprecated
 public abstract class SourceOrigin<T> {
     final T sender;
 

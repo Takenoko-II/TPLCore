@@ -2,35 +2,42 @@ package com.gmail.subnokoii78.tplcore.execute;
 
 import com.gmail.subnokoii78.tplcore.vector.DualAxisRotationBuilder;
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
-import net.minecraft.commands.CommandSource;
-import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.command.CommandException;
-import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.command.*;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.commands.ExecuteCommand;
+import net.minecraft.server.level.ServerLevel;
+
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.command.VanillaCommandWrapper;
+import org.bukkit.craftbukkit.entity.CraftEntity;
+
+import org.spigotmc.AsyncCatcher;
 
 /**
  * executeコマンドにおける単一の実行文脈を表現するクラス
  */
+@NullMarked
 public class CommandSourceStack {
-    private final SourceOrigin<?> sender;
+    private final CommandSender sender;
 
+    @Nullable
     private Entity executor = null;
 
     private World dimension = DimensionAccess.OVERWORLD.getWorld();
@@ -47,36 +54,31 @@ public class CommandSourceStack {
      * 初期状態のソーススタックを生成します。
      */
     public CommandSourceStack() {
-        this(SourceOrigin.of(Bukkit.getServer()));
+        this(Bukkit.getConsoleSender());
     }
 
     /**
      * 引数に渡されたオブジェクトをコマンドの送信者としてソーススタックを生成します。
      * @param sender 送信者
      */
-    public CommandSourceStack(@NotNull SourceOrigin<?> sender) {
+    public CommandSourceStack(CommandSender sender) {
         this.sender = sender;
-        sender.useOrigin(Entity.class, entity -> {
-            write(entity);
-            write(entity.getWorld());
-            write(Vector3Builder.from(entity));
-            write(DualAxisRotationBuilder.from(entity));
-            return null;
-        });
 
-        sender.useOrigin(Block.class, block -> {
-            write(block.getWorld());
-            write(Vector3Builder.from(block.getLocation()));
-            write(DualAxisRotationBuilder.from(block.getLocation()));
-            return null;
-        });
+        final net.minecraft.commands.CommandSourceStack stack = VanillaCommandWrapper.getListener(sender);
+        final Entity entity = stack.getExecutor();
+        final Location location = stack.getLocation();
+
+        if (entity != null) write(entity);
+        write(Vector3Builder.from(location));
+        write(DualAxisRotationBuilder.from(location));
+        write(location.getWorld());
     }
 
     /**
      * コマンドの送信者(実行者)を取得します。
      * @return 送信者
      */
-    public @NotNull SourceOrigin<?> getSender() {
+    public CommandSender getSender() {
         return sender;
     }
 
@@ -94,8 +96,8 @@ public class CommandSourceStack {
      * <br>先に{@link CommandSourceStack#hasExecutor()}を呼び出してください
      * @return 実行者
      */
-    public @NotNull Entity getExecutor() throws IllegalStateException {
-        if (hasExecutor()) return executor;
+    public Entity getExecutor() throws IllegalStateException {
+        if (executor != null) return executor;
         else throw new IllegalStateException("実行者が存在しません");
     }
 
@@ -103,7 +105,7 @@ public class CommandSourceStack {
      * 実行ディメンションを返します。
      * @return 実行ディメンション
      */
-    public @NotNull World getDimension() {
+    public World getDimension() {
         return dimension;
     }
 
@@ -111,7 +113,7 @@ public class CommandSourceStack {
      * 実行座標を返します。
      * @return 実行座標(3次元ベクトル)
      */
-    public @NotNull Vector3Builder getPosition() {
+    public Vector3Builder getPosition() {
         return location.copy();
     }
 
@@ -119,7 +121,7 @@ public class CommandSourceStack {
      * 実行方向を返します。
      * @return 実行方向(2次元ベクトル)
      */
-    public @NotNull DualAxisRotationBuilder getRotation() {
+    public DualAxisRotationBuilder getRotation() {
         return rotation.copy();
     }
 
@@ -127,7 +129,7 @@ public class CommandSourceStack {
      * 実行座標、実行方向、実行ディメンションの三つを一つの{@link Location}オブジェクトとして取得します。
      * @return 実行座標・実行方向・実行ディメンション
      */
-    public @NotNull Location getLocation(@NotNull LocationGetOption... options) {
+    public Location getLocation(LocationGetOption... options) {
         final Set<LocationGetOption> set = Set.of(options);
 
         if (set.isEmpty()) {
@@ -156,41 +158,41 @@ public class CommandSourceStack {
      * 実行アンカーを返します。
      * @return 実行アンカー(デフォルトでfeet)
      */
-    public @NotNull EntityAnchor getEntityAnchor() {
+    public EntityAnchor getEntityAnchor() {
         return entityAnchor;
     }
 
-    public @NotNull ResultCallback getCallback() {
+    public ResultCallback getCallback() {
         return resultCallback;
     }
 
-    protected void write(@NotNull Entity executor) {
+    protected void write(@Nullable Entity executor) {
         this.executor = executor;
     }
 
-    protected void write(@NotNull World dimension) {
+    protected void write(World dimension) {
         this.dimension = dimension;
     }
 
-    protected void write(@NotNull Vector3Builder location) {
+    protected void write(Vector3Builder location) {
         this.location.x(location.x()).y(location.y()).z(location.z());
     }
 
-    protected void write(@NotNull DualAxisRotationBuilder rotation) {
+    protected void write(DualAxisRotationBuilder rotation) {
         this.rotation.yaw(rotation.yaw()).pitch(rotation.pitch());
     }
 
-    protected void write(@NotNull EntityAnchor.Type type) {
+    protected void write(EntityAnchor.Type type) {
         this.entityAnchor.setType(type);
     }
 
-    protected void write(@NotNull StoreTarget storeTarget, @NotNull ResultConsumer resultConsumer) {
+    protected void write(StoreTarget storeTarget, ResultConsumer resultConsumer) {
         this.resultCallback = this.resultCallback.chain(storeTarget, (successful, returnValue) -> {
             resultConsumer.accept(copy(), returnValue);
         });
     }
 
-    private double parseAbsolutePos(@NotNull String input) {
+    private double parseAbsolutePos(String input) {
         if (input.matches("^[+-]?\\d$")) {
             return Double.parseDouble(input) + 0.5d;
         }
@@ -202,7 +204,7 @@ public class CommandSourceStack {
         }
     }
 
-    private double parseRelativePos(@NotNull String input, int axis) {
+    private double parseRelativePos(String input, int axis) {
         if (input.matches("^~(?:[+-]?\\d+(?:\\.\\d+)?)?$")) {
             final String number = input.substring(1);
             final double offset = number.isEmpty() ? 0 : Double.parseDouble(number);
@@ -220,7 +222,7 @@ public class CommandSourceStack {
         }
     }
 
-    private @NotNull Vector3Builder parseLocalPos(@NotNull List<String> components) {
+    private Vector3Builder parseLocalPos(List<String> components) {
         final Vector3Builder out = location.copy();
 
         int i = 0;
@@ -255,7 +257,7 @@ public class CommandSourceStack {
      * @param coordinates 解析する文字列
      * @return 絶対座標
      */
-    public @NotNull Vector3Builder readCoordinates(@NotNull String coordinates) {
+    public Vector3Builder readCoordinates(String coordinates) {
         final List<String> componentInputs = List.of(coordinates.split("\\s"));
         final List<Double> componentOutputs = new ArrayList<>();
 
@@ -283,7 +285,7 @@ public class CommandSourceStack {
         return new Vector3Builder(componentOutputs.get(0), componentOutputs.get(1), componentOutputs.get(2));
     }
 
-    private float parseAbsoluteRot(@NotNull String input) {
+    private float parseAbsoluteRot(String input) {
         if (input.matches("^[+-]?\\d+(?:\\.\\d+)?$")) {
             return Float.parseFloat(input);
         }
@@ -292,7 +294,7 @@ public class CommandSourceStack {
         }
     }
 
-    private float parseRelativeRot(@NotNull String input, int axis) {
+    private float parseRelativeRot(String input, int axis) {
         if (input.matches("^~(?:[+-]?\\d+(?:\\.\\d+)?)?$")) {
             final String number = input.substring(1);
             final float offset = number.isEmpty() ? 0 : Float.parseFloat(number);
@@ -314,7 +316,7 @@ public class CommandSourceStack {
      * @param angles 解析する文字列
      * @return 絶対回転
      */
-    public @NotNull DualAxisRotationBuilder readAngles(@NotNull String angles) {
+    public DualAxisRotationBuilder readAngles(String angles) {
         final List<String> componentInputs = List.of(angles.split("\\s"));
         final List<Float> componentOutputs = new ArrayList<>();
 
@@ -339,7 +341,7 @@ public class CommandSourceStack {
      * @param selector セレクター
      * @return エンティティのリスト
      */
-    public <T extends Entity> @NotNull List<T> getEntities(@NotNull EntitySelector<T> selector) {
+    public <T extends Entity> List<T> getEntities(EntitySelector<T> selector) {
         return selector.getEntities(this);
     }
 
@@ -348,7 +350,7 @@ public class CommandSourceStack {
      * @param selector セレクター
      * @return エンティティのリスト
      */
-    public <T extends Entity> @NotNull List<T> getEntities(@NotNull EntitySelector.Builder<T> selector) {
+    public <T extends Entity> List<T> getEntities(EntitySelector.Builder<T> selector) {
         return getEntities(selector.build());
     }
 
@@ -356,7 +358,7 @@ public class CommandSourceStack {
      * このソーススタックをコピーします。
      * @return コピーされたオブジェクト
      */
-    public @NotNull CommandSourceStack copy() {
+    public CommandSourceStack copy() {
         final CommandSourceStack stack = new CommandSourceStack(sender);
         stack.write(dimension);
         stack.write(executor);
@@ -367,14 +369,105 @@ public class CommandSourceStack {
         return stack;
     }
 
+    @ApiStatus.Experimental
+    private net.minecraft.commands.CommandSourceStack toNMS(boolean sendsOutput) {
+        var stack = VanillaCommandWrapper.getListener(getSender())
+            .withPermission(Commands.LEVEL_OWNERS)
+            .withLocation(getLocation())
+            .withAnchor(
+                getEntityAnchor().getType().equals(EntityAnchor.EYES)
+                    ? EntityAnchorArgument.Anchor.EYES
+                    : EntityAnchorArgument.Anchor.FEET
+            );
+
+        if (hasExecutor()) {
+            stack = stack.withEntity(((CraftEntity) getExecutor()).getHandle());
+        }
+
+        if (!sendsOutput) {
+            stack = stack.withSuppressedOutput();
+        }
+
+        return stack;
+    }
+
+    @ApiStatus.Experimental
+    public int matchRegions(String begin, String end, String destination, ScanMode scanMode) {
+        final net.minecraft.commands.CommandSourceStack nms = toNMS(false);
+
+        final Vector3Builder beginV = readCoordinates(begin);
+        final Vector3Builder endV = readCoordinates(end);
+        final Vector3Builder destinationV = readCoordinates(destination);
+
+        final OptionalInt i;
+        try {
+            final Method method = ExecuteCommand.class.getDeclaredMethod(
+                "checkRegions",
+                ServerLevel.class,
+                BlockPos.class,
+                BlockPos.class,
+                BlockPos.class,
+                boolean.class
+            );
+
+            method.setAccessible(true);
+
+            i = (OptionalInt) method.invoke(
+                null,
+                nms.getLevel(),
+                beginV.toIntVector().toNMSBlockPos(),
+                endV.toIntVector().toNMSBlockPos(),
+                destinationV.toIntVector().toNMSBlockPos(),
+                scanMode.equals(ScanMode.MASKED)
+            );
+        }
+        catch (NoSuchMethodException e) {
+            throw new IllegalStateException("net.minecraft.server.commands.ExecuteCommand::checkRegions() へのアクセスに失敗しました", e);
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException("net.minecraft.server.commands.ExecuteCommand::checkRegions() の実行に失敗しました", e);
+        }
+
+        if (i.isEmpty()) {
+            return 0;
+        }
+        else {
+            return i.getAsInt();
+        }
+    }
+
+    @ApiStatus.Experimental
+    public boolean runCommand(String commandLine, boolean sendsOutput) {
+        AsyncCatcher.catchOp("Command Dispatched Async: " + commandLine);
+        final String command = StringUtils.normalizeSpace(commandLine.trim());
+        final Commands commands = ((CraftServer) Bukkit.getServer()).getHandle().getServer().getCommands();
+        final CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher = commands.getDispatcher();
+        final ParseResults<net.minecraft.commands.CommandSourceStack> results = dispatcher.parse(command, toNMS(sendsOutput));
+
+        try {
+            Commands.validateParseResults(results);
+        }
+        catch (CommandSyntaxException e) {
+            return false;
+        }
+
+        if (results.getContext().getNodes().isEmpty()) {
+            return false;
+        }
+
+        commands.performCommand(results, command, false);
+
+        return true;
+    }
+
     /**
      * コマンドを実行します。
      * @param command 実行するコマンド
      * @return 成功したときtrue、失敗すればfalse
-     * @apiNote 整数を返さないため、使用を推奨しません。
+     * @apiNote 安定こそしているが、送信者の情報が十分でない
      */
     @ApiStatus.Obsolete
-    public boolean runCommand(@NotNull String command) {
+    public boolean runCommandLegacy(String command) {
         final String common = String.format(
             "in %s positioned %s rotated %s",
             DimensionAccess.of(dimension).getId(),
@@ -382,51 +475,13 @@ public class CommandSourceStack {
             rotation.format("$c $c", 5)
         );
 
-        /*MinecraftServer.getServer().getCommands().getDispatcher()
-            .execute(command, new net.minecraft.commands.CommandSourceStack(
-                new CommandSource() {
-                    @Override
-                    public void sendSystemMessage(Component component) {
-
-                    }
-
-                    @Override
-                    public boolean acceptsSuccess() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean acceptsFailure() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean shouldInformAdmins() {
-                        return false;
-                    }
-
-                    @Override
-                    public CommandSender getBukkitSender(net.minecraft.commands.CommandSourceStack commandSourceStack) {
-                        return null;
-                    }
-                },
-                new Vec3(getPosition().x(), getPosition().y(), getPosition().z()),
-                new Vec2(getRotation().yaw(), getRotation().pitch()),
-                ((CraftWorld) getDimension()).getHandle(),
-                Commands.LEVEL_OWNERS,
-                getSender().toString(),
-                Component.literal(getSender().getDisplayName().toString()),
-                MinecraftServer.getServer(),
-                ((CraftEntity) getExecutor()).getHandle()
-            ));*/
-
         final String commandString;
 
         if (hasExecutor()) {
             commandString = String.format(
                 "execute %s as %s anchored %s run %s",
                 common,
-                executor.getUniqueId(),
+                getExecutor().getUniqueId(),
                 entityAnchor.getType().getId(),
                 command
             );
@@ -441,7 +496,7 @@ public class CommandSourceStack {
         }
 
         try {
-            return Bukkit.getServer().dispatchCommand(COMMAND_SENDER, commandString);
+            return Bukkit.dispatchCommand(COMMAND_SENDER, commandString);
         }
         catch (CommandException e) {
             return false;
@@ -451,5 +506,5 @@ public class CommandSourceStack {
     /**
      * 架空のコマンド送信者のオブジェクト
      */
-    public static final CommandSender COMMAND_SENDER = Bukkit.createCommandSender(component -> {});
+    private static final CommandSender COMMAND_SENDER = Bukkit.createCommandSender(component -> {});
 }

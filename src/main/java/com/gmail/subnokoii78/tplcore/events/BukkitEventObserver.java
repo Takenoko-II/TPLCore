@@ -4,7 +4,6 @@ import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.execute.CommandSourceStack;
 import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
 import com.gmail.subnokoii78.tplcore.execute.SelectorArgument;
-import com.gmail.subnokoii78.tplcore.execute.SourceOrigin;
 import com.gmail.takenokoii78.json.JSONParser;
 import com.gmail.subnokoii78.tplcore.schedule.GameTickScheduler;
 import com.gmail.subnokoii78.tplcore.schedule.SystemTimeScheduler;
@@ -206,7 +205,7 @@ public class BukkitEventObserver implements Listener {
         if (!tags.contains("plugin_api.messenger")) return;
 
         final EntitySelector<Entity> selector = EntitySelector.E.arg(SelectorArgument.TAG, "plugin_api.target");
-        final Set<Entity> targets = new HashSet<>(new CommandSourceStack(SourceOrigin.of(entity)).getEntities(selector));
+        final Set<Entity> targets = new HashSet<>(new CommandSourceStack(entity).getEntities(selector));
 
         final Location location = Objects.requireNonNullElse(event.getTo(), event.getFrom());
 

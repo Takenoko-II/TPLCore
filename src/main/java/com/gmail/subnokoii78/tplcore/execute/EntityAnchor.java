@@ -52,6 +52,19 @@ public final class EntityAnchor {
             types.put(id, this);
         }
 
+        @Override
+        public int hashCode() {
+            return Objects.hash(id);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Type type) {
+                return id.equals(type.id);
+            }
+            else return false;
+        }
+
         public @NotNull String getId() {
             return id;
         }

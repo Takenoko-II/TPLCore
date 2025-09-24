@@ -104,7 +104,5 @@ public class TPLCore {
         else {
             throw new TPLCoreException("プラグインのインスタンスが既に登録されています");
         }
-
-        new Execute();
     }
 }

@@ -56,6 +56,10 @@ tasks {
         options.encoding = Charsets.UTF_8.name()
 
         // 各種警告を無視(これがないと永遠にビルドできない)
-        options.compilerArgs.add("-Xlint:none")
+        options.compilerArgs.addAll(listOf("-Xlint:all", "-Xlint:-unchecked"))
+    }
+
+    withType<JavaCompile>().configureEach {
+        options.encoding = "UTF-8"
     }
 }

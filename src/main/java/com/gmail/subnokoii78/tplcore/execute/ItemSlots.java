@@ -17,8 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-// TODO: $() が返す値をMatcherを継承したもの(=MultiAccessor)にする
-// TODO: 現 $() の名称を getAccessorList() にする
 @Experimental
 @NullMarked
 public final class ItemSlots {
