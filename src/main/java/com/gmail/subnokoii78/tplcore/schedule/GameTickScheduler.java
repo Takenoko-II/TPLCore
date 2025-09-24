@@ -102,6 +102,7 @@ public class GameTickScheduler implements Scheduler {
      * @param delay 遅延する時間(ミリ秒)
      * @deprecated tickの処理に割り込むことができるため、予期しないエラーが発生する可能性があります。
      */
+    @Deprecated
     public static void runTimeout(Runnable callback, long delay) {
         if (delay < 0) {
             throw new IllegalArgumentException("負の遅延は無効です");
