@@ -149,7 +149,7 @@ public class ContainerInteraction {
 
             final ItemStack itemStack = event.getCurrentItem();
             if (itemStack == null) return;
-            if (ItemButton.isButton(itemStack)) return;
+            if (!ItemButton.isButton(itemStack)) return;
 
             final int slot = event.getSlot();
 

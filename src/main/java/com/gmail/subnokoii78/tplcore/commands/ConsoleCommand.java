@@ -1,6 +1,8 @@
 package com.gmail.subnokoii78.tplcore.commands;
 
+import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.commands.arguments.PluginMessageTypeArgument;
+import com.gmail.subnokoii78.tplcore.execute.Execute;
 import com.gmail.subnokoii78.tplcore.files.LogFile;
 import com.gmail.subnokoii78.tplcore.files.LogPage;
 import com.gmail.subnokoii78.tplcore.files.LogMessageType;
@@ -16,22 +18,25 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@NullMarked
 public final class ConsoleCommand extends AbstractCommand {
     private ConsoleCommand() {
         super();
     }
 
     @Override
-    public @NotNull LiteralCommandNode<CommandSourceStack> getCommandNode() {
+    public LiteralCommandNode<CommandSourceStack> getCommandNode() {
         return Commands.literal("console")
             .requires(stack -> {
-                return stack.getSender().isOp();
+                return stack.getSender().isOp() || isDeveloper(stack.getSender());
             })
             .then(
                 Commands.literal("query")
@@ -84,10 +89,30 @@ public final class ConsoleCommand extends AbstractCommand {
                             )
                     )
             )
+            .then(
+                Commands.literal("execute")
+                    .requires(stack -> {
+                        final CommandSender sender = stack.getSender();
+
+                        if (sender instanceof ConsoleCommandSender) {
+                            return true;
+                        }
+                        else return isDeveloper(sender);
+                    })
+                    .then(
+                        Commands.argument("command", StringArgumentType.greedyString())
+                            .executes(ctx -> {
+                                return execute(
+                                    ctx.getSource().getSender(),
+                                    ctx.getArgument("command", String.class)
+                                );
+                            })
+                    )
+            )
             .build();
     }
 
-    private int query(@NotNull CommandSender sender, int pageNumber, @NotNull Set<String> words) {
+    private int query(CommandSender sender, int pageNumber, Set<String> words) {
         final LogFile logFile = new LogFile(LogFile.LATEST_LOG_FILE_PATH);
 
         if (logFile.exists()) {
@@ -115,7 +140,7 @@ public final class ConsoleCommand extends AbstractCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private int put(@NotNull CommandSender sender, @NotNull LogMessageType type, @NotNull String message, boolean sendsChat) {
+    private int put(CommandSender sender, LogMessageType type, String message, boolean sendsChat) {
         sender.sendMessage(
             Component.text("ログに書き込みました:")
                 .color(NamedTextColor.WHITE)
@@ -131,6 +156,32 @@ public final class ConsoleCommand extends AbstractCommand {
         }
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    private int execute(CommandSender sender, String command) {
+        final boolean s = new Execute(new com.gmail.subnokoii78.tplcore.execute.CommandSourceStack(sender))
+            .run.command(command);
+
+        if (s) {
+            TPLCore.getPlugin().getComponentLogger().info(
+                Component.text("コンソール相当の権限のもとでコマンドが実行されました: ")
+                    .color(NamedTextColor.LIGHT_PURPLE)
+                    .append(
+                        Component.text(command)
+                            .color(NamedTextColor.YELLOW)
+                    )
+            );
+
+            sender.sendMessage("コマンドを実行します: " + command);
+
+            return Command.SINGLE_SUCCESS;
+        }
+        else {
+            sender.sendMessage(Component.text(
+                "コマンドの実行に失敗しました"
+            ).color(NamedTextColor.RED));
+            return 0;
+        }
     }
 
     public static final ConsoleCommand CONSOLE_COMMAND = new ConsoleCommand();

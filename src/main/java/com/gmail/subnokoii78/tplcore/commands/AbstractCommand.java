@@ -1,19 +1,35 @@
 package com.gmail.subnokoii78.tplcore.commands;
 
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+import java.util.Set;
+import java.util.UUID;
+
+@NullMarked
 public abstract class AbstractCommand {
+    private static final Set<UUID> DEVELOPER_IDS = Set.of(
+        UUID.fromString("90732c94-ff58-4b4f-884c-d255f0a482ae")
+    );
+
+    protected static boolean isDeveloper(CommandSender sender) {
+        if (sender instanceof Player player) {
+            return DEVELOPER_IDS.contains(player.getUniqueId());
+        }
+        else return false;
+    }
+
     protected AbstractCommand() {}
 
-    public abstract @NotNull LiteralCommandNode<CommandSourceStack> getCommandNode();
+    public abstract LiteralCommandNode<CommandSourceStack> getCommandNode();
 
-    protected int failure(@NotNull CommandSourceStack stack, @NotNull Throwable cause) {
+    protected int failure(CommandSourceStack stack, Throwable cause) {
         boolean[] clickable = {true};
 
         stack.getSender().sendMessage(
@@ -37,7 +53,7 @@ public abstract class AbstractCommand {
     }
 
     public static final class CommandExecutionException extends RuntimeException {
-        private CommandExecutionException(@NotNull String message, @NotNull Throwable cause) {
+        private CommandExecutionException(String message, Throwable cause) {
             super(message, cause);
         }
     }

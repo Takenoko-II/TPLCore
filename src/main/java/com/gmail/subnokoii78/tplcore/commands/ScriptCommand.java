@@ -4,6 +4,7 @@ import com.gmail.subnokoii78.tplcore.commands.arguments.LangTypeArgument;
 import com.gmail.subnokoii78.tplcore.eval.LangType;
 import com.gmail.subnokoii78.tplcore.vector.DualAxisRotationBuilder;
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
