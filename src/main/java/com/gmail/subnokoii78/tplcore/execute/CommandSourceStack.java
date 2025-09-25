@@ -74,6 +74,14 @@ public class CommandSourceStack {
         write(location.getWorld());
     }
 
+    public CommandSourceStack(CommandSender sender, @Nullable Entity executor, Location location) {
+        this.sender = sender;
+        write(executor);
+        write(location.getWorld());
+        write(Vector3Builder.from(location));
+        write(DualAxisRotationBuilder.from(location));
+    }
+
     /**
      * コマンドの送信者(実行者)を取得します。
      * @return 送信者

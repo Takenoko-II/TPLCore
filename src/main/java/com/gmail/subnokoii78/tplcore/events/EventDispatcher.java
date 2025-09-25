@@ -8,8 +8,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class EventDispatcher<T extends TPLEvent> {
-    private static final Map<TPLEventType<?>, EventDispatcher<?>> dispatchers = new HashMap<>();
-
     private final TPLEventType<T> type;
 
     private final Map<Integer, Consumer<T>> handlers = new HashMap<>();
@@ -40,16 +38,5 @@ public class EventDispatcher<T extends TPLEvent> {
 
     public void dispatch(T event) {
         handlers.forEach((id, handler) -> handler.accept(event));
-    }
-
-    public static <T extends TPLEvent> EventDispatcher<T> getDispatcher(@NotNull TPLEventType<T> type) {
-        if (dispatchers.containsKey(type)) {
-            return (EventDispatcher<T>) dispatchers.get(type);
-        }
-        else {
-            final EventDispatcher<T> dispatcher = new EventDispatcher<>(type);
-            dispatchers.put(type, dispatcher);
-            return dispatcher;
-        }
     }
 }

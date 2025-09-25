@@ -1,7 +1,7 @@
 package com.gmail.subnokoii78.tplcore;
 
+import com.gmail.subnokoii78.tplcore.api.PluginApi;
 import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
-import com.gmail.subnokoii78.tplcore.commands.ScriptCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
 import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
@@ -22,7 +22,6 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.function.Consumer;
 
 @NullMarked
 public class TPLCore {
@@ -38,19 +37,9 @@ public class TPLCore {
         }
     }
 
-    public static final class Events {
-        private Events() {}
+    public static final TPLEvents events = new TPLEvents();
 
-        public <T extends TPLEvent> int register(TPLEventType<T> type, Consumer<T> handler) {
-            return EventDispatcher.getDispatcher(type).add(handler);
-        }
-
-        public <T extends TPLEvent> boolean unregister(TPLEventType<T> type, int id) {
-            return EventDispatcher.getDispatcher(type).remove(id);
-        }
-    }
-
-    public static final Events events = new Events();
+    public static final PluginApi pluginApi = new PluginApi();
 
     @Nullable
     private static Scoreboard scoreboard;

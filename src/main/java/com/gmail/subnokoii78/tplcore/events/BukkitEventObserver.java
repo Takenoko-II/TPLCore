@@ -1,6 +1,7 @@
 package com.gmail.subnokoii78.tplcore.events;
 
 import com.gmail.subnokoii78.tplcore.TPLCore;
+import com.gmail.subnokoii78.tplcore.api.PluginApi;
 import com.gmail.subnokoii78.tplcore.execute.CommandSourceStack;
 import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
 import com.gmail.subnokoii78.tplcore.execute.SelectorArgument;
@@ -23,6 +24,7 @@ import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.*;
@@ -71,7 +73,7 @@ public class BukkitEventObserver implements Listener {
     }
 
     public void onTick() {
-        EventDispatcher.getDispatcher(TPLEventTypes.TICK).dispatch(new TickEvent(
+        TPLCore.events.getDispatcher(TPLEventTypes.TICK).dispatch(new TickEvent(
             Bukkit.getServer().getServerTickManager().isFrozen(),
             Bukkit.getServer().isTickingWorlds()
         ));
@@ -88,7 +90,7 @@ public class BukkitEventObserver implements Listener {
 
         new GameTickScheduler(() -> {
             // priorityがLOWだと少し速く発火してしまうのでゲームティックに合わせる
-            EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
+            TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                 .dispatch(new PlayerClickEvent(
                     event.getPlayer(),
                     event,
@@ -102,7 +104,7 @@ public class BukkitEventObserver implements Listener {
     public void onPrePlayerAttack(PrePlayerAttackEntityEvent event) {
         final Player player = event.getPlayer();
         TimeStorage.getStorage(PrePlayerAttackEntityEvent.class.getName()).setTime(player);
-        EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
+        TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
             .dispatch(new PlayerClickEvent(
                 event.getPlayer(),
                 event,
@@ -138,7 +140,7 @@ public class BukkitEventObserver implements Listener {
             if (System.currentTimeMillis() - interactAtEntityEventTime < 50L) return;
 
             if (block != null) {
-                EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
+                TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                     .dispatch(new PlayerClickEvent(
                         player,
                         event,
@@ -147,7 +149,7 @@ public class BukkitEventObserver implements Listener {
                     ));
             }
             else {
-                EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
+                TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                     .dispatch(new PlayerClickEvent(
                         player,
                         event,
@@ -175,7 +177,7 @@ public class BukkitEventObserver implements Listener {
 
             if (block != null) {
                 new GameTickScheduler(() -> {
-                    EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
+                    TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                         .dispatch(new PlayerClickEvent(
                             player,
                             event,
@@ -186,7 +188,7 @@ public class BukkitEventObserver implements Listener {
             }
             else {
                 new GameTickScheduler(() -> {
-                    EventDispatcher.getDispatcher(TPLEventTypes.PLAYER_CLICK)
+                    TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                         .dispatch(new PlayerClickEvent(
                             player,
                             event,
@@ -197,7 +199,7 @@ public class BukkitEventObserver implements Listener {
         }).runTimeout(8L);
     }
 
-    @EventHandler
+    /*@EventHandler
     public void onEntityTeleport(EntityTeleportEvent event) {
         final Entity entity = event.getEntity();
         final Set<String> tags = entity.getScoreboardTags();
@@ -229,7 +231,7 @@ public class BukkitEventObserver implements Listener {
                     jsonObject
                 );
 
-                EventDispatcher.getDispatcher(TPLEventTypes.DATAPACK_MESSAGE_RECEIVE).dispatch(data);
+                TPLCore.events.getDispatcher(TPLEventTypes.DATAPACK_MESSAGE_RECEIVE).dispatch(data);
 
                 if (!TPLCore.getScoreboard().hasObjective("plugin_api.return")) return;
                 final ScoreObjective objective = TPLCore.getScoreboard().getObjective("plugin_api.return");
@@ -238,6 +240,13 @@ public class BukkitEventObserver implements Listener {
             catch (RuntimeException e) {
                 return;
             }
+        }
+    }*/
+
+    @EventHandler
+    public void onServerCommand(ServerCommandEvent event) {
+        if (event.getCommand().endsWith(String.format("function %s {key: %s}", PluginApi.TRIGGER, PluginApi.KEY))) {
+            TPLCore.pluginApi.trigger(PluginApi.KEY);
         }
     }
 }
