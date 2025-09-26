@@ -14,7 +14,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -75,12 +75,17 @@ public class BukkitEventObserver implements Listener {
         TimeStorage.getStorage(PlayerDropItemEvent.class.getName()).setTime(event.getPlayer());
     }
 
-    @EventHandler(priority = EventPriority.LOW)
-    public void onPlayerInteractAtEntity(PlayerInteractAtEntityEvent event) {
-        TimeStorage.getStorage(PlayerInteractAtEntityEvent.class.getName()).setTime(event.getPlayer());
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        final long lastFiredTime = TimeStorage.getStorage(PlayerInteractEntityEvent.class.getName()).getTime(event.getPlayer());
+
+        // おそらくバグのための2回目の発火を抑制
+        if (System.currentTimeMillis() - lastFiredTime < 50L) return;
+
+        TimeStorage.getStorage(PlayerInteractEntityEvent.class.getName()).setTime(event.getPlayer());
 
         new GameTickScheduler(() -> {
-            // priorityがLOWだと少し速く発火してしまうのでゲームティックに合わせる
+            // priorityがLOWESTだと少し速く発火してしまうのでゲームティックに合わせる
             TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                 .dispatch(new PlayerClickEvent(
                     event.getPlayer(),
@@ -125,10 +130,10 @@ public class BukkitEventObserver implements Listener {
 
             TimeStorage.getStorage(PlayerInteractEvent.class.getName()).setTime(player);
 
-            final long interactAtEntityEventTime = TimeStorage.getStorage(PlayerInteractAtEntityEvent.class.getName()).getTime(player);
+            final long interactEntityEventTime = TimeStorage.getStorage(PlayerInteractEntityEvent.class.getName()).getTime(player);
 
             // エンティティへの右クリックと同時のとき発火しない
-            if (System.currentTimeMillis() - interactAtEntityEventTime < 50L) return;
+            if (System.currentTimeMillis() - interactEntityEventTime < 50L) return;
 
             if (block != null) {
                 TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
@@ -154,7 +159,7 @@ public class BukkitEventObserver implements Listener {
         new SystemTimeScheduler(() -> {
             final long dropEventTime = TimeStorage.getStorage(PlayerDropItemEvent.class.getName()).getTime(player);
             final long interactEventTime = TimeStorage.getStorage(PlayerInteractEvent.class.getName()).getTime(player);
-            final long interactAtEntityEventTime = TimeStorage.getStorage(PlayerInteractAtEntityEvent.class.getName()).getTime(player);
+            final long interactEntityEventTime = TimeStorage.getStorage(PlayerInteractEntityEvent.class.getName()).getTime(player);
             final long preAttackTime = TimeStorage.getStorage(PrePlayerAttackEntityEvent.class.getName()).getTime(player);
 
             // ドロップと同時のとき発火しない
@@ -162,7 +167,7 @@ public class BukkitEventObserver implements Listener {
             // 右クリックと同時のとき発火しない
             else if (System.currentTimeMillis() - interactEventTime < 50L) return;
             // エンティティへの右クリックと同時のとき発火しない
-            else if (System.currentTimeMillis() - interactAtEntityEventTime < 50L) return;
+            else if (System.currentTimeMillis() - interactEntityEventTime < 50L) return;
             // エンティティへの攻撃と同時のとき発火しない
             else if (System.currentTimeMillis() - preAttackTime < 50L) return;
 
