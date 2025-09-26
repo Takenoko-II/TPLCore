@@ -19,7 +19,10 @@ import org.bukkit.entity.Entity;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @NullMarked
 public final class PluginApi {
@@ -30,6 +33,8 @@ public final class PluginApi {
     public static final String EXECUTOR_ENTITY_TAG = NAMESPACE + '.' + "executor";
 
     public static final String LOCATION_MESSENGER_ENTITY_TAG = NAMESPACE + '.' + "location_messenger";
+
+    public static final String TARGET_ENTITY_TAG = NAMESPACE + '.' + "target";
 
     public static final String KEY = "KEY";
 
@@ -131,13 +136,19 @@ public final class PluginApi {
         );
     }
 
+    private Set<Entity> getTargets() {
+        return new HashSet<>(new CommandSourceStack().getEntities(EntitySelector.E.arg(SelectorArgument.TAG, TARGET_ENTITY_TAG)));
+    }
+
     /**
      * commands:
      * <br>tag @s add plugin_api.executor
      * <br>summon marker ~ ~ ~ {Tags: ["plugin_api.location_messenger"]}
+     * <br>tag 0-0-0-0 add plugin_api.target
      * <br>function plugin_api:__trigger__ {key: "KEY"}
      * <br>tag @s remove plugin_api.executor
      * <br>kill @e[type=marker,tag=plugin_api.location_messenger,limit=1]
+     * <br>tag @e[tag=plugin_api.target] remove plugin_api.target
      *
      * @param key {@value KEY}
      */
@@ -148,12 +159,13 @@ public final class PluginApi {
 
         final MojangsonCompound in = readBroadcastingInput();
         final CommandSourceStack context = getContext();
+        final Set<Entity> targets = getTargets();
 
         if (in == null || context == null) {
             return;
         }
 
-        final DatapackMessageReceiveEvent event = new DatapackMessageReceiveEvent(context, in);
+        final DatapackMessageReceiveEvent event = new DatapackMessageReceiveEvent(context, in, targets);
 
         TPLCore.events.getDispatcher(TPLEventTypes.DATAPACK_MESSAGE_RECEIVE).dispatch(event);
 
