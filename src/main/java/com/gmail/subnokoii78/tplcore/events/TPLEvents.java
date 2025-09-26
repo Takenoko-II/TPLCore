@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * イベントひとつにつきクラスひとつが必要なイベントAPI
+ */
 @NullMarked
 public class TPLEvents {
     private final Map<TPLEventType<?>, EventDispatcher<?>> dispatchers = new HashMap<>();
