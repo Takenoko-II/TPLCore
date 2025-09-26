@@ -1,10 +1,11 @@
-package com.gmail.subnokoii78.tplcore.api;
+package com.gmail.subnokoii78.tplcore.events;
 
 import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.events.DatapackMessageReceiveEvent;
 import com.gmail.subnokoii78.tplcore.events.TPLEventTypes;
 import com.gmail.subnokoii78.tplcore.execute.*;
 import com.gmail.takenokoii78.mojangson.MojangsonParser;
+import com.gmail.takenokoii78.mojangson.MojangsonPath;
 import com.gmail.takenokoii78.mojangson.MojangsonSerializer;
 import com.gmail.takenokoii78.mojangson.MojangsonValueTypes;
 import com.gmail.takenokoii78.mojangson.values.*;
@@ -38,7 +39,7 @@ public final class PluginApi {
 
     public static final String KEY = "KEY";
 
-    private static final ResourceLocation STORAGE_BROADCASTING = ResourceLocation.fromNamespaceAndPath(NAMESPACE, "broadcast");
+    private static final ResourceLocation STORAGE_BROADCASTING = ResourceLocation.fromNamespaceAndPath(NAMESPACE, "broadcasting");
 
     private static final CommandSender PLUGIN_API_COMMAND_SENDER = Bukkit.createCommandSender($ -> {
 
@@ -91,8 +92,8 @@ public final class PluginApi {
     }
 
     private void writeBroadcastingOutput(MojangsonCompound output) {
-        if (!(output.has("returnValue") && output.getTypeOf("returnValue").equals(MojangsonValueTypes.INT))) {
-            throw new IllegalArgumentException("returnValue: int が見つかりませんでした");
+        if (!(output.has("return_value") && output.getTypeOf("return_value").equals(MojangsonValueTypes.INT))) {
+            output.set("return_value", 0);
         }
 
         final MojangsonCompound compound = readBroadcasting();
@@ -109,7 +110,7 @@ public final class PluginApi {
             executor = null;
         }
         else if (executors.size() > 1) {
-            throw new IllegalArgumentException("Could not get context: executor must be 1");
+            throw new IllegalArgumentException("Could not get context: executor must be single entity");
         }
         else {
             executor = executors.getFirst();
@@ -123,7 +124,7 @@ public final class PluginApi {
             return null;
         }
         else if (locationMessengers.size() > 1) {
-            throw new IllegalArgumentException("Could not get context: location messenger must be 1");
+            throw new IllegalArgumentException("Could not get context: location messenger must be single entity");
         }
         else {
             locationMessenger = locationMessengers.getFirst();
@@ -149,14 +150,8 @@ public final class PluginApi {
      * <br>tag @s remove plugin_api.executor
      * <br>kill @e[type=marker,tag=plugin_api.location_messenger,limit=1]
      * <br>tag @e[tag=plugin_api.target] remove plugin_api.target
-     *
-     * @param key {@value KEY}
      */
-    public void trigger(String key) {
-        if (!key.equals(KEY)) {
-            return;
-        }
-
+    void trigger() {
         final MojangsonCompound in = readBroadcastingInput();
         final CommandSourceStack context = getContext();
         final Set<Entity> targets = getTargets();
@@ -169,7 +164,7 @@ public final class PluginApi {
 
         TPLCore.events.getDispatcher(TPLEventTypes.DATAPACK_MESSAGE_RECEIVE).dispatch(event);
 
-        event.getOutput().set("returnValue", event.getReturnValue());
+        event.getOutput().set("return_value", event.getReturnValue());
         writeBroadcastingOutput(event.getOutput());
     }
 }

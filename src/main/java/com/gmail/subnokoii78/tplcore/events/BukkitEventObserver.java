@@ -1,26 +1,16 @@
 package com.gmail.subnokoii78.tplcore.events;
 
 import com.gmail.subnokoii78.tplcore.TPLCore;
-import com.gmail.subnokoii78.tplcore.api.PluginApi;
-import com.gmail.subnokoii78.tplcore.execute.CommandSourceStack;
-import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
-import com.gmail.subnokoii78.tplcore.execute.SelectorArgument;
-import com.gmail.takenokoii78.json.JSONParser;
 import com.gmail.subnokoii78.tplcore.schedule.GameTickScheduler;
 import com.gmail.subnokoii78.tplcore.schedule.SystemTimeScheduler;
-import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
-import com.gmail.takenokoii78.json.values.JSONObject;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -246,7 +236,7 @@ public class BukkitEventObserver implements Listener {
     @EventHandler
     public void onServerCommand(ServerCommandEvent event) {
         if (event.getCommand().endsWith(String.format("function %s {key: %s}", PluginApi.TRIGGER, PluginApi.KEY))) {
-            TPLCore.pluginApi.trigger(PluginApi.KEY);
+            TPLCore.pluginApi.trigger();
         }
     }
 }
