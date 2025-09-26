@@ -6,15 +6,16 @@ import com.gmail.subnokoii78.tplcore.schedule.SystemTimeScheduler;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.*;
@@ -189,54 +190,12 @@ public class BukkitEventObserver implements Listener {
         }).runTimeout(8L);
     }
 
-    /*@EventHandler
+    @EventHandler
     public void onEntityTeleport(EntityTeleportEvent event) {
         final Entity entity = event.getEntity();
-        final Set<String> tags = entity.getScoreboardTags();
 
-        if (!tags.contains("plugin_api.messenger")) return;
-
-        final EntitySelector<Entity> selector = EntitySelector.E.arg(SelectorArgument.TAG, "plugin_api.target");
-        final Set<Entity> targets = new HashSet<>(new CommandSourceStack(entity).getEntities(selector));
-
-        final Location location = Objects.requireNonNullElse(event.getTo(), event.getFrom());
-
-        entity.remove();
-
-        for (final String tag : tags) {
-            if (!tag.startsWith("plugin_api.json_message")) continue;
-
-            final String message = tag.replaceFirst("^plugin_api\\.json_message\\s+", "");
-
-            try {
-                final JSONObject jsonObject = JSONParser.object(message);
-
-                if (!jsonObject.has("id")) {
-                    throw new IllegalArgumentException();
-                }
-
-                final DatapackMessageReceiveEvent data = new DatapackMessageReceiveEvent(
-                    location,
-                    targets,
-                    jsonObject
-                );
-
-                TPLCore.events.getDispatcher(TPLEventTypes.DATAPACK_MESSAGE_RECEIVE).dispatch(data);
-
-                if (!TPLCore.getScoreboard().hasObjective("plugin_api.return")) return;
-                final ScoreObjective objective = TPLCore.getScoreboard().getObjective("plugin_api.return");
-                objective.setScore("#", data.getReturnValue());
-            }
-            catch (RuntimeException e) {
-                return;
-            }
-        }
-    }*/
-
-    @EventHandler
-    public void onServerCommand(ServerCommandEvent event) {
-        if (event.getCommand().endsWith(String.format("function %s {key: %s}", PluginApi.TRIGGER, PluginApi.KEY))) {
-            TPLCore.pluginApi.trigger();
+        if (entity.getScoreboardTags().contains(PluginApi.MESSENGER_ENTITY_TAG)) {
+            TPLCore.pluginApi.broadcast(entity);
         }
     }
 }
