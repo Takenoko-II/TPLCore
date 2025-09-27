@@ -109,6 +109,10 @@ public class CommandSourceStack {
         else throw new IllegalStateException("実行者が存在しません");
     }
 
+    public @Nullable Entity getExecutorOrNull() {
+        return executor;
+    }
+
     /**
      * 実行ディメンションを返します。
      * @return 実行ディメンション
@@ -509,6 +513,14 @@ public class CommandSourceStack {
         catch (CommandException e) {
             return false;
         }
+    }
+
+    public static CommandSourceStack fromPaper(io.papermc.paper.command.brigadier.CommandSourceStack stack) {
+        return new CommandSourceStack(
+            stack.getSender(),
+            stack.getExecutor(),
+            stack.getLocation()
+        );
     }
 
     /**

@@ -7,6 +7,7 @@ import com.gmail.takenokoii78.mojangson.MojangsonSerializer;
 import com.gmail.takenokoii78.mojangson.MojangsonValueTypes;
 import com.gmail.takenokoii78.mojangson.values.*;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.papermc.paper.datapack.Datapack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
@@ -24,17 +25,17 @@ import java.util.Set;
 
 @NullMarked
 public final class PluginApi {
-    public static final String NAMESPACE = "plugin_api";
+    public static final String ID = "plugin_api";
 
     public static final String BROADCASTING = "broadcasting";
 
-    public static final String EXECUTOR_ENTITY_TAG = NAMESPACE + '.' + "executor";
+    public static final String EXECUTOR_ENTITY_TAG = ID + '.' + "executor";
 
-    public static final String MESSENGER_ENTITY_TAG = NAMESPACE + '.' + "messenger";
+    public static final String MESSENGER_ENTITY_TAG = ID + '.' + "messenger";
 
-    public static final String TARGET_ENTITY_TAG = NAMESPACE + '.' + "target";
+    public static final String TARGET_ENTITY_TAG = ID + '.' + "target";
 
-    private static final ResourceLocation STORAGE = ResourceLocation.fromNamespaceAndPath(NAMESPACE, "");
+    private static final ResourceLocation STORAGE = ResourceLocation.fromNamespaceAndPath(ID, "");
 
     private static final CommandSender PLUGIN_API_COMMAND_SENDER = Bukkit.createCommandSender($ -> {
 
@@ -160,5 +161,19 @@ public final class PluginApi {
 
         event.getOutput().set("return_value", event.getReturnValue());
         writeBroadcastingOutput(event.getOutput());
+    }
+
+    public String getPackName() {
+        return TPLCore.getPlugin().getName() + '/' + ID;
+    }
+
+    public Datapack getDatapack() {
+        final Datapack datapack = Bukkit.getDatapackManager().getPack(getPackName());
+
+        if (datapack == null) {
+            throw new IllegalStateException("データパック '" + ID + "' の取得に失敗しました");
+        }
+
+        return datapack;
     }
 }

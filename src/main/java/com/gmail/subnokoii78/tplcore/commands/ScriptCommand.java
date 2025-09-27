@@ -2,22 +2,17 @@ package com.gmail.subnokoii78.tplcore.commands;
 
 import com.gmail.subnokoii78.tplcore.commands.arguments.LangTypeArgument;
 import com.gmail.subnokoii78.tplcore.eval.LangType;
-import com.gmail.subnokoii78.tplcore.vector.DualAxisRotationBuilder;
-import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import org.bukkit.Bukkit;
-import org.bukkit.Server;
-import org.bukkit.World;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -40,36 +35,32 @@ public class ScriptCommand extends AbstractCommand {
             .then(
                 Commands.argument("lang_type", LangTypeArgument.langType())
                     .then(
-                        Commands.argument("script", StringArgumentType.string())
+                        Commands.argument("script", StringArgumentType.greedyString())
                             .executes(ctx -> {
                                 final LangType type = ctx.getArgument("lang_type", LangType.class);
                                 final String script = ctx.getArgument("script", String.class);
-                                return type.interpret(ctx.getSource(), script);
+                                final int returnValue = type.interpret(ctx.getSource(), script);
+
+                                if (returnValue > 0) {
+                                    ctx.getSource().getSender().sendMessage(Component.text(
+                                        String.format(
+                                            "%s の実行に成功しました: %d",
+                                            type.name().toLowerCase(Locale.ROOT),
+                                            returnValue
+                                        )
+                                    ));
+                                }
+                                else {
+                                    return failure(ctx.getSource(), new IllegalArgumentException(
+                                        String.format("%s の実行に失敗しました", type.name().toLowerCase(Locale.ROOT))
+                                    ));
+                                }
+
+                                return returnValue;
                             })
                     )
             )
             .build();
-    }
-
-    private static final class ScriptCommandContext {
-        @Nullable
-        public final Player player;
-
-        public final World dimension;
-
-        public final Vector3Builder position;
-
-        public final DualAxisRotationBuilder rotation;
-
-        public final Server server;
-
-        public ScriptCommandContext(@Nullable Player player, @NotNull World dimension, @NotNull Vector3Builder position, @NotNull DualAxisRotationBuilder rotation) {
-            this.player = player;
-            this.dimension = dimension;
-            this.position = position;
-            this.rotation = rotation;
-            this.server = Bukkit.getServer();
-        }
     }
 
     public static final ScriptCommand SCRIPT_COMMAND = new ScriptCommand();

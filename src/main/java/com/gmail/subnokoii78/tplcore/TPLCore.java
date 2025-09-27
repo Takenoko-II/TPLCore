@@ -1,5 +1,6 @@
 package com.gmail.subnokoii78.tplcore;
 
+import com.gmail.subnokoii78.tplcore.commands.ScriptCommand;
 import com.gmail.subnokoii78.tplcore.events.PluginApi;
 import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
@@ -66,24 +67,6 @@ public class TPLCore {
         }
     }
 
-    public static String getDatapackId(Datapack datapack) {
-        if (!(datapack instanceof PaperDatapack paperDatapack)) {
-            throw new IllegalArgumentException(PaperDatapack.class.getName() + " へのキャストに失敗しました");
-        }
-
-        final Pack pack;
-        try {
-            final Field field = PaperDatapack.class.getDeclaredField("pack");
-            field.setAccessible(true);
-            pack = (Pack) field.get(paperDatapack);
-        }
-        catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new IllegalStateException("リフレクションの実行に失敗しました");
-        }
-
-        return pack.getId();
-    }
-
     public static Scoreboard getScoreboard() throws TPLCoreException {
         if (scoreboard == null) {
             throw new TPLCoreException("スコアボードのインスタンスが用意されていません");
@@ -110,10 +93,10 @@ public class TPLCore {
             plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
                 final Commands registrar = event.registrar();
                 registrar.register(ConsoleCommand.CONSOLE_COMMAND.getCommandNode());
-                // registrar.register(ScriptCommand.SCRIPT_COMMAND.getCommandNode());
+                registrar.register(ScriptCommand.SCRIPT_COMMAND.getCommandNode());
             });
 
-            plugin.getComponentLogger().info(Component.text("TPLCore が起動しました").color(NamedTextColor.BLUE));
+            plugin.getComponentLogger().info(Component.text("TPLCore が起動しました"));
         }
         else {
             throw new TPLCoreException("プラグインのインスタンスが既に登録されています");

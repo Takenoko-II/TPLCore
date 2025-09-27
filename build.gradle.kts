@@ -26,6 +26,7 @@ dependencies {
         "../JSON/target/JSON-1.0-SNAPSHOT.jar",
         "../ConsoleColorizer/target/ConsoleColorizer-1.0-SNAPSHOT.jar"
     ))
+    implementation("org.codehaus.groovy:groovy:3.0.21")
 }
 
 tasks {

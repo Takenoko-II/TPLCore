@@ -1,18 +1,19 @@
 package com.gmail.subnokoii78.tplcore.random;
 
-import com.gmail.subnokoii78.tplcore.execute.DimensionAccess;
 import com.gmail.subnokoii78.tplcore.execute.NumberRange;
 import org.bukkit.Material;
 import org.bukkit.block.Container;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+@ApiStatus.Experimental
 public final class LootTable {
     private final Set<Pool> pools = new HashSet<>();
 
