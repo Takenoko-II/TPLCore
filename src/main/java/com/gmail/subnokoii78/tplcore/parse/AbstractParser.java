@@ -1,10 +1,12 @@
 package com.gmail.subnokoii78.tplcore.parse;
 
+import com.gmail.subnokoii78.tplcore.generic.MultiMap;
+import com.gmail.subnokoii78.tplcore.generic.Pair;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @NullMarked
@@ -253,6 +255,82 @@ public abstract class AbstractParser<T> {
         if (next(true, getTrue()) != null) return true;
         else if (next(true, getFalse()) != null) return false;
         else throw exception("真偽値の解析に失敗しました");
+    }
+
+    protected <K, V> MultiMap<K, V> multiMap(char beginBrace, char endBrace, char separator, char connector, Function<String, K> keyResolver, Function<String, V> valueResolver) {
+        if (beginBrace == endBrace) {
+            throw exception("開始の括弧と終了の括弧は異なる文字でなければなりません");
+        }
+        else if (separator == connector) {
+            throw exception("ペアの区切り文字とキーと値の接続文字は異なる文字でなければなりません");
+        }
+        else if (getWhitespace().stream().anyMatch(c -> Set.of(beginBrace, endBrace, separator, connector).contains(c))) {
+            throw exception("引数に渡されるすべての文字は空白文字と判定される文字であってはなりません");
+        }
+        else if (getQuotes().stream().anyMatch(c -> Set.of(beginBrace, endBrace, separator, connector).contains(c))) {
+            throw exception("引数に渡されるすべての文字はクォーテーションと判定される文字であってはなりません");
+        }
+
+        ignore();
+        if (isOver()) {
+            return new MultiMap<>();
+        }
+
+        final MultiMap<K, V> map = new MultiMap<>();
+
+        expect(true, beginBrace);
+
+        do {
+            final String key = string(false, connector);
+
+            expect(true, connector);
+
+            final String value = string(false, separator, endBrace);
+
+            map.put(
+                keyResolver.apply(key),
+                valueResolver.apply(value)
+            );
+        }
+        while (next(true, separator) != null);
+
+        expect(true, endBrace);
+
+        return map;
+    }
+
+    protected <E> List<E> list(char beginBrace, char endBrace, char separator, Function<String, E> valueResolver) {
+        if (beginBrace == endBrace) {
+            throw exception("開始の括弧と終了の括弧は異なる文字でなければなりません");
+        }
+        else if (getWhitespace().stream().anyMatch(c -> Set.of(beginBrace, endBrace, separator).contains(c))) {
+            throw exception("引数に渡されるすべての文字は空白文字と判定される文字であってはなりません");
+        }
+        else if (getQuotes().stream().anyMatch(c -> Set.of(beginBrace, endBrace, separator).contains(c))) {
+            throw exception("引数に渡されるすべての文字はクォーテーションと判定される文字であってはなりません");
+        }
+
+        ignore();
+        if (isOver()) {
+            return new ArrayList<>();
+        }
+
+        final List<E> list = new ArrayList<>();
+
+        expect(true, beginBrace);
+
+        do {
+            final String value = string(false, separator, endBrace);
+
+            list.add(
+                valueResolver.apply(value)
+            );
+        }
+        while (next(true, separator) != null);
+
+        expect(true, endBrace);
+
+        return list;
     }
 
     protected ParseException exception(String message) {

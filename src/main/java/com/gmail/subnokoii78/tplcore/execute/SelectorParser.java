@@ -147,7 +147,7 @@ public final class SelectorParser extends AbstractParser<EntitySelector<?>> {
             return type;
         }
         else {
-            throw new SelectorParseException("パーサーが対応していない型が渡されました");
+            throw exception("パーサーが対応していない型が渡されました");
         }
     }
 
