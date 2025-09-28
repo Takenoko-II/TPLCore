@@ -22,7 +22,7 @@ public class ScriptCommand extends AbstractCommand {
     protected LiteralCommandNode<CommandSourceStack> getCommandNode() {
         return Commands.literal("script")
             .requires(stack -> {
-                return isAllowed(stack.getSender());
+                return stack.getSender().isOp() && isAllowed(stack.getSender());
             })
             .then(
                 Commands.argument("script_language", ScriptLanguageArgument.scriptLanguage())
@@ -31,24 +31,22 @@ public class ScriptCommand extends AbstractCommand {
                             .executes(ctx -> {
                                 final ScriptLanguage type = ctx.getArgument("script_language", ScriptLanguage.class);
                                 final String script = ctx.getArgument("script", String.class);
-                                final int returnValue = type.interpret(ctx.getSource(), script);
+                                final ScriptLanguage.ScriptEvaluationResult<?> result = type.interpret(ctx.getSource(), script);
 
-                                if (returnValue > 0) {
-                                    ctx.getSource().getSender().sendMessage(Component.text(
-                                        String.format(
-                                            "%s の実行に成功しました: %d",
-                                            type.name().toLowerCase(Locale.ROOT),
-                                            returnValue
-                                        )
-                                    ));
+                                if (result instanceof ScriptLanguage.ScriptEvaluationResult.ScriptEvaluationFailure failure) {
+                                    return failure(ctx.getSource(), failure.getResultValue());
                                 }
                                 else {
-                                    return failure(ctx.getSource(), new IllegalArgumentException(
-                                        String.format("%s の実行に失敗しました", type.name().toLowerCase(Locale.ROOT))
+                                    ctx.getSource().getSender().sendMessage(Component.text(
+                                        String.format(
+                                            "%s の実行に成功しました: %s",
+                                            type.name().toLowerCase(Locale.ROOT),
+                                            result.getResultValue().toString()
+                                        )
                                     ));
-                                }
 
-                                return returnValue;
+                                    return result.getReturnInt();
+                                }
                             })
                     )
             )

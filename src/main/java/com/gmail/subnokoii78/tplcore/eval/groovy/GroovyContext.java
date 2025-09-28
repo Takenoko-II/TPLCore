@@ -145,6 +145,7 @@ public class GroovyContext {
             .putMethod("give", GroovyMethod.builder(Integer.class, ctx -> {
                 ctx.getArgument("player", Player.class).getInventory().addItem(ctx.getArgument("itemStack", ItemStack.class));
                 return 1;
-            }).argument("player", Player.class).argument("itemStack", ItemStack.class));
+            }).argument("player", Player.class).argument("itemStack", ItemStack.class))
+            .putClasses(SelectorParser.class);
     }
 }

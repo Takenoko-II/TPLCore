@@ -1,7 +1,8 @@
 package com.gmail.subnokoii78.tplcore.events;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public interface TPLEvent {
-    @NotNull TPLEventType<? extends TPLEvent> getType();
+    TPLEventType<? extends TPLEvent> getType();
 }

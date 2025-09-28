@@ -59,7 +59,14 @@ public final class Scoreboard {
         if (hasObjective(name)) {
             throw new IllegalStateException("オブジェクティブ '" + name + "' は既に存在します");
         }
-        else return new ScoreObjective(this, bukkit.registerNewObjective(name, criteria == null ? Criteria.DUMMY : criteria, displayName, renderType == null ? RenderType.INTEGER : renderType));
+        else {
+            return new ScoreObjective(this, bukkit.registerNewObjective(
+                name,
+                criteria == null ? Criteria.DUMMY : criteria,
+                displayName == null ? Component.text(name) : displayName,
+                renderType == null ? RenderType.INTEGER : renderType
+            ));
+        }
     }
 
     public @NotNull ScoreObjective getOrAddObjective(@NotNull String name, @Nullable Criteria criteria, @Nullable Component displayName, @Nullable RenderType renderType) {

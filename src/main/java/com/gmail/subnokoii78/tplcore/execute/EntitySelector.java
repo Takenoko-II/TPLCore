@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * エンティティセレクターを表現するクラス
@@ -92,6 +93,24 @@ public final class EntitySelector<T extends Entity> {
         return builder.selectorSpecificModifier(modifier(builder.getTargetCandidates(stack), stack), stack, arguments);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EntitySelector<?> that = (EntitySelector<?>) o;
+        return Objects.equals(arguments, that.arguments);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(arguments);
+    }
+
+    @Override
+    public String toString() {
+        return builder.toString() + arguments;
+    }
+
     private static @NotNull List<Entity> getAllEntities() {
         return Bukkit.getServer().getWorlds().stream()
             .flatMap(world -> world.getEntities().stream())
@@ -116,6 +135,11 @@ public final class EntitySelector<T extends Entity> {
         @NotNull List<Entity> selectorSpecificModifier(@NotNull List<Entity> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments) {
             return entities;
         }
+
+        @Override
+        public String toString() {
+            return "@e";
+        }
     };
 
     /**
@@ -130,6 +154,11 @@ public final class EntitySelector<T extends Entity> {
         @Override
         @NotNull List<Entity> selectorSpecificModifier(@NotNull List<Entity> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments) {
             return entities;
+        }
+
+        @Override
+        public String toString() {
+            return "@s";
         }
     };
 
@@ -146,6 +175,11 @@ public final class EntitySelector<T extends Entity> {
         @Override
         @NotNull List<Player> selectorSpecificModifier(@NotNull List<Player> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments) {
             return entities;
+        }
+
+        @Override
+        public String toString() {
+            return "@a";
         }
     };
 
@@ -169,6 +203,11 @@ public final class EntitySelector<T extends Entity> {
                 return entities;
             }
             else return List.of(entities.getFirst());
+        }
+
+        @Override
+        public String toString() {
+            return "@p";
         }
     };
 
@@ -195,6 +234,11 @@ public final class EntitySelector<T extends Entity> {
             }
             else return List.of(entities.getFirst());
         }
+
+        @Override
+        public String toString() {
+            return "@r";
+        }
     };
 
     /**
@@ -215,6 +259,11 @@ public final class EntitySelector<T extends Entity> {
             }
             else return List.of(entities.getFirst());
         }
+
+        @Override
+        public String toString() {
+            return "@n";
+        }
     };
 
     /**
@@ -226,6 +275,9 @@ public final class EntitySelector<T extends Entity> {
         abstract @NotNull List<T> getTargetCandidates(@NotNull CommandSourceStack stack);
 
         abstract @NotNull List<T> selectorSpecificModifier(@NotNull List<T> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments);
+
+        @Override
+        public abstract String toString();
 
         /**
          * 新しくセレクターを作成します。

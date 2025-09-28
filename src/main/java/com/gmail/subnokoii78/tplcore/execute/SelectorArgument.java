@@ -44,6 +44,17 @@ public abstract class SelectorArgument {
         return Objects.hash(value, getId());
     }
 
+    @Override
+    public String toString() {
+        if (getId().equals(SelectorArgument.NOT.getId())) {
+            final SelectorArgument p = (SelectorArgument) value;
+            return p.getId() + "=!" + p.value;
+        }
+        else {
+            return getId() + '=' + value;
+        }
+    }
+
     abstract @NotNull String getId();
 
     static final Builder<SelectorArgument> NOT = new Builder<>() {

@@ -1,7 +1,8 @@
 package com.gmail.subnokoii78.tplcore.events;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class TickEvent implements TPLEvent {
     private final boolean isFrozen;
 
@@ -21,7 +22,7 @@ public class TickEvent implements TPLEvent {
     }
 
     @Override
-    public @NotNull TPLEventType<? extends TPLEvent> getType() {
+    public TPLEventType<? extends TPLEvent> getType() {
         return TPLEventTypes.TICK;
     }
 }

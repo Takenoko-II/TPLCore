@@ -70,6 +70,7 @@ public abstract class AbstractParser<T> {
 
     protected @Nullable Character test(boolean ignore, char... candidates) {
         ignore();
+        if (isOver()) return null;
         for (char c : candidates) {
             if (peekChar() == c) {
                 return c;
@@ -81,6 +82,7 @@ public abstract class AbstractParser<T> {
 
     protected @Nullable Character next(boolean ignore, char... candidates) {
         ignore();
+        if (isOver()) return null;
         for (char c : candidates) {
             if (peekChar() == c) {
                 nextChar();
@@ -102,6 +104,7 @@ public abstract class AbstractParser<T> {
 
     protected @Nullable String test(boolean ignore, String... candidates) {
         ignore();
+        if (isOver()) return null;
         for (final String string : Arrays.stream(candidates).sorted((a, b) -> b.length() - a.length()).toList()) {
             if (text.substring(cursor).startsWith(string)) {
                 return string;
@@ -113,6 +116,7 @@ public abstract class AbstractParser<T> {
 
     protected @Nullable String next(boolean ignore, String... candidates) {
         ignore();
+        if (isOver()) return null;
         for (final String string : Arrays.stream(candidates).sorted((a, b) -> b.length() - a.length()).toList()) {
             if (text.substring(cursor).startsWith(string)) {
                 cursor += string.length();
@@ -153,10 +157,13 @@ public abstract class AbstractParser<T> {
         if (SIGNS.contains(initial)) {
             sb.append(initial);
         }
+        else if (INTEGERS.contains(initial)) {
+            sb.append(initial);
+            intAppeared = true;
+        }
 
         while (!isOver()) {
             final char current = peek(false);
-            next(false);
 
             if (INTEGERS.contains(current)) {
                 sb.append(current);
@@ -169,6 +176,8 @@ public abstract class AbstractParser<T> {
             else {
                 break;
             }
+
+            next(false);
         }
 
         if (pointAppeared && asInt) {
@@ -179,7 +188,7 @@ public abstract class AbstractParser<T> {
             return Double.parseDouble(sb.toString());
         }
         catch (NumberFormatException e) {
-            throw exception("小数の解析に失敗しました", e);
+            throw exception("小数の解析に失敗しました: '" + sb + "'", e);
         }
     }
 
@@ -229,6 +238,9 @@ public abstract class AbstractParser<T> {
                 current = peek(false);
                 next(false);
             }
+
+            // どうしようこいつ
+            cursor--;
         }
         else {
             throw exception("string() の実行に失敗しました: asQuoted=true に反しています: " + sb);
@@ -268,7 +280,7 @@ public abstract class AbstractParser<T> {
                 String.format(
                     message + "; pos: %s >> %s << %s",
                     parser.text.substring(Math.max(0, parser.cursor - 8), Math.max(0, parser.cursor)),
-                    parser.text.charAt(parser.cursor),
+                    parser.cursor >= parser.text.length() ? "" : parser.text.charAt(parser.cursor),
                     parser.text.substring(Math.min(parser.cursor + 1, parser.text.length()), Math.min(parser.cursor + 8, parser.text.length()))
                 ),
                 cause
@@ -280,7 +292,7 @@ public abstract class AbstractParser<T> {
                 String.format(
                     message + "; pos: %s >> %s << %s",
                     parser.text.substring(Math.max(0, parser.cursor - 8), Math.max(0, parser.cursor)),
-                    parser.text.charAt(parser.cursor),
+                    parser.cursor >= parser.text.length() ? "" : parser.text.charAt(parser.cursor),
                     parser.text.substring(Math.min(parser.cursor + 1, parser.text.length()), Math.min(parser.cursor + 8, parser.text.length()))
                 )
             );

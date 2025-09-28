@@ -84,8 +84,9 @@ public final class SelectorParser extends AbstractParser<EntitySelector<?>> {
     }
 
     private @NotNull Set<SelectorArgument> arguments() {
+        ignore();
         if (isOver()) {
-            throw exception("arguments(): isOver");
+            return Set.of();
         }
 
         final Set<SelectorArgument> arguments = new HashSet<>();
@@ -101,7 +102,7 @@ public final class SelectorParser extends AbstractParser<EntitySelector<?>> {
             final boolean not = next(false, '!') != null;
 
             final SelectorArgument argument = builder.build(
-                argumentValue(builder.getArgumentType())
+                value(builder.getArgumentType())
             );
 
             if (not) {
@@ -118,7 +119,7 @@ public final class SelectorParser extends AbstractParser<EntitySelector<?>> {
         return arguments;
     }
 
-    private Object argumentValue(Class<?> clazz) {
+    private Object value(Class<?> clazz) {
         // switchに変えんな
         if (clazz.equals(String.class)) {
             return string(false, ',', ']');
@@ -157,15 +158,13 @@ public final class SelectorParser extends AbstractParser<EntitySelector<?>> {
             selector.addArgument(argument);
         }
 
+        finish();
+
         return selector;
     }
 
     @ApiStatus.Experimental
     public static @NotNull EntitySelector<? extends Entity> parse(@NotNull String selector) {
         return new SelectorParser(selector).parse();
-    }
-
-    static {
-        SelectorParser.parse("@e[type=player]");
     }
 }

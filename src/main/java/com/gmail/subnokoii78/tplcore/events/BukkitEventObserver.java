@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -53,7 +52,7 @@ public class BukkitEventObserver implements Listener {
             timeStorage.put(player, System.currentTimeMillis());
         }
 
-        private static <T extends Event> TimeStorage getStorage(String eventId) {
+        private static TimeStorage getStorage(String eventId) {
             if (storages.containsKey(eventId)) {
                 return storages.get(eventId);
             }
@@ -89,6 +88,7 @@ public class BukkitEventObserver implements Listener {
             TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                 .dispatch(new PlayerClickEvent(
                     event.getPlayer(),
+                    event.getPlayer().getEquipment() == null ? null : event.getPlayer().getEquipment().getItem(event.getHand()),
                     event,
                     PlayerClickEvent.Click.RIGHT,
                     event.getRightClicked()
@@ -103,6 +103,7 @@ public class BukkitEventObserver implements Listener {
         TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
             .dispatch(new PlayerClickEvent(
                 event.getPlayer(),
+                event.getPlayer().getEquipment() == null ? null : event.getPlayer().getEquipment().getItem(EquipmentSlot.HAND),
                 event,
                 PlayerClickEvent.Click.LEFT,
                 event.getAttacked()
@@ -139,6 +140,7 @@ public class BukkitEventObserver implements Listener {
                 TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                     .dispatch(new PlayerClickEvent(
                         player,
+                        event.getItem(),
                         event,
                         PlayerClickEvent.Click.RIGHT,
                         block
@@ -148,6 +150,7 @@ public class BukkitEventObserver implements Listener {
                 TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                     .dispatch(new PlayerClickEvent(
                         player,
+                        event.getItem(),
                         event,
                         PlayerClickEvent.Click.RIGHT
                     ));
@@ -176,6 +179,7 @@ public class BukkitEventObserver implements Listener {
                     TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                         .dispatch(new PlayerClickEvent(
                             player,
+                            event.getItem(),
                             event,
                             PlayerClickEvent.Click.LEFT,
                             block
@@ -187,6 +191,7 @@ public class BukkitEventObserver implements Listener {
                     TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK)
                         .dispatch(new PlayerClickEvent(
                             player,
+                            event.getItem(),
                             event,
                             PlayerClickEvent.Click.LEFT
                         ));

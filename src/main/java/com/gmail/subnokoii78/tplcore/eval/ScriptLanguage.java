@@ -13,8 +13,8 @@ public enum ScriptLanguage implements CommandArgumentableEnumeration {
         public final GroovyEvaluator evaluator = new GroovyEvaluator(GroovyContext.getApiContext());
 
         @Override
-        public int interpret(@NotNull io.papermc.paper.command.brigadier.CommandSourceStack stack, @NotNull String script) {
-            return evaluator.evaluate(CommandSourceStack.fromPaper(stack), script).returnValue;
+        public ScriptEvaluationResult<?> interpret(@NotNull io.papermc.paper.command.brigadier.CommandSourceStack stack, @NotNull String script) {
+            return evaluator.evaluate(CommandSourceStack.fromPaper(stack), script);
         }
 
         @Override
@@ -28,7 +28,56 @@ public enum ScriptLanguage implements CommandArgumentableEnumeration {
     }
 
     @ApiStatus.OverrideOnly
-    public int interpret(@NotNull io.papermc.paper.command.brigadier.CommandSourceStack stack, @NotNull String script) {
-        return 0;
+    public ScriptEvaluationResult<?> interpret(@NotNull io.papermc.paper.command.brigadier.CommandSourceStack stack, @NotNull String script) {
+        return ScriptEvaluationResult.success(1);
+    }
+
+    public static abstract class ScriptEvaluationResult<T> {
+        protected final boolean successful;
+
+        protected final T resultValue;
+
+        private ScriptEvaluationResult(boolean successful, T resultValue) {
+            this.successful = successful;
+            this.resultValue = resultValue;
+        }
+
+        public boolean isSuccess() {
+            return successful;
+        }
+
+        public T getResultValue() {
+            return resultValue;
+        }
+
+        public int getReturnInt() {
+            return successful
+                ? (resultValue instanceof Number number)
+                    ? number.intValue()
+                    : 1
+                : 0;
+        }
+
+        public static final class ScriptEvaluationSuccess<T> extends ScriptEvaluationResult<T> {
+
+            private ScriptEvaluationSuccess(T resultValue) {
+                super(true, resultValue);
+            }
+        }
+
+        public static final class ScriptEvaluationFailure extends ScriptEvaluationResult<Throwable> {
+
+            private ScriptEvaluationFailure(Throwable cause) {
+                super(false, cause);
+            }
+        }
+
+        public static <T> ScriptEvaluationSuccess<T> success(T resultValue) {
+            return new ScriptEvaluationSuccess<>(resultValue);
+        }
+
+        public static ScriptEvaluationFailure failure(Throwable cause) {
+            return new ScriptEvaluationFailure(cause);
+        }
     }
 }

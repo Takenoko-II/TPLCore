@@ -17,7 +17,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -38,7 +37,7 @@ public final class ConsoleCommand extends AbstractCommand {
     protected LiteralCommandNode<CommandSourceStack> getCommandNode() {
         return Commands.literal("console")
             .requires(stack -> {
-                return stack.getSender().isOp() || isDeveloper(stack.getSender());
+                return stack.getSender().isOp();
             })
             .then(
                 Commands.literal("query")

@@ -54,6 +54,10 @@ public class PrivilegeCommand extends AbstractCommand {
 
         final int count = players.stream().map(AbstractCommand::allow).reduce(0, Integer::sum);
 
+        if (ctx.getSource().getSender() instanceof Player player) {
+            player.updateCommands();
+        }
+
         if (count == 0) {
             return failure(ctx.getSource(), new IllegalStateException(
                 "権限を与えられるプレイヤーが見つかりませんでした"
@@ -77,6 +81,10 @@ public class PrivilegeCommand extends AbstractCommand {
         }
 
         final int count = players.stream().map(AbstractCommand::disallow).reduce(0, Integer::sum);
+
+        if (ctx.getSource().getSender() instanceof Player player) {
+            player.updateCommands();
+        }
 
         if (count == 0) {
             return failure(ctx.getSource(), new IllegalStateException(

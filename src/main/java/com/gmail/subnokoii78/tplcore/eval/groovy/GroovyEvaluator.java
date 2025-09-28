@@ -1,9 +1,13 @@
 package com.gmail.subnokoii78.tplcore.eval.groovy;
 
+import com.gmail.subnokoii78.tplcore.eval.ScriptLanguage;
 import com.gmail.subnokoii78.tplcore.execute.*;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
 
 @NullMarked
 public class GroovyEvaluator {
@@ -24,33 +28,17 @@ public class GroovyEvaluator {
         return binding;
     }
 
-    public ScriptEvaluationResult evaluate(CommandSourceStack stack, String script) {
+    public ScriptLanguage.ScriptEvaluationResult<?> evaluate(CommandSourceStack stack, String script) {
         final GroovyShell shell = new GroovyShell(getBinding(stack));
 
         final Object returnValue;
         try {
             returnValue = shell.evaluate(script);
         }
-        catch (Exception e) {
-            return new ScriptEvaluationResult(false, 0);
+        catch (Throwable e) {
+            return ScriptLanguage.ScriptEvaluationResult.failure(e);
         }
 
-        if (returnValue instanceof Integer integer) {
-            return new ScriptEvaluationResult(true, integer);
-        }
-        else {
-            return new ScriptEvaluationResult(true, 1);
-        }
-    }
-
-    public static final class ScriptEvaluationResult {
-        public final boolean successful;
-
-        public final int returnValue;
-
-        private ScriptEvaluationResult(boolean successful, int returnValue) {
-            this.successful = successful;
-            this.returnValue = returnValue;
-        }
+        return ScriptLanguage.ScriptEvaluationResult.success(Objects.requireNonNullElse(returnValue, 1));
     }
 }

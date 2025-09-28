@@ -1,12 +1,13 @@
 package com.gmail.subnokoii78.tplcore.events;
 
 import org.bukkit.event.Cancellable;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public abstract class CancellableEvent implements TPLEvent {
     protected final Cancellable event;
 
-    protected CancellableEvent(@NotNull Cancellable event) {
+    protected CancellableEvent(Cancellable event) {
         this.event = event;
     }
 
@@ -15,5 +16,5 @@ public abstract class CancellableEvent implements TPLEvent {
     }
 
     @Override
-    public abstract @NotNull TPLEventType<? extends CancellableEvent> getType();
+    public abstract TPLEventType<? extends CancellableEvent> getType();
 }
