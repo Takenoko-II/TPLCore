@@ -10,23 +10,24 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
 import net.kyori.adventure.text.Component;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class AbstractEnumerationArgument<T extends Enum<T>> implements CustomArgumentType.Converted<T, String> {
+@NullMarked
+public abstract class AbstractEnumerationArgument<T extends Enum<T> & CommandArgumentableEnumeration> implements CustomArgumentType.Converted<T, String> {
     private static final DynamicCommandExceptionType ERROR = new DynamicCommandExceptionType(message -> {
         return MessageComponentSerializer.message().serialize(Component.text((String) message));
     });
 
-    protected abstract @NotNull Class<T> getEnumClass();
+    protected abstract Class<T> getEnumClass();
 
-    protected abstract @NotNull String getErrorMessage(String unknownString);
+    protected abstract String getErrorMessage(String unknownString);
 
     @Override
-    public final @NotNull T convert(String nativeType) throws CommandSyntaxException {
+    public final T convert(String nativeType) throws CommandSyntaxException {
         try {
             return (T) getEnumClass()
                 .getMethod("valueOf", String.class)
@@ -38,7 +39,7 @@ public abstract class AbstractEnumerationArgument<T extends Enum<T>> implements 
     }
 
     @Override
-    public final <S> @NotNull CompletableFuture<Suggestions> listSuggestions(@NotNull CommandContext<S> context, @NotNull SuggestionsBuilder builder) {
+    public final <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         final T[] values;
         try {
             values = (T[]) getEnumClass()
@@ -50,11 +51,18 @@ public abstract class AbstractEnumerationArgument<T extends Enum<T>> implements 
         }
 
         for (final T value : values) {
-            final String name = value.toString();
+            final String name = value.toString().toLowerCase(Locale.ROOT);
 
-            // Only suggest if the log_type name matches the user input
+            // Only suggest if argument value matches the user input
             if (name.startsWith(builder.getRemainingLowerCase())) {
-                builder.suggest(name.toLowerCase(Locale.ROOT));
+                final Component description = value.getDescription();
+
+                if (description == null) {
+                    builder.suggest(name);
+                }
+                else {
+                    builder.suggest(name, MessageComponentSerializer.message().serialize(description));
+                }
             }
         }
 
@@ -62,7 +70,7 @@ public abstract class AbstractEnumerationArgument<T extends Enum<T>> implements 
     }
 
     @Override
-    public final @NotNull ArgumentType<String> getNativeType() {
+    public final ArgumentType<String> getNativeType() {
         return StringArgumentType.word();
     }
 }

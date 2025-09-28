@@ -1,5 +1,6 @@
 package com.gmail.subnokoii78.tplcore;
 
+import com.gmail.subnokoii78.tplcore.commands.PrivilegeCommand;
 import com.gmail.subnokoii78.tplcore.commands.ScriptCommand;
 import com.gmail.subnokoii78.tplcore.events.PluginApi;
 import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
@@ -8,21 +9,15 @@ import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
 import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.datapack.Datapack;
-import io.papermc.paper.datapack.PaperDatapack;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.minecraft.server.packs.repository.Pack;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.messaging.Messenger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.lang.reflect.Field;
 
 @NullMarked
 public class TPLCore {
@@ -92,8 +87,9 @@ public class TPLCore {
 
             plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
                 final Commands registrar = event.registrar();
-                registrar.register(ConsoleCommand.CONSOLE_COMMAND.getCommandNode());
-                registrar.register(ScriptCommand.SCRIPT_COMMAND.getCommandNode());
+                ConsoleCommand.CONSOLE_COMMAND.register(registrar);
+                ScriptCommand.SCRIPT_COMMAND.register(registrar);
+                PrivilegeCommand.PRIVILEGE_COMMAND.register(registrar);
             });
 
             plugin.getComponentLogger().info(Component.text("TPLCore が起動しました"));

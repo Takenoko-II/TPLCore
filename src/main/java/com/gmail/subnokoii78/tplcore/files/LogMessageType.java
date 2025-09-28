@@ -1,5 +1,6 @@
 package com.gmail.subnokoii78.tplcore.files;
 
+import com.gmail.subnokoii78.tplcore.commands.arguments.CommandArgumentableEnumeration;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -8,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
-public enum LogMessageType {
+public enum LogMessageType implements CommandArgumentableEnumeration {
     ANNOUNCEMENT(NamedTextColor.LIGHT_PURPLE, true),
 
     INFORMATION(NamedTextColor.AQUA, false),
