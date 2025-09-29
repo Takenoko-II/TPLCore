@@ -73,35 +73,52 @@ public class MultiMap<K, V> {
         map.clear();
     }
 
-    public Set<K> keySet() {
-        return map.keySet();
+    public Set<K> keys() {
+        return Set.copyOf(map.keySet());
     }
 
     public Collection<V> values() {
         return map.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
     }
 
-    public Set<Map.Entry<K, V>> entrySet() {
-        return keySet().stream().flatMap(key -> {
-            return get(key).stream().map(value -> {
-                return new Map.Entry<K, V>() {
-                    @Override
-                    public K getKey() {
-                        return key;
-                    }
+    public Set<Entry<K, V>> entries() {
+        return keys().stream().flatMap(key -> get(key).stream().map(value -> new Entry<>(key, value))).collect(Collectors.toSet());
+    }
 
-                    @Override
-                    public V getValue() {
-                        return value;
-                    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MultiMap<?, ?> multiMap = (MultiMap<?, ?>) o;
+        return Objects.equals(map, multiMap.map);
+    }
 
-                    @Override
-                    public V setValue(V value) {
-                        get(key).remove(value);
-                        return value;
-                    }
-                };
-            });
-        }).collect(Collectors.toSet());
+    @Override
+    public int hashCode() {
+        return Objects.hash(map);
+    }
+
+    @Override
+    public String toString() {
+        return "MultiMap" + ' ' + map;
+    }
+
+    public static final class Entry<K, V> {
+        private final K key;
+
+        private final V value;
+
+        private Entry(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public K getKey() {
+            return key;
+        }
+
+        public V getValue() {
+            return value;
+        }
     }
 }

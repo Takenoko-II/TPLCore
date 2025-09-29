@@ -3,6 +3,7 @@ package com.gmail.subnokoii78.tplcore.network;
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.gmail.takenokoii78.json.JSONParser;
+import com.gmail.takenokoii78.json.JSONPath;
 import com.gmail.takenokoii78.json.JSONValueTypes;
 import com.gmail.takenokoii78.json.values.JSONObject;
 import com.mojang.authlib.GameProfile;
@@ -83,8 +84,8 @@ public final class GameProfileServerConnector {
         try {
             final JSONObject propertyObject = JSONParser.object(read());
 
-            final String value = propertyObject.get("properties[0].value", JSONValueTypes.STRING).getValue();
-            final String signature = propertyObject.get("properties[0].signature", JSONValueTypes.STRING).getValue();
+            final String value = propertyObject.get(JSONPath.of("properties[0].value"), JSONValueTypes.STRING).getValue();
+            final String signature = propertyObject.get(JSONPath.of("properties[0].signature"), JSONValueTypes.STRING).getValue();
 
             return new Property("textures", value, signature);
         }

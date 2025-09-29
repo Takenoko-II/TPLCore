@@ -1,7 +1,6 @@
 package com.gmail.subnokoii78.tplcore.parse;
 
 import com.gmail.subnokoii78.tplcore.generic.MultiMap;
-import com.gmail.subnokoii78.tplcore.generic.Pair;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -52,6 +51,16 @@ public abstract class AbstractParser<T> {
     protected abstract Set<Character> getWhitespace();
 
     protected abstract Set<Character> getQuotes();
+
+    protected Set<Character> getInvalidSymbolsInUnquotedString() {
+        return Set.of(
+            '.', ',', ':', ';', '\\', '@',
+            '(', ')', '{', '}', '[', ']',
+            '!', '?', '\'', '"', '#', '$',
+            '=', '+', '-', '*', '/', '%',
+            '&', '|', '~', '^', '<', '>'
+        );
+    }
 
     protected abstract String getTrue();
 
@@ -220,13 +229,7 @@ public abstract class AbstractParser<T> {
             }
         }
         else if (!asQuoted) {
-            final Set<Character> SYMBOLS = Set.of(
-                '.', ',', ':', ';', '\\', '@',
-                '(', ')', '{', '}', '[', ']',
-                '!', '?', '\'', '"', '#', '$',
-                '=', '+', '-', '*', '/', '%',
-                '&', '|', '~', '^', '<', '>'
-            );
+            final Set<Character> SYMBOLS = getInvalidSymbolsInUnquotedString();
 
             while (!getWhitespace().contains(current) && !Arrays.stream(unquotedStoppers).collect(Collectors.toSet()).contains(current)) {
                 if (SYMBOLS.contains(current)) {
