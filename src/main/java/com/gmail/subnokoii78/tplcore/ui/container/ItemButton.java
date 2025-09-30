@@ -108,10 +108,10 @@ public class ItemButton {
     }
 
     protected void click(@NotNull ItemButtonClickEvent event) {
+        itemButtonClickEventDispatcher.dispatch(event);
         if (sound != null) {
             sound.play(event.getPlayer());
         }
-        itemButtonClickEventDispatcher.dispatch(event);
     }
 
     private static final MojangsonPath PATH = MojangsonPath.of("tpl_core.container_interaction_button");
