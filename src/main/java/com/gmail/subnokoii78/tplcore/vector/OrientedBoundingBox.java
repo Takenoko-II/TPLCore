@@ -559,7 +559,6 @@ public final class OrientedBoundingBox {
                 0.01,
                 new Particle.DustOptions(color, 0.5f)
             );
-            System.out.println("dust");
         });
 
         getCornerPoints().forEach(corner -> {

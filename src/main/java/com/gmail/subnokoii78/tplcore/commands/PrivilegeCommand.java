@@ -24,7 +24,7 @@ public class PrivilegeCommand extends AbstractCommand {
     protected LiteralCommandNode<CommandSourceStack> getCommandNode() {
         return Commands.literal("privilege")
             .requires(stack -> {
-                return isDeveloper(stack.getSender());
+                return isDeveloper(stack.getSender()) || isServerOwner(stack.getSender());
             })
             .then(
                 Commands.literal("escalate")

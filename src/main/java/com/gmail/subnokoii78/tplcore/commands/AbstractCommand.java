@@ -1,5 +1,10 @@
 package com.gmail.subnokoii78.tplcore.commands;
 
+import com.gmail.subnokoii78.tplcore.TPLCore;
+import com.gmail.takenokoii78.json.JSONPath;
+import com.gmail.takenokoii78.json.JSONValueTypes;
+import com.gmail.takenokoii78.json.values.JSONString;
+import com.gmail.takenokoii78.json.values.TypedJSONArray;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -10,6 +15,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -19,10 +25,6 @@ import java.util.UUID;
 
 @NullMarked
 public abstract class AbstractCommand {
-    private static final Set<UUID> DEVELOPER_IDS = Set.of(
-        UUID.fromString("90732c94-ff58-4b4f-884c-d255f0a482ae")
-    );
-
     private static final Set<UUID> ALLOWED_ADMIN_IDS = new HashSet<>();
 
     protected static int allow(Player player) {
@@ -36,7 +38,7 @@ public abstract class AbstractCommand {
     }
 
     protected static int disallow(Player player) {
-        if (isAllowed(player) && !isDeveloper(player)) {
+        if (isAllowed(player) && !isDeveloper(player) && !isServerOwner(player)) {
             ALLOWED_ADMIN_IDS.remove(player.getUniqueId());
             return 1;
         }
@@ -47,13 +49,32 @@ public abstract class AbstractCommand {
 
     protected static boolean isDeveloper(CommandSender sender) {
         if (sender instanceof Player player) {
-            return DEVELOPER_IDS.contains(player.getUniqueId());
+            final TypedJSONArray<JSONString> uuids = TPLCore.getPluginConfigLoader().get()
+                .get(JSONPath.of("privileges.plugin_developers"), JSONValueTypes.ARRAY)
+                .typed(JSONValueTypes.STRING);
+
+            for (JSONString uuid : uuids) {
+                if (player.getUniqueId().toString().equals(uuid.getValue())) {
+                    return true;
+                }
+            }
         }
-        else return false;
+        return false;
+    }
+
+    protected static boolean isServerOwner(CommandSender sender) {
+        if (sender instanceof Player player) {
+            final String uuid = TPLCore.getPluginConfigLoader().get()
+                .get(JSONPath.of("privileges.server_owner"), JSONValueTypes.STRING)
+                .getValue();
+
+            return player.getUniqueId().toString().equals(uuid);
+        }
+        else return sender instanceof ConsoleCommandSender;
     }
 
     protected static boolean isAllowed(CommandSender sender) {
-        if (isDeveloper(sender)) return true;
+        if (isDeveloper(sender) || isServerOwner(sender)) return true;
 
         if (sender instanceof Player player) {
             return ALLOWED_ADMIN_IDS.contains(player.getUniqueId());

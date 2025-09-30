@@ -8,6 +8,7 @@ import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
 import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
 import com.gmail.subnokoii78.tplcore.execute.Execute;
+import com.gmail.subnokoii78.tplcore.files.PluginConfigLoader;
 import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
 import com.gmail.subnokoii78.tplcore.ui.container.ContainerInteraction;
@@ -43,6 +44,9 @@ public class TPLCore {
     @Nullable
     private static Scoreboard scoreboard;
 
+    @Nullable
+    public static PluginConfigLoader pluginConfigLoader;
+
     public static final PaperVelocityManager paperVelocityManager = new PaperVelocityManager();
 
     private TPLCore() {}
@@ -65,6 +69,15 @@ public class TPLCore {
         }
     }
 
+    public static PluginConfigLoader getPluginConfigLoader() throws TPLCoreException {
+        if (pluginConfigLoader == null) {
+            throw new TPLCoreException("プラグインコンフィグローダーのインスタンスが用意されていません");
+        }
+        else {
+            return pluginConfigLoader;
+        }
+    }
+
     public static Scoreboard getScoreboard() throws TPLCoreException {
         if (scoreboard == null) {
             throw new TPLCoreException("スコアボードのインスタンスが用意されていません");
@@ -74,10 +87,14 @@ public class TPLCore {
         }
     }
 
-    public static void initialize(Plugin plugin, PluginBootstrap bootstrap) throws TPLCoreException {
+    public static void initialize(Plugin plugin, PluginBootstrap bootstrap, String configPath, String defaultConfigPath) throws TPLCoreException {
         if (TPLCore.plugin == null) {
             TPLCore.plugin = plugin;
             TPLCore.bootstrap = bootstrap;
+            TPLCore.pluginConfigLoader = new PluginConfigLoader(
+                configPath,
+                defaultConfigPath
+            );
             TPLCore.scoreboard = new Scoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
             final PluginManager manager = Bukkit.getPluginManager();
