@@ -70,13 +70,13 @@ public final class PaperVelocityManager implements PluginMessageListener {
         InteractivePluginMessageBuilder.receiveMessage(subChannel, player, message);
     }
 
-    public void getServerOf(@NotNull String player, @NotNull Consumer<BoAServer> callback) {
+    public void getServerOf(@NotNull Player player, @NotNull Consumer<BoAServer> callback) {
         newInteractiveMessage("GetPlayerServer", (input, time) -> {
             input.readUTF();
             final String id = input.readUTF();
             callback.accept(BoAServer.getById(id));
         })
-            .argument(player)
+            .argument(player.getName())
             .sendMessage();
     }
 

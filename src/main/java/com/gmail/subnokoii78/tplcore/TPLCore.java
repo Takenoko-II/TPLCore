@@ -2,12 +2,9 @@ package com.gmail.subnokoii78.tplcore;
 
 import com.gmail.subnokoii78.tplcore.commands.PrivilegeCommand;
 import com.gmail.subnokoii78.tplcore.commands.ScriptCommand;
-import com.gmail.subnokoii78.tplcore.eval.ScriptLanguage;
 import com.gmail.subnokoii78.tplcore.events.PluginApi;
 import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
-import com.gmail.subnokoii78.tplcore.execute.EntitySelector;
-import com.gmail.subnokoii78.tplcore.execute.Execute;
 import com.gmail.subnokoii78.tplcore.files.PluginConfigLoader;
 import com.gmail.subnokoii78.tplcore.network.PaperVelocityManager;
 import com.gmail.subnokoii78.tplcore.scoreboard.Scoreboard;
@@ -29,7 +26,7 @@ public class TPLCore {
     private static Plugin plugin;
 
     @Nullable
-    private static PluginBootstrap bootstrap;
+    private static PluginBootstrap pluginBootstrap;
 
     public static final class TPLCoreException extends RuntimeException {
         private TPLCoreException(String message) {
@@ -60,12 +57,12 @@ public class TPLCore {
         }
     }
 
-    public static PluginBootstrap getBootstrap() throws TPLCoreException {
-        if (bootstrap == null) {
+    public static PluginBootstrap getPluginBootstrap() throws TPLCoreException {
+        if (pluginBootstrap == null) {
             throw new TPLCoreException("ブートストラップのインスタンスが用意されていません");
         }
         else {
-            return bootstrap;
+            return pluginBootstrap;
         }
     }
 
@@ -87,10 +84,10 @@ public class TPLCore {
         }
     }
 
-    public static void initialize(Plugin plugin, PluginBootstrap bootstrap, String configPath, String defaultConfigPath) throws TPLCoreException {
+    public static void initialize(Plugin plugin, PluginBootstrap pluginBootstrap, String configPath, String defaultConfigPath) throws TPLCoreException {
         if (TPLCore.plugin == null) {
             TPLCore.plugin = plugin;
-            TPLCore.bootstrap = bootstrap;
+            TPLCore.pluginBootstrap = pluginBootstrap;
             TPLCore.pluginConfigLoader = new PluginConfigLoader(
                 configPath,
                 defaultConfigPath
