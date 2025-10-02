@@ -28,6 +28,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -146,6 +147,7 @@ public final class PaperVelocityManager implements PluginMessageListener {
         customPluginMessageReceivers.add(callback);
     }
 
+    @ApiStatus.Obsolete
     private final ContainerInteraction SERVER_SELECTOR = new ContainerInteraction(Component.text("Battle of Apostolos"), 1)
         .set(1, ItemButton.item(Material.NETHER_STAR)
             .clickSound(ItemButtonClickSound.BASIC)
@@ -196,6 +198,7 @@ public final class PaperVelocityManager implements PluginMessageListener {
             })
         );
 
+    @ApiStatus.Obsolete
     public @NotNull ItemStack getServerSelectorItemStack() {
         return new ItemStackBuilder(Material.COMPASS)
             .itemName(Component.text("Server Selector").color(NamedTextColor.GREEN))
@@ -207,6 +210,7 @@ public final class PaperVelocityManager implements PluginMessageListener {
             .build();
     }
 
+    @ApiStatus.Obsolete
     public @NotNull ContainerInteraction getServerSelectorInteraction() {
         return SERVER_SELECTOR.copy();
     }

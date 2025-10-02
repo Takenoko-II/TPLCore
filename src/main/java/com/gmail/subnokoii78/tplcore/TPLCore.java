@@ -2,6 +2,7 @@ package com.gmail.subnokoii78.tplcore;
 
 import com.gmail.subnokoii78.tplcore.commands.PrivilegeCommand;
 import com.gmail.subnokoii78.tplcore.commands.ScriptCommand;
+import com.gmail.subnokoii78.tplcore.eval.ScriptLanguage;
 import com.gmail.subnokoii78.tplcore.events.PluginApi;
 import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
@@ -105,7 +106,6 @@ public class TPLCore {
             plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
                 final Commands registrar = event.registrar();
                 ConsoleCommand.CONSOLE_COMMAND.register(registrar);
-                ScriptCommand.SCRIPT_COMMAND.register(registrar);
                 PrivilegeCommand.PRIVILEGE_COMMAND.register(registrar);
             });
 

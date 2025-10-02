@@ -6,15 +6,21 @@ import com.gmail.subnokoii78.tplcore.eval.groovy.GroovyEvaluator;
 import com.gmail.subnokoii78.tplcore.execute.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public enum ScriptLanguage implements CommandArgumentableEnumeration {
     GROOVY {
         public final GroovyEvaluator evaluator = new GroovyEvaluator(GroovyContext.getApiContext());
 
         @Override
-        public ScriptEvaluationResult<?> interpret(@NotNull io.papermc.paper.command.brigadier.CommandSourceStack stack, @NotNull String script) {
+        public ScriptEvaluationResult<?> interpret(io.papermc.paper.command.brigadier.CommandSourceStack stack, String script) {
             return evaluator.evaluate(CommandSourceStack.fromPaper(stack), script);
+        }
+
+        @Override
+        public GroovyEvaluator getEvaluator() {
+            return evaluator;
         }
 
         @Override
@@ -28,8 +34,13 @@ public enum ScriptLanguage implements CommandArgumentableEnumeration {
     }
 
     @ApiStatus.OverrideOnly
-    public ScriptEvaluationResult<?> interpret(@NotNull io.papermc.paper.command.brigadier.CommandSourceStack stack, @NotNull String script) {
-        return ScriptEvaluationResult.success(1);
+    public ScriptEvaluationResult<?> interpret(io.papermc.paper.command.brigadier.CommandSourceStack stack, String script) {
+        throw new IllegalStateException("OVERRIDE ONLY");
+    }
+
+    @ApiStatus.OverrideOnly
+    public IScriptEvaluator getEvaluator() {
+        throw new IllegalStateException("OVERRIDE ONLY");
     }
 
     public static abstract class ScriptEvaluationResult<T> {

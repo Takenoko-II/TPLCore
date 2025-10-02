@@ -8,4 +8,6 @@ public final class TPLEventTypes {
     public static final TPLEventType<DatapackMessageReceiveEvent> DATAPACK_MESSAGE_RECEIVE = new TPLEventType<>(DatapackMessageReceiveEvent.class);
 
     public static final TPLEventType<TickEvent> TICK = new TPLEventType<>(TickEvent.class);
+
+    public static final TPLEventType<ScriptApiContextInitializeEvent> SCRIPT_API_CONTEXT_INITIALIZE =new TPLEventType<>(ScriptApiContextInitializeEvent.class);
 }

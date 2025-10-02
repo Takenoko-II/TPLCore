@@ -1,16 +1,16 @@
 package com.gmail.subnokoii78.tplcore.eval.groovy;
 
+import com.gmail.subnokoii78.tplcore.eval.IScriptEvaluator;
 import com.gmail.subnokoii78.tplcore.eval.ScriptLanguage;
 import com.gmail.subnokoii78.tplcore.execute.*;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
 @NullMarked
-public class GroovyEvaluator {
+public class GroovyEvaluator implements IScriptEvaluator {
     private final GroovyContext context;
 
     public GroovyEvaluator(GroovyContext context) {
@@ -26,6 +26,10 @@ public class GroovyEvaluator {
             binding.setVariable(name, overloads.asClosure(stack));
         });
         return binding;
+    }
+
+    public GroovyContext getContext() {
+        return context;
     }
 
     public ScriptLanguage.ScriptEvaluationResult<?> evaluate(CommandSourceStack stack, String script) {
