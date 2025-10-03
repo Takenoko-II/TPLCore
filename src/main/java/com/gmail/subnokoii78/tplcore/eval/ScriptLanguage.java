@@ -8,19 +8,30 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 @NullMarked
 public enum ScriptLanguage implements CommandArgumentableEnumeration {
     GROOVY {
-        public final GroovyEvaluator evaluator = new GroovyEvaluator(GroovyContext.getApiContext());
-
         @Override
-        public ScriptEvaluationResult<?> interpret(io.papermc.paper.command.brigadier.CommandSourceStack stack, String script) {
+        public ScriptEvaluationResult<?> interpret(io.papermc.paper.command.brigadier.CommandSourceStack stack, String contextId, String script) {
+            final GroovyEvaluator evaluator = new GroovyEvaluator(getContext(contextId));
             return evaluator.evaluate(CommandSourceStack.fromPaper(stack), script);
         }
 
         @Override
-        public GroovyEvaluator getEvaluator() {
-            return evaluator;
+        public GroovyContext getContext(String id) {
+            return (GroovyContext) super.getContext(id);
+        }
+
+        @Override
+        public void registerContext(String id, IScriptContext context) {
+            if (!(context instanceof GroovyContext)) {
+                throw new IllegalArgumentException("Registration failure; Illegal context class: " + context.getClass().getName() + " (expected: " + GroovyContext.class.getName() + ")");
+            }
+            super.registerContext(id, context);
         }
 
         @Override
@@ -29,17 +40,36 @@ public enum ScriptLanguage implements CommandArgumentableEnumeration {
         }
     };
 
+    private final Map<String, IScriptContext> contexts = new HashMap<>();
+
     ScriptLanguage() {
 
     }
 
-    @ApiStatus.OverrideOnly
-    public ScriptEvaluationResult<?> interpret(io.papermc.paper.command.brigadier.CommandSourceStack stack, String script) {
-        throw new IllegalStateException("OVERRIDE ONLY");
+    public IScriptContext getContext(String id) {
+        if (contexts.containsKey(id)) {
+            return contexts.get(id);
+        }
+        else {
+            throw new IllegalArgumentException("Unknown context id");
+        }
+    }
+
+    public Set<String> getContextIdList() {
+        return Set.copyOf(contexts.keySet());
+    }
+
+    public void registerContext(String id, IScriptContext context) {
+        if (contexts.containsKey(id)) {
+            throw new IllegalArgumentException("Already used context id");
+        }
+        else {
+            contexts.put(id, context);
+        }
     }
 
     @ApiStatus.OverrideOnly
-    public IScriptEvaluator getEvaluator() {
+    public ScriptEvaluationResult<?> interpret(io.papermc.paper.command.brigadier.CommandSourceStack stack, String contextId, String script) {
         throw new IllegalStateException("OVERRIDE ONLY");
     }
 

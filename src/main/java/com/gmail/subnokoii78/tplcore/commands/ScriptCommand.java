@@ -2,9 +2,10 @@ package com.gmail.subnokoii78.tplcore.commands;
 
 import com.gmail.subnokoii78.tplcore.commands.arguments.ScriptLanguageArgument;
 import com.gmail.subnokoii78.tplcore.eval.ScriptLanguage;
-import com.gmail.subnokoii78.tplcore.eval.groovy.GroovyContext;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -12,6 +13,7 @@ import net.kyori.adventure.text.Component;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 
 @NullMarked
 public class ScriptCommand extends AbstractCommand {
@@ -29,17 +31,34 @@ public class ScriptCommand extends AbstractCommand {
             .then(
                 Commands.argument("script_language", ScriptLanguageArgument.scriptLanguage())
                     .then(
-                        Commands.argument("script", StringArgumentType.greedyString())
-                            .executes(this::execute)
+                        Commands.argument("context", StringArgumentType.word())
+                            .suggests(this::suggestAvailableContexts)
+                            .then(
+                                Commands.argument("script", StringArgumentType.greedyString())
+                                    .executes(this::execute)
+                            )
                     )
             )
             .build();
     }
 
+    private CompletableFuture<Suggestions> suggestAvailableContexts(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
+        final ScriptLanguage language = context.getArgument("script_language", ScriptLanguage.class);
+
+        for (String id : language.getContextIdList()) {
+            if (id.startsWith(builder.getRemainingLowerCase())) {
+                builder.suggest(id);
+            }
+        }
+
+        return builder.buildFuture();
+    }
+
     private int execute(CommandContext<CommandSourceStack> ctx) {
         final ScriptLanguage type = ctx.getArgument("script_language", ScriptLanguage.class);
+        final String context = ctx.getArgument("context", String.class);
         final String script = ctx.getArgument("script", String.class);
-        final ScriptLanguage.ScriptEvaluationResult<?> result = type.interpret(ctx.getSource(), script);
+        final ScriptLanguage.ScriptEvaluationResult<?> result = type.interpret(ctx.getSource(), context, script);
 
         if (result instanceof ScriptLanguage.ScriptEvaluationResult.ScriptEvaluationFailure failure) {
             return failure(ctx.getSource(), failure.getResultValue());

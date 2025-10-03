@@ -2,8 +2,6 @@ package com.gmail.subnokoii78.tplcore.eval.groovy;
 
 import com.gmail.subnokoii78.tplcore.TPLCore;
 import com.gmail.subnokoii78.tplcore.eval.IScriptContext;
-import com.gmail.subnokoii78.tplcore.events.ScriptApiContextInitializeEvent;
-import com.gmail.subnokoii78.tplcore.events.TPLEventTypes;
 import com.gmail.subnokoii78.tplcore.execute.*;
 import com.gmail.subnokoii78.tplcore.random.RandomService;
 import com.gmail.subnokoii78.tplcore.random.Xorshift32;
@@ -70,8 +68,8 @@ public class GroovyContext implements IScriptContext {
         return this;
     }
 
-    public static GroovyContext getApiContext() {
-        final GroovyContext context = new GroovyContext()
+    public static GroovyContext standardApi() {
+        return new GroovyContext()
             .putVariable("server", Bukkit.getServer())
             .putVariable("executor", CommandSourceStack::getExecutorOrNull)
             .putVariable("location", CommandSourceStack::getLocation)
@@ -150,12 +148,5 @@ public class GroovyContext implements IScriptContext {
                 return 1;
             }).argument("player", Player.class).argument("itemStack", ItemStack.class))
             .putClasses(SelectorParser.class);
-
-        TPLCore.events.getDispatcher(TPLEventTypes.SCRIPT_API_CONTEXT_INITIALIZE).dispatch(new ScriptApiContextInitializeEvent(
-            GroovyContext.class,
-            context
-        ));
-
-        return context;
     }
 }

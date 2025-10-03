@@ -107,6 +107,7 @@ public class TPLCore {
                 final Commands registrar = event.registrar();
                 ConsoleCommand.CONSOLE_COMMAND.register(registrar);
                 PrivilegeCommand.PRIVILEGE_COMMAND.register(registrar);
+                ScriptCommand.SCRIPT_COMMAND.register(registrar);
             });
 
             plugin.getComponentLogger().info(Component.text("TPLCore が起動しました"));
