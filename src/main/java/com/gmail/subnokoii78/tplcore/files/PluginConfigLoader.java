@@ -1,6 +1,9 @@
 package com.gmail.subnokoii78.tplcore.files;
 
 import com.gmail.subnokoii78.tplcore.TPLCore;
+import com.gmail.subnokoii78.tplcore.events.PluginConfigUpdateEvent;
+import com.gmail.subnokoii78.tplcore.events.TPLEventType;
+import com.gmail.subnokoii78.tplcore.events.TPLEventTypes;
 import com.gmail.takenokoii78.json.JSONFile;
 import com.gmail.takenokoii78.json.JSONParseException;
 import com.gmail.takenokoii78.json.JSONParser;
@@ -87,6 +90,11 @@ public class PluginConfigLoader {
             file.create();
             file.write(defaultValues);
         }
+
+        TPLCore.events.getDispatcher(TPLEventTypes.PLUGIN_CONFIG_UPDATE).dispatch(new PluginConfigUpdateEvent(
+            this
+        ));
+
         return true;
     }
 
