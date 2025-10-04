@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -64,8 +65,7 @@ public class BukkitEventObserver implements Listener {
 
     public void onTick() {
         TPLCore.events.getDispatcher(TPLEventTypes.TICK).dispatch(new TickEvent(
-            Bukkit.getServer().getServerTickManager().isFrozen(),
-            Bukkit.getServer().isTickingWorlds()
+            Bukkit.getServer().getServerTickManager().isFrozen()
         ));
     }
 
@@ -108,6 +108,19 @@ public class BukkitEventObserver implements Listener {
                 PlayerClickEvent.Click.LEFT,
                 event.getAttacked()
             ));
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        // おそらくPlayerInteractEventよりも早い段階で呼び出される
+        TimeStorage.getStorage(BlockBreakEvent.class.getName()).setTime(event.getPlayer());
+        TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_CLICK).dispatch(new PlayerClickEvent(
+            event.getPlayer(),
+            event.getPlayer().getEquipment() == null ? null : event.getPlayer().getEquipment().getItemInMainHand(),
+            event,
+            PlayerClickEvent.Click.LEFT,
+            event.getBlock()
+        ));
     }
 
     @EventHandler
@@ -164,6 +177,7 @@ public class BukkitEventObserver implements Listener {
             final long interactEventTime = TimeStorage.getStorage(PlayerInteractEvent.class.getName()).getTime(player);
             final long interactEntityEventTime = TimeStorage.getStorage(PlayerInteractEntityEvent.class.getName()).getTime(player);
             final long preAttackTime = TimeStorage.getStorage(PrePlayerAttackEntityEvent.class.getName()).getTime(player);
+            final long blockBreakTime = TimeStorage.getStorage(BlockBreakEvent.class.getName()).getTime(player);
 
             // ドロップと同時のとき発火しない
             if (System.currentTimeMillis() - dropEventTime < 50L) return;
@@ -173,6 +187,8 @@ public class BukkitEventObserver implements Listener {
             else if (System.currentTimeMillis() - interactEntityEventTime < 50L) return;
             // エンティティへの攻撃と同時のとき発火しない
             else if (System.currentTimeMillis() - preAttackTime < 50L) return;
+            // ブロックの破壊と同時のとき発火しない
+            else if (System.currentTimeMillis() - blockBreakTime < 50L) return;
 
             if (block != null) {
                 new GameTickScheduler(() -> {

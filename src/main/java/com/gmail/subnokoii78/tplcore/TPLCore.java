@@ -2,7 +2,6 @@ package com.gmail.subnokoii78.tplcore;
 
 import com.gmail.subnokoii78.tplcore.commands.PrivilegeCommand;
 import com.gmail.subnokoii78.tplcore.commands.ScriptCommand;
-import com.gmail.subnokoii78.tplcore.eval.ScriptLanguage;
 import com.gmail.subnokoii78.tplcore.events.PluginApi;
 import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
