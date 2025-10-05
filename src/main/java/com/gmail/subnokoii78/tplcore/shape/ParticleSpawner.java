@@ -2,9 +2,14 @@ package com.gmail.subnokoii78.tplcore.shape;
 
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParticleSpawner<T> {
     private World world = Bukkit.getWorlds().getFirst();
@@ -18,6 +23,8 @@ public class ParticleSpawner<T> {
     private int count = 1;
 
     private double speed = 0;
+
+    private final List<Player> receivers = new ArrayList<>();
 
     private final T data;
 
@@ -39,6 +46,10 @@ public class ParticleSpawner<T> {
         return this;
     }
 
+    public ParticleSpawner<T> place(@NotNull Location location) {
+        return place(location.getWorld(), Vector3Builder.from(location));
+    }
+
     public ParticleSpawner<T> delta(@NotNull Vector3Builder delta) {
         this.delta.x(delta.x());
         this.delta.y(delta.y());
@@ -56,7 +67,19 @@ public class ParticleSpawner<T> {
         return this;
     }
 
+    public ParticleSpawner<?> receivers(List<Player> players) {
+        receivers.addAll(players);
+        return this;
+    }
+
     public void spawn() {
-        world.spawnParticle(particle, center.withWorld(world), count, delta.x(), delta.y(), delta.z(), speed, data);
+        if (receivers.isEmpty()) {
+            world.spawnParticle(particle, center.withWorld(world), count, delta.x(), delta.y(), delta.z(), speed, data);
+        }
+        else {
+            for (final Player receiver : receivers) {
+                receiver.spawnParticle(particle, center.withWorld(world), count, delta.x(), delta.y(), delta.z(), speed, data);
+            }
+        }
     }
 }

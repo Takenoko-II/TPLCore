@@ -323,7 +323,6 @@ public class Vector3Builder implements VectorBuilder<Vector3Builder, Double> {
      * @param degree 角度
      * @return this
      */
-    @ApiStatus.Experimental
     @Destructive
     public @NotNull Vector3Builder rotate(@NotNull Vector3Builder axis, float degree) {
         /*final double radian = degree * Math.PI / 180;

@@ -2,6 +2,7 @@ package com.gmail.subnokoii78.tplcore;
 
 import com.gmail.subnokoii78.tplcore.commands.PrivilegeCommand;
 import com.gmail.subnokoii78.tplcore.commands.ScriptCommand;
+import com.gmail.subnokoii78.tplcore.entity.FakeArrowLauncher;
 import com.gmail.subnokoii78.tplcore.events.PluginApi;
 import com.gmail.subnokoii78.tplcore.commands.ConsoleCommand;
 import com.gmail.subnokoii78.tplcore.events.*;
@@ -96,6 +97,8 @@ public class TPLCore {
 
             final PluginManager manager = Bukkit.getPluginManager();
             manager.registerEvents(BukkitEventObserver.INSTANCE, plugin);
+            manager.registerEvents(FakeArrowLauncher.FakeArrowEventListener.INSTANCE, plugin);
+            FakeArrowLauncher.FakeArrowEventListener.INSTANCE.runTaskTimer(plugin, 0L, 1);
             manager.registerEvents(ContainerInteraction.ContainerEventObserver.INSTANCE, plugin);
 
             final Messenger messenger = Bukkit.getServer().getMessenger();

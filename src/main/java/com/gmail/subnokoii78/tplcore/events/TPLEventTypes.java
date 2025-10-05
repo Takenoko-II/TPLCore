@@ -10,4 +10,8 @@ public final class TPLEventTypes {
     public static final TPLEventType<TickEvent> TICK = new TPLEventType<>(TickEvent.class);
 
     public static final TPLEventType<PluginConfigUpdateEvent> PLUGIN_CONFIG_UPDATE = new TPLEventType<>(PluginConfigUpdateEvent.class);
+
+    public static final TPLEventType<PlayerBowShootEvent> PLAYER_BOW_SHOOT = new TPLEventType<>(PlayerBowShootEvent.class);
+
+    public static final TPLEventType<PlayerUsingItemEvent> PLAYER_USING_ITEM = new TPLEventType<>(PlayerUsingItemEvent.class);
 }

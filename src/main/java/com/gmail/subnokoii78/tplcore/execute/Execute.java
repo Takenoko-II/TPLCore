@@ -918,7 +918,6 @@ public class Execute {
          * @return 成功した場合true、失敗した場合false
          * @apiNote NMSに大いに依存しているためこまめにメンテ
          */
-        @ApiStatus.Experimental
         public boolean command(@NotNull String command) {
             return callback(stack -> stack.runCommand(command, false) ? SUCCESS : FAILURE);
         }

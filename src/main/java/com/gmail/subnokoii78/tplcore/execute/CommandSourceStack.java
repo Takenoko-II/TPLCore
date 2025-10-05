@@ -381,7 +381,6 @@ public class CommandSourceStack {
         return stack;
     }
 
-    @ApiStatus.Experimental
     private net.minecraft.commands.CommandSourceStack toNMS(boolean sendsOutput) {
         var stack = VanillaCommandWrapper.getListener(getSender())
             .withPermission(Commands.LEVEL_OWNERS)
@@ -448,7 +447,6 @@ public class CommandSourceStack {
         }
     }
 
-    @ApiStatus.Experimental
     public boolean runCommand(String commandLine, boolean sendsOutput) {
         AsyncCatcher.catchOp("Command Dispatched Async: " + commandLine);
         final String command = StringUtils.normalizeSpace(commandLine.trim());

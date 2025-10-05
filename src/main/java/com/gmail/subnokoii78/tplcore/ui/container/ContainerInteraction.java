@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-@ApiStatus.Experimental
 public class ContainerInteraction {
     private static final class InteractionInventoryHolder implements InventoryHolder {
         private final ContainerInteraction interactionBuilder;

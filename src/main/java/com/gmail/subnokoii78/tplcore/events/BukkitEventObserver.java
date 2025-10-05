@@ -1,22 +1,30 @@
 package com.gmail.subnokoii78.tplcore.events;
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.gmail.subnokoii78.tplcore.TPLCore;
+import com.gmail.subnokoii78.tplcore.entity.FakeArrowLauncher;
 import com.gmail.subnokoii78.tplcore.schedule.GameTickScheduler;
 import com.gmail.subnokoii78.tplcore.schedule.SystemTimeScheduler;
+import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityTeleportEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.persistence.PersistentDataType;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -33,6 +41,8 @@ public class BukkitEventObserver implements Listener {
         private static final Map<String, TimeStorage> storages = new HashMap<>();
 
         private final Map<Player, Long> timeStorage = new HashMap<>();
+
+        private final Map<Player, Object> dataStorage = new HashMap<>();
 
         /**
          * @param eventId recommended: .class.getName()
@@ -53,6 +63,14 @@ public class BukkitEventObserver implements Listener {
             timeStorage.put(player, System.currentTimeMillis());
         }
 
+        private @Nullable Object getData(Player player) {
+            return dataStorage.get(player);
+        }
+
+        private void setData(Player player, @Nullable Object data) {
+            dataStorage.put(player, data);
+        }
+
         private static TimeStorage getStorage(String eventId) {
             if (storages.containsKey(eventId)) {
                 return storages.get(eventId);
@@ -67,6 +85,18 @@ public class BukkitEventObserver implements Listener {
         TPLCore.events.getDispatcher(TPLEventTypes.TICK).dispatch(new TickEvent(
             Bukkit.getServer().getServerTickManager().isFrozen()
         ));
+
+        for (final Player player : Bukkit.getOnlinePlayers()) {
+            if (!player.hasActiveItem()) {
+                continue;
+            }
+
+            TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_USING_ITEM).dispatch(new PlayerUsingItemEvent(
+                player,
+                player.getActiveItem(),
+                player.getActiveItemUsedTime()
+            ));
+        }
     }
 
     @EventHandler
@@ -223,5 +253,37 @@ public class BukkitEventObserver implements Listener {
         if (entity.getScoreboardTags().contains(PluginApi.MESSENGER_ENTITY_TAG)) {
             TPLCore.pluginApi.broadcast(entity);
         }
+    }
+
+    @EventHandler
+    public void onPlayerStopUsingItem(PlayerStopUsingItemEvent event) {
+        final TimeStorage timeStorage = TimeStorage.getStorage(PlayerStopUsingItemEvent.class.getName());
+        timeStorage.setTime(event.getPlayer());
+        timeStorage.setData(event.getPlayer(), event);
+    }
+
+    @EventHandler
+    public void onEntityShootBow(EntityShootBowEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (!(event.getProjectile() instanceof Projectile projectile)) return;
+
+        final TimeStorage timeStorage = TimeStorage.getStorage(PlayerStopUsingItemEvent.class.getName());
+        final long playerStopUsingItemTime = timeStorage.getTime(player);
+
+        if (System.currentTimeMillis() - playerStopUsingItemTime > 50L) return;
+
+        final PlayerStopUsingItemEvent stopEvent = (PlayerStopUsingItemEvent) timeStorage.getData(player);
+
+        if (stopEvent == null) {
+            throw new IllegalStateException();
+        }
+
+        TPLCore.events.getDispatcher(TPLEventTypes.PLAYER_BOW_SHOOT).dispatch(new PlayerBowShootEvent(
+            event,
+            player,
+            projectile,
+            stopEvent.getItem(),
+            stopEvent.getTicksHeldFor()
+        ));
     }
 }
