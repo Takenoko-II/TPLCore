@@ -3,12 +3,14 @@ package com.gmail.subnokoii78.tplcore.execute;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+@NullMarked
 public final class DimensionAccess {
     private static final Map<NamespacedKey, DimensionAccess> INSTANCES = new HashMap<>();
 
@@ -29,7 +31,7 @@ public final class DimensionAccess {
 
     private final NamespacedKey key;
 
-    private DimensionAccess(@NotNull NamespacedKey key) {
+    private DimensionAccess(NamespacedKey key) {
         this.key = key;
         INSTANCES.put(key, this);
     }
@@ -39,7 +41,7 @@ public final class DimensionAccess {
      * @return ディメンション
      * @throws IllegalStateException ディメンションが未生成か、バニラのディメンションではない場合
      */
-    public @NotNull World getWorld() throws IllegalStateException {
+    public World getWorld() throws IllegalStateException {
         final World world = Bukkit.getWorld(key);
 
         if (world == null) {
@@ -53,11 +55,29 @@ public final class DimensionAccess {
      * IDを取得します。
      * @return ID
      */
-    public @NotNull String getId() {
+    public String getId() {
         return key.toString();
     }
 
-    public static @NotNull Set<DimensionAccess> values() {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DimensionAccess that = (DimensionAccess) o;
+        return Objects.equals(key, that.key);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key);
+    }
+
+    @Override
+    public String toString() {
+        return "DimensionAccess<" + getId() + ">";
+    }
+
+    public static Set<DimensionAccess> values() {
         return Set.copyOf(INSTANCES.values());
     }
 
@@ -67,7 +87,7 @@ public final class DimensionAccess {
      * @return 対応する {@link DimensionAccess}
      * @throws IllegalArgumentException カスタムディメンションが渡されたとき
      */
-    public static @NotNull DimensionAccess of(@NotNull NamespacedKey key) throws IllegalArgumentException {
+    public static DimensionAccess of(NamespacedKey key) throws IllegalArgumentException {
         if (INSTANCES.containsKey(key)) {
             return INSTANCES.get(key);
         }
@@ -87,7 +107,7 @@ public final class DimensionAccess {
      * @return 対応する {@link DimensionAccess}
      * @throws IllegalArgumentException カスタムディメンションが渡されたとき
      */
-    public static @NotNull DimensionAccess of(@NotNull World world) throws IllegalArgumentException {
+    public static DimensionAccess of(World world) throws IllegalArgumentException {
         return of(world.getKey());
     }
 
@@ -97,7 +117,7 @@ public final class DimensionAccess {
      * @return 対応する {@link DimensionAccess}
      * @throws IllegalArgumentException カスタムディメンションが渡されたとき
      */
-    public static @NotNull DimensionAccess of(@NotNull String id) throws IllegalArgumentException {
+    public static DimensionAccess of(String id) throws IllegalArgumentException {
         final NamespacedKey key = NamespacedKey.fromString(id);
 
         if (key == null) {

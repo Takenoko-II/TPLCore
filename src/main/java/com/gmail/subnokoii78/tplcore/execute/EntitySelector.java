@@ -3,7 +3,7 @@ package com.gmail.subnokoii78.tplcore.execute;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +13,13 @@ import java.util.Objects;
  * エンティティセレクターを表現するクラス
  * @param <T> @pや@aは{@link Player}、@eや@nは{@link Entity}、@sは暫定で{@link Entity}
  */
+@NullMarked
 public final class EntitySelector<T extends Entity> {
     private final List<SelectorArgument> arguments = new ArrayList<>();
 
     private final Builder<T> builder;
 
-    private EntitySelector(@NotNull Builder<T> builder) {
+    private EntitySelector(Builder<T> builder) {
         this.builder = builder;
     }
 
@@ -38,7 +39,7 @@ public final class EntitySelector<T extends Entity> {
         return builder.equals(S) || builder.equals(P) || builder.equals(N);
     }
 
-    void addArgument(@NotNull SelectorArgument argument) {
+    void addArgument(SelectorArgument argument) {
         arguments.add(argument);
         arguments.sort((a, b) -> b.getPriority() - a.getPriority());
     }
@@ -49,7 +50,7 @@ public final class EntitySelector<T extends Entity> {
      * @param value セレクター引数に渡す値
      * @return thisをそのまま返す
      */
-    public <U> @NotNull EntitySelector<T> arg(@NotNull SelectorArgument.Builder<U> modifier, @NotNull U value) {
+    public <U> EntitySelector<T> arg(SelectorArgument.Builder<U> modifier, U value) {
         if (arguments.stream().anyMatch(argument -> {
             if (argument.getId().equals(SelectorArgument.NOT.getId())) return false;
             else return argument.getId().equals(modifier.getId());
@@ -67,16 +68,16 @@ public final class EntitySelector<T extends Entity> {
      * @param value セレクター引数に渡す値
      * @return thisをそのまま返す
      */
-    public <U> @NotNull EntitySelector<T> notArg(@NotNull SelectorArgument.Builder<U> modifier, @NotNull U value) {
+    public <U> EntitySelector<T> notArg(SelectorArgument.Builder<U> modifier, U value) {
         addArgument(SelectorArgument.NOT.build(modifier.build(value)));
         return this;
     }
 
-    public @NotNull ScoreHolder toScoreHolder() {
+    public ScoreHolder toScoreHolder() {
         return ScoreHolder.of(this);
     }
 
-    private @NotNull List<T> modifier(@NotNull List<T> entities, @NotNull CommandSourceStack stack) {
+    private List<T> modifier(List<T> entities, CommandSourceStack stack) {
         final CommandSourceStack copy = stack.copy();
         List<Entity> out = entities.stream().map(entity -> (Entity) entity).toList();
 
@@ -89,7 +90,7 @@ public final class EntitySelector<T extends Entity> {
         return (List<T>) out;
     }
 
-    @NotNull List<T> getEntities(@NotNull CommandSourceStack stack) {
+    List<T> getEntities(CommandSourceStack stack) {
         return builder.selectorSpecificModifier(modifier(builder.getTargetCandidates(stack), stack), stack, arguments);
     }
 
@@ -111,13 +112,13 @@ public final class EntitySelector<T extends Entity> {
         return builder.toString() + arguments;
     }
 
-    private static @NotNull List<Entity> getAllEntities() {
+    private static List<Entity> getAllEntities() {
         return Bukkit.getServer().getWorlds().stream()
             .flatMap(world -> world.getEntities().stream())
             .toList();
     }
 
-    private static @NotNull List<Player> getAllPlayers() {
+    private static List<Player> getAllPlayers() {
         return Bukkit.getOnlinePlayers().stream().map(player -> (Player) player).toList();
     }
 
@@ -126,13 +127,13 @@ public final class EntitySelector<T extends Entity> {
      */
     public static final Builder<Entity> E = new Builder<>() {
         @Override
-        @NotNull List<Entity> getTargetCandidates(@NotNull CommandSourceStack stack) {
+        List<Entity> getTargetCandidates(CommandSourceStack stack) {
             final List<Entity> entities = EntitySelector.getAllEntities();
             return SelectorSortOrder.ARBITRARY.sort(entities, stack);
         }
 
         @Override
-        @NotNull List<Entity> selectorSpecificModifier(@NotNull List<Entity> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments) {
+        List<Entity> selectorSpecificModifier(List<Entity> entities, CommandSourceStack stack, List<SelectorArgument> arguments) {
             return entities;
         }
 
@@ -147,12 +148,12 @@ public final class EntitySelector<T extends Entity> {
      */
     public static final Builder<Entity> S = new Builder<>() {
         @Override
-        @NotNull List<Entity> getTargetCandidates(@NotNull CommandSourceStack stack) {
+        List<Entity> getTargetCandidates(CommandSourceStack stack) {
             return stack.hasExecutor() ? List.of(stack.getExecutor()) : List.of();
         }
 
         @Override
-        @NotNull List<Entity> selectorSpecificModifier(@NotNull List<Entity> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments) {
+        List<Entity> selectorSpecificModifier(List<Entity> entities, CommandSourceStack stack, List<SelectorArgument> arguments) {
             return entities;
         }
 
@@ -167,13 +168,13 @@ public final class EntitySelector<T extends Entity> {
      */
     public static final Builder<Player> A = new Builder<>() {
         @Override
-        @NotNull List<Player> getTargetCandidates(@NotNull CommandSourceStack stack) {
+        List<Player> getTargetCandidates(CommandSourceStack stack) {
             final List<Player> players = EntitySelector.getAllPlayers();
             return SelectorSortOrder.ARBITRARY.sort(players, stack);
         }
 
         @Override
-        @NotNull List<Player> selectorSpecificModifier(@NotNull List<Player> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments) {
+        List<Player> selectorSpecificModifier(List<Player> entities, CommandSourceStack stack, List<SelectorArgument> arguments) {
             return entities;
         }
 
@@ -188,7 +189,7 @@ public final class EntitySelector<T extends Entity> {
      */
     public static final Builder<Player> P = new Builder<>() {
         @Override
-        @NotNull List<Player> getTargetCandidates(@NotNull CommandSourceStack stack) {
+        List<Player> getTargetCandidates(CommandSourceStack stack) {
             final List<Player> players = EntitySelector.getAllPlayers()
                 .stream()
                 .filter(player -> !player.isDead())
@@ -198,7 +199,7 @@ public final class EntitySelector<T extends Entity> {
         }
 
         @Override
-        @NotNull List<Player> selectorSpecificModifier(@NotNull List<Player> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments) {
+        List<Player> selectorSpecificModifier(List<Player> entities, CommandSourceStack stack, List<SelectorArgument> arguments) {
             if (arguments.stream().anyMatch(argument -> argument.getId().equals(SelectorArgument.LIMIT.getId()))) {
                 return entities;
             }
@@ -216,7 +217,7 @@ public final class EntitySelector<T extends Entity> {
      */
     public static final Builder<Player> R = new Builder<>() {
         @Override
-        @NotNull List<Player> getTargetCandidates(@NotNull CommandSourceStack stack) {
+        List<Player> getTargetCandidates(CommandSourceStack stack) {
             final List<Player> players = new ArrayList<>(
                 EntitySelector.getAllPlayers()
                     .stream()
@@ -228,7 +229,7 @@ public final class EntitySelector<T extends Entity> {
         }
 
         @Override
-        @NotNull List<Player> selectorSpecificModifier(@NotNull List<Player> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments) {
+        List<Player> selectorSpecificModifier(List<Player> entities, CommandSourceStack stack, List<SelectorArgument> arguments) {
             if (arguments.stream().anyMatch(argument -> argument.getId().equals(SelectorArgument.LIMIT.getId()))) {
                 return entities;
             }
@@ -246,14 +247,12 @@ public final class EntitySelector<T extends Entity> {
      */
     public static final Builder<Entity> N = new Builder<>() {
         @Override
-        @NotNull
-        List<Entity> getTargetCandidates(@NotNull CommandSourceStack stack) {
+        List<Entity> getTargetCandidates(CommandSourceStack stack) {
             return SelectorSortOrder.NEAREST.sort(EntitySelector.getAllEntities(), stack);
         }
 
         @Override
-        @NotNull
-        List<Entity> selectorSpecificModifier(@NotNull List<Entity> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments) {
+        List<Entity> selectorSpecificModifier(List<Entity> entities, CommandSourceStack stack, List<SelectorArgument> arguments) {
             if (arguments.stream().anyMatch(argument -> argument.getId().equals(SelectorArgument.LIMIT.getId()))) {
                 return entities;
             }
@@ -272,9 +271,21 @@ public final class EntitySelector<T extends Entity> {
     public static abstract class Builder<T extends Entity> {
         private Builder() {}
 
-        abstract @NotNull List<T> getTargetCandidates(@NotNull CommandSourceStack stack);
+        /**
+         * セレクタに選択されうるエンティティを取得する
+         * @param stack コマンドソーススタック
+         * @return たとえば '@a' での実装なら全プレイヤーのリストを返す
+         */
+        abstract List<T> getTargetCandidates(CommandSourceStack stack);
 
-        abstract @NotNull List<T> selectorSpecificModifier(@NotNull List<T> entities, @NotNull CommandSourceStack stack, @NotNull List<SelectorArgument> arguments);
+        /**
+         * 受け取ったセレクタ引数の条件のもとセレクタの効果を再編集する
+         * @param entities 選択されたエンティティ
+         * @param stack コマンドソーススタック
+         * @param arguments セレクタ引数のリスト
+         * @return 最終結果
+         */
+        abstract List<T> selectorSpecificModifier(List<T> entities, CommandSourceStack stack, List<SelectorArgument> arguments);
 
         @Override
         public abstract String toString();
@@ -282,7 +293,7 @@ public final class EntitySelector<T extends Entity> {
         /**
          * 新しくセレクターを作成します。
          */
-        protected @NotNull EntitySelector<T> build() {
+        protected EntitySelector<T> build() {
             return new EntitySelector<>(this);
         }
 
@@ -292,7 +303,7 @@ public final class EntitySelector<T extends Entity> {
          * @param value セレクター引数に渡す値
          * @return 作成されたセレクター
          */
-        public <U> @NotNull EntitySelector<T> arg(@NotNull SelectorArgument.Builder<U> modifier, @NotNull U value) {
+        public <U> EntitySelector<T> arg(SelectorArgument.Builder<U> modifier, U value) {
             return build().arg(modifier, value);
         }
 
@@ -302,11 +313,11 @@ public final class EntitySelector<T extends Entity> {
          * @param value セレクター引数に渡す値
          * @return 作成されたセレクター
          */
-        public <U> @NotNull EntitySelector<T> notArg(@NotNull SelectorArgument.Builder<U> modifier, @NotNull U value) {
+        public <U> EntitySelector<T> notArg(SelectorArgument.Builder<U> modifier, U value) {
             return build().notArg(modifier, value);
         }
 
-        public @NotNull ScoreHolder toScoreHolder() {
+        public ScoreHolder toScoreHolder() {
             return ScoreHolder.of(this);
         }
     }

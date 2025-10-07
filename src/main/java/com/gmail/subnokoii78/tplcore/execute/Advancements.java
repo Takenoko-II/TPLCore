@@ -5,16 +5,44 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.advancement.Advancement;
 import org.intellij.lang.annotations.Pattern;
 import org.intellij.lang.annotations.RegExp;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.HashMap;
 
+@NullMarked
 public final class Advancements extends HashMap<Advancement, Boolean> {
     private Advancements() {
         super();
     }
 
-    public static @NotNull Builder builder() {
+    public Advancements $(String id, boolean flag) {
+        if (containsKey(id)) {
+            throw new IllegalArgumentException();
+        }
+
+        final NamespacedKey key;
+        try {
+            key = NamespacedKey.fromString(id);
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException();
+        }
+        if (key == null) throw new IllegalArgumentException();
+
+        final Advancement advancement = Bukkit.getAdvancement(key);
+        if (advancement == null) throw new IllegalArgumentException();
+
+        put(advancement, flag);
+
+        return this;
+    }
+
+    public static Advancements chain() {
+        return new Advancements();
+    }
+
+    @Deprecated
+    public static Builder builder() {
         return new Builder();
     }
 
@@ -26,7 +54,7 @@ public final class Advancements extends HashMap<Advancement, Boolean> {
 
         private Builder() {}
 
-        public @NotNull Builder and(@NotNull @Pattern(value = PATTERN) String value) {
+        public Builder and(@Pattern(value = PATTERN) String value) {
             final String[] separated = value.split("=");
 
             if (separated.length > 2) {
@@ -60,7 +88,7 @@ public final class Advancements extends HashMap<Advancement, Boolean> {
             return this;
         }
 
-        public @NotNull Advancements build() {
+        public Advancements build() {
             return advancements;
         }
     }

@@ -1,8 +1,11 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * サブコマンドif|unlessを区別するための列挙型
  */
+@NullMarked
 public enum Conditional {
     /**
      * ガードサブコマンドの条件をテストの成功にするオプション
