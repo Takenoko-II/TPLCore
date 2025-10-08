@@ -1,6 +1,5 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
-import com.gmail.subnokoii78.tplcore.vector.Destructive;
 import com.gmail.subnokoii78.tplcore.vector.DualAxisRotationBuilder;
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
 import io.papermc.paper.entity.Leashable;
@@ -938,7 +937,7 @@ public class Execute {
          * 実行者を直近5秒以内に攻撃したエンティティに実行者を渡します。
          * @return that
          */
-        @Destructive
+        @NetMinecraftServer
         public Execute attacker() {
             return execute.fork(stack -> {
                 if (!stack.hasExecutor()) return List.of();

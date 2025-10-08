@@ -381,6 +381,7 @@ public class CommandSourceStack {
         return stack;
     }
 
+    @NetMinecraftServer
     private net.minecraft.commands.CommandSourceStack toNMS(boolean sendsOutput) {
         var stack = VanillaCommandWrapper.getListener(getSender())
             .withPermission(Commands.LEVEL_OWNERS)
@@ -402,6 +403,7 @@ public class CommandSourceStack {
         return stack;
     }
 
+    @NetMinecraftServer
     @ApiStatus.Experimental
     public int matchRegions(String begin, String end, String destination, ScanMode scanMode) {
         final net.minecraft.commands.CommandSourceStack nms = toNMS(false);
@@ -447,6 +449,7 @@ public class CommandSourceStack {
         }
     }
 
+    @NetMinecraftServer
     public boolean runCommand(String commandLine, boolean sendsOutput) {
         AsyncCatcher.catchOp("Command Dispatched Async: " + commandLine);
         final String command = StringUtils.normalizeSpace(commandLine.trim());

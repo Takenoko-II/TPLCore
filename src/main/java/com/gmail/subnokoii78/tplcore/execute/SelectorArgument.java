@@ -1,6 +1,7 @@
 package com.gmail.subnokoii78.tplcore.execute;
 
 import com.gmail.subnokoii78.tplcore.TPLCore;
+import com.gmail.subnokoii78.tplcore.generic.MultiMap;
 import com.gmail.subnokoii78.tplcore.scoreboard.ScoreObjective;
 import com.gmail.subnokoii78.tplcore.vector.Vector3Builder;
 import net.kyori.adventure.text.Component;
@@ -424,9 +425,8 @@ public abstract class SelectorArgument {
             return entities.stream()
                 .filter(entity -> {
                     if (entity instanceof Player player) {
-                        for (final Advancement advancement : argument.keySet()) {
-                            final boolean flag = argument.get(advancement);
-                            if (player.getAdvancementProgress(advancement).isDone() != flag) {
+                        for (final MultiMap.Entry<Advancement, Boolean> entry : argument) {
+                            if (player.getAdvancementProgress(entry.getKey()).isDone() != entry.getValue()) {
                                 return false;
                             }
                         }
@@ -458,13 +458,12 @@ public abstract class SelectorArgument {
         List<Entity> modify(@NotNull List<Entity> entities, @NotNull CommandSourceStack stack, @NotNull Scores argument) {
             return entities.stream()
                 .filter(entity -> {
-                    for (final String name : argument.keySet()) {
-                        if (!TPLCore.getScoreboard().hasObjective(name)) return false;
+                    for (final MultiMap.Entry<String, NumberRange.ScoreRange> entry : argument) {
+                        if (!TPLCore.getScoreboard().hasObjective(entry.getKey())) return false;
 
-                        final ScoreObjective objective = TPLCore.getScoreboard().getObjective(name);
-                        final NumberRange<Integer> range = argument.get(name);
+                        final ScoreObjective objective = TPLCore.getScoreboard().getObjective(entry.getKey());
 
-                        if (range.within(objective.getScore(entity))) {
+                        if (entry.getValue().within(objective.getScore(entity))) {
                             return false;
                         }
                     }
